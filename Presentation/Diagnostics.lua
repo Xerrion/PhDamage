@@ -31,8 +31,8 @@ local SCHOOL_COLORS = {
 }
 
 -- Decorative line characters (WoW chat supports UTF-8)
-local LINE_DOUBLE = string.rep("\226\149\144", 40)  -- ═ repeated
-local LINE_SINGLE = string.rep("\226\148\128", 28)  -- ─ repeated
+local LINE_DOUBLE = string.rep("=", 40)  -- ═ repeated
+local LINE_SINGLE = string.rep("-", 28)  -- ─ repeated
 
 -------------------------------------------------------------------------------
 -- Helpers

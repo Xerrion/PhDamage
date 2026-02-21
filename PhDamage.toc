@@ -32,3 +32,5 @@ Engine\Pipeline.lua
 
 # Presentation
 Presentation\Diagnostics.lua
+Presentation\Tooltip.lua
+Presentation\ActionBar.lua

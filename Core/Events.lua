@@ -61,6 +61,11 @@ function Events.OnStateEvent(event, arg1, ...)
         ns.StateCollector.Invalidate()
     end
 
+    -- Initialize ActionBar on first PLAYER_ENTERING_WORLD (buttons must exist)
+    if event == "PLAYER_ENTERING_WORLD" and ns.ActionBar and ns.ActionBar.Initialize then
+        ns.ActionBar.Initialize()
+    end
+
     -- Fire internal message for any listeners
     local addon = GetAddon()
     if addon then

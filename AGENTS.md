@@ -41,6 +41,8 @@ Sub-namespaces:
 - `ns.StateCollector` — WoW API → PlayerState bridge
 - `ns.Events` — Event registration
 - `ns.Diagnostics` — Slash command output
+- `ns.Tooltip` — Tooltip hook and spell display
+- `ns.ActionBar` — Action bar overlay management
 
 ---
 
@@ -94,5 +96,5 @@ Sub-namespaces:
 ## Current Scope
 
 - **Phase 1**: TBC Anniversary only, Warlock only, diagnostics slash command only
-- **Phase 2** (planned): Tooltip hooks, actionbar text overlay
+- **Phase 2** (active): Tooltip hooks, actionbar text overlay
 - **Future**: Additional classes, multi-version support, options panel
