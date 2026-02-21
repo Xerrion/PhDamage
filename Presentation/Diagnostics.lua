@@ -137,13 +137,15 @@ function Diagnostics.PrintSpellSummary(r)
             .. COLOR_VALUE .. FN(r.dotDamage) .. COLOR_RESET .. " DoT expected | "
             .. castStr
         )
-        local directBase = r.baseDamage
-            and (FN((r.baseDamage.min + r.baseDamage.max) / 2))
+        local baseMin = r.baseDamage and (r.baseDamage.min or 0) or 0
+        local baseMax = r.baseDamage and (r.baseDamage.max or 0) or 0
+        local directBase = (r.baseDamage and baseMin > 0)
+            and FN((baseMin + baseMax) / 2)
             or FN(r.avgBaseDamage)
         Diagnostics.Print(
-            "  " .. LabelValue("Direct", directBase .. " base + " .. FN(r.spellPowerBonus) .. " SP")
-            .. " | " .. LabelValue("Crit", r.critChance > 0
-                and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier) .. ")")
+            "  " .. LabelValue("Direct", directBase .. " base + " .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
+            .. " | " .. LabelValue("Crit", (r.critChance or 0) > 0
+                and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
                 or "n/a")
         )
         return
@@ -193,8 +195,8 @@ function Diagnostics.PrintSpellSummary(r)
         .. castStr .. " | "
         .. COLOR_GOOD .. FN(r.dps) .. " DPS" .. COLOR_RESET
     )
-    local critStr = r.critChance > 0
-        and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier) .. ")")
+    local critStr = (r.critChance or 0) > 0
+        and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
         or "n/a"
     Diagnostics.Print(
         "  " .. LabelValue("Base", FN(r.avgBaseDamage))
@@ -269,7 +271,7 @@ end
 function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
     if r.baseDamage then
         Diagnostics.Print("  " .. LabelValue("Base damage",
-            FN(r.baseDamage.min) .. " - " .. FN(r.baseDamage.max)
+            FN(r.baseDamage.min or 0) .. " - " .. FN(r.baseDamage.max or 0)
             .. " (avg " .. FN(r.avgBaseDamage) .. ")"))
     else
         Diagnostics.Print("  " .. LabelValue("Base damage", FN(r.avgBaseDamage)))
@@ -299,7 +301,7 @@ end
 function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
     if r.baseDamage then
         Diagnostics.Print("  " .. LabelValue("Base damage",
-            FN(r.baseDamage.min) .. " - " .. FN(r.baseDamage.max)
+            FN(r.baseDamage.min or 0) .. " - " .. FN(r.baseDamage.max or 0)
             .. " (avg " .. FN(r.avgBaseDamage) .. ")"))
     else
         Diagnostics.Print("  " .. LabelValue("Base damage", FN(r.avgBaseDamage)))
@@ -312,8 +314,8 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
     Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Crit chance",
-        r.critChance > 0
-            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier) .. " multiplier)")
+        (r.critChance or 0) > 0
+            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. " multiplier)")
             or "n/a"))
     Diagnostics.Print("  " .. LabelValue("Expected damage", COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
@@ -353,9 +355,11 @@ function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
     -- Direct portion
     Diagnostics.Print("  " .. COLOR_HEADER .. "Direct Portion" .. COLOR_RESET)
     if r.baseDamage then
+        local baseMin = r.baseDamage.min or 0
+        local baseMax = r.baseDamage.max or 0
         Diagnostics.Print("    " .. LabelValue("Base damage",
-            FN(r.baseDamage.min) .. " - " .. FN(r.baseDamage.max)
-            .. " (avg " .. FN((r.baseDamage.min + r.baseDamage.max) / 2) .. ")"))
+            FN(baseMin) .. " - " .. FN(baseMax)
+            .. " (avg " .. FN((baseMin + baseMax) / 2) .. ")"))
     else
         Diagnostics.Print("    " .. LabelValue("Base damage", FN(r.avgBaseDamage)))
     end
@@ -376,8 +380,8 @@ function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("    " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("    " .. LabelValue("Crit chance",
-        r.critChance > 0
-            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier)
+        (r.critChance or 0) > 0
+            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0)
                 .. " multiplier, direct only)")
             or "n/a"))
     Diagnostics.Print("    " .. LabelValue("Expected total", COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))

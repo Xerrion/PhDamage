@@ -86,20 +86,6 @@ function StateCollector.CollectPlayerState()
         state.stats.spellHit = result / 100
     end
 
-    -- Add talent-based hit from GetSpellHitModifier or GetHitModifier
-    local hitMod
-    if GetSpellHitModifier then
-        ok, hitMod = pcall(GetSpellHitModifier)
-        if ok and hitMod then
-            state.stats.spellHit = state.stats.spellHit + hitMod / 100
-        end
-    elseif GetHitModifier then
-        ok, hitMod = pcall(GetHitModifier)
-        if ok and hitMod then
-            state.stats.spellHit = state.stats.spellHit + hitMod / 100
-        end
-    end
-
     -- Spell haste from rating (CR_HASTE_SPELL)
     ok, result = pcall(GetCombatRatingBonus, ns.CR_HASTE_SPELL)
     if ok and result then

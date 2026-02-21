@@ -50,7 +50,7 @@ function Events.UnregisterAll()
     end
 end
 
-function Events.OnStateEvent(self, event, arg1, ...)
+function Events.OnStateEvent(event, arg1, ...)
     -- UNIT_AURA and UNIT_STATS fire for all units; only care about player
     if (event == "UNIT_AURA" or event == "UNIT_STATS") and arg1 ~= "player" then
         return

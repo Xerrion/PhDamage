@@ -39,7 +39,7 @@ TalentMap["1:2"] = {
 }
 
 -- Improved Curse of Agony: +5% Curse of Agony damage per rank
-TalentMap["1:7"] = {
+TalentMap["1:6"] = {
     name = "Improved Curse of Agony",
     maxRank = 2,
     effects = {
@@ -61,7 +61,7 @@ TalentMap["1:11"] = {
 -- Siphon Life (1:13): 1 rank, enables the spell. No damage modifier.
 
 -- Shadow Mastery: +2% Shadow damage per rank
-TalentMap["1:16"] = {
+TalentMap["1:15"] = {
     name = "Shadow Mastery",
     maxRank = 5,
     effects = {
@@ -71,7 +71,7 @@ TalentMap["1:16"] = {
 }
 
 -- Contagion: +1% damage to Corruption, Seed of Corruption, and Curse of Agony per rank
-TalentMap["1:17"] = {
+TalentMap["1:16"] = {
     name = "Contagion",
     maxRank = 5,
     effects = {
@@ -81,6 +81,15 @@ TalentMap["1:17"] = {
 }
 
 -- Unstable Affliction (1:21): 1 rank, enables the spell. No damage modifier.
+
+-- Malediction: +1/2/3% to Curse of the Elements and Curse of Shadow damage amplification
+-- The actual amplification is handled via talentAmplify in AuraMap entries for those curses;
+-- this entry provides the talent definition for rank lookup.
+TalentMap["1:19"] = {
+    name = "Malediction",
+    maxRank = 3,
+    effects = {},
+}
 
 -------------------------------------------------------------------------------
 -- Tab 2: Demonology
@@ -115,7 +124,7 @@ TalentMap["3:3"] = {
 }
 
 -- Devastation: +1% crit chance to Destruction spells per rank
-TalentMap["3:6"] = {
+TalentMap["3:7"] = {
     name = "Devastation",
     maxRank = 5,
     effects = {
@@ -125,12 +134,12 @@ TalentMap["3:6"] = {
     },
 }
 
--- Improved Searing Pain: +4% crit to Searing Pain per rank
-TalentMap["3:10"] = {
+-- Improved Searing Pain: +4/7/10% crit to Searing Pain per rank
+TalentMap["3:11"] = {
     name = "Improved Searing Pain",
     maxRank = 3,
     effects = {
-        { type = MOD.CRIT_BONUS, value = 0.04, perRank = true,
+        { type = MOD.CRIT_BONUS, value = {0.04, 0.07, 0.10},
           filter = { spellNames = {"Searing Pain"} } },
     },
 }

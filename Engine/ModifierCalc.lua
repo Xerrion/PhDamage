@@ -14,11 +14,11 @@ local ModifierCalc = {}
 ns.Engine.ModifierCalc = ModifierCalc
 
 -------------------------------------------------------------------------------
--- MatchesFilter(filter, spellData)
+-- MatchesFilter(filter, spellData, rankData)
 -- Returns true if the spell matches all filter criteria (AND logic).
 -- A nil filter matches everything.
 -------------------------------------------------------------------------------
-function ModifierCalc.MatchesFilter(filter, spellData)
+function ModifierCalc.MatchesFilter(filter, spellData, rankData)
     if not filter then
         return true
     end
@@ -61,20 +61,9 @@ function ModifierCalc.MatchesFilter(filter, spellData)
         end
     end
 
-    -- Spell ID match (check any rank's spellID)
-    if filter.spellID then
-        local found = false
-        if spellData.ranks then
-            for _, rankData in pairs(spellData.ranks) do
-                if rankData.spellID == filter.spellID then
-                    found = true
-                    break
-                end
-            end
-        end
-        if not found then
-            return false
-        end
+    -- Spell ID match (check current rank only)
+    if filter.spellID and filter.spellID ~= rankData.spellID then
+        return false
     end
 
     return true
@@ -108,6 +97,12 @@ end
 local function ApplyEffect(mods, effect, rank)
     local effectType = effect.type
     local value = effect.value
+
+    -- Handle table-valued effects (e.g., Improved Searing Pain: {0.04, 0.07, 0.10})
+    -- When value is a table, index by rank to get the scalar value.
+    if type(value) == "table" then
+        value = value[rank] or value[#value] or 0
+    end
 
     if effectType == MOD.DAMAGE_MULTIPLIER then
         if effect.perRank then
@@ -191,15 +186,16 @@ end
 -------------------------------------------------------------------------------
 function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentMap, auraMap)
     local mods = CreateModAccumulator()
+    local rankData = baseResult.rankData
 
     ---------------------------------------------------------------------------
     -- 1. Talent modifiers
     ---------------------------------------------------------------------------
     for key, entry in pairs(talentMap) do
         local talentRank = playerState.talents[key]
-        if talentRank and talentRank > 0 then
+        if talentRank and talentRank > 0 and entry.effects then
             for _, effect in ipairs(entry.effects) do
-                if ModifierCalc.MatchesFilter(effect.filter, spellData) then
+                if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
                     ApplyEffect(mods, effect, talentRank)
                 end
             end
@@ -219,9 +215,11 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
             end
 
             if isActive then
-                for _, effect in ipairs(entry.effects) do
-                    if ModifierCalc.MatchesFilter(effect.filter, spellData) then
-                        ApplyEffect(mods, effect, 1)
+                if entry.effects then
+                    for _, effect in ipairs(entry.effects) do
+                        if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                            ApplyEffect(mods, effect, 1)
+                        end
                     end
                 end
 
@@ -229,11 +227,11 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
                 if entry.talentAmplify then
                     local amp = entry.talentAmplify
                     local talentRank = playerState.talents[amp.talentKey] or 0
-                    if talentRank > 0 then
+                    if talentRank > 0 and entry.effects then
                         -- Create a synthetic effect matching the aura's first matching filter
                         for _, effect in ipairs(entry.effects) do
                             if effect.type == amp.effectType
-                                    and ModifierCalc.MatchesFilter(effect.filter, spellData) then
+                                    and ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
                                 local syntheticEffect = {
                                     type = amp.effectType,
                                     value = amp.perRank * talentRank,
@@ -291,6 +289,8 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         result.spellPowerBonus = spBonus
         result.healthCost = baseResult.healthCost
         result.manaGain = (baseResult.rankData.manaGain or 0) + spBonus
+        result.critBonus = mods.critBonus
+        result.hitBonus = mods.spellHitBonus
         return result
     end
 
@@ -330,10 +330,15 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
 
         local totalDmg = (baseTotalDmg + spBonus) * mods.damageMultiplier * mods.dotDamageMultiplier
         result.totalDamage = totalDmg
-        result.numTicks = baseResult.numTicks
+        local numTicks = baseResult.numTicks
+        if not numTicks or numTicks == 0 then numTicks = 1 end
+        result.numTicks = numTicks
         result.duration = baseResult.duration
-        result.tickDamage = totalDmg / baseResult.numTicks
+        result.tickDamage = totalDmg / numTicks
     end
+
+    result.critBonus = mods.critBonus
+    result.hitBonus = mods.spellHitBonus
 
     return result
 end
@@ -373,9 +378,11 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     result.dotCoefficient = dotCoeff
     result.dotSpBonus = dotSpBonus
     result.dotDamage = dotDamage
-    result.numTicks = baseResult.numTicks
+    local numTicks = baseResult.numTicks
+    if not numTicks or numTicks == 0 then numTicks = 1 end
+    result.numTicks = numTicks
     result.duration = baseResult.duration
-    result.tickDamage = dotDamage / baseResult.numTicks
+    result.tickDamage = dotDamage / numTicks
 
     -- Combined
     result.coefficient = directCoeff + dotCoeff
@@ -393,6 +400,9 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     end
     castTime = math.max(castTime, 0)
     result.castTime = castTime
+
+    result.critBonus = mods.critBonus
+    result.hitBonus = mods.spellHitBonus
 
     return result
 end
