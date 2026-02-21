@@ -146,52 +146,11 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
 
     -- DoTs/channels generally don't crit in TBC, but we respect spellData.canCrit
     local expectedDamage = totalDmg * (1 + critChance * (critMultiplier - 1))
-    local expectedTick = tickDmg * (1 + critChance * (critMultiplier - 1))
     local expectedWithMiss = expectedDamage * hitChance
+    local expectedTick = (tickDmg * (1 + critChance * (critMultiplier - 1))) * hitChance
 
     -- DPS: for DoTs/channels, include cast time in denominator for throughput DPS
-    -- Channels: duration IS the cast time, so just use duration
-    -- DoTs with cast time: use castTime + duration
-    local dpsDivisor
-    -- For channeled spells, castTime in SpellData equals the channel duration.
-    -- Use the channel duration (modResult.duration) as the DPS divisor since
-    -- the player is occupied for the entire channel.
-    if spellData.isChanneled then
-        dpsDivisor = modResult.duration or effectiveCastTime
-    else
-        dpsDivisor = effectiveCastTime + (modResult.duration or 0)
-    end
-    if dpsDivisor <= 0 then
-        dpsDivisor = effectiveCastTime
-    end
-    local dps = expectedWithMiss / dpsDivisor
-
-    return {
-        spellID = modResult.rankData and modResult.rankData.spellID,
-        spellName = spellData.name,
-        school = spellData.school,
-        spellType = spellData.spellType,
-        -- Base values
-        avgBaseDamage = modResult.avgBaseDamage,
-        coefficient = modResult.coefficient,
-        spellPowerBonus = modResult.spellPowerBonus,
-        -- Modifier values
-        damageBeforeMods = modResult.damageBeforeMods,
-        damageAfterMods = totalDmg,
-        talentDamageBonus = modResult.talentDamageBonus,
-        -- Crit values
-        critChance = critChance,
-        critMultiplier = critMultiplier,
-        expectedDamage = expectedDamage,
-        -- Hit values
-        hitChance = hitChance,
-        expectedDamageWithMiss = expectedWithMiss,
-        -- Timing
-        castTime = effectiveCastTime,
-        dps = dps,
-        -- Flags
-        isDot = spellData.isDot or false,
-        isChanneled = spellData.isChanneled or false,
+...
         -- DoT-specific
         tickDamage = expectedTick,
         numTicks = modResult.numTicks,
@@ -214,15 +173,12 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
     local expectedTotal = expectedDirect + dotDmg
     local expectedWithMiss = expectedTotal * hitChance
 
-    -- DPS: use cast time + DoT duration for hybrid total damage throughput
-    -- This represents the total time investment (cast + ticking), giving a "total throughput DPS"
-    -- rather than separate direct/DoT DPS values. This may differ from other addon displays.
-    local totalDuration = effectiveCastTime + (modResult.duration or 0)
-    local dps = 0
-    if totalDuration > 0 then
-        dps = expectedWithMiss / totalDuration
-    end
+    -- Apply hit chance to individual components so the detailed display is accurate
+    local directWithHit = expectedDirect * hitChance
+    local dotWithHit = dotDmg * hitChance
 
+    -- DPS: use cast time + DoT duration for hybrid total damage throughput
+...
     return {
         spellID = modResult.rankData and modResult.rankData.spellID,
         spellName = spellData.name,
@@ -250,11 +206,11 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
         isDot = true,
         isChanneled = false,
         -- Hybrid-specific
-        directDamage = expectedDirect,
+        directDamage = directWithHit,
         directSpBonus = modResult.directSpBonus,
-        dotDamage = dotDmg,
+        dotDamage = dotWithHit,
         dotSpBonus = modResult.dotSpBonus,
-        tickDamage = tickDmg,
+        tickDamage = dotWithHit / (modResult.numTicks or 1),
         numTicks = modResult.numTicks,
         duration = modResult.duration,
     }

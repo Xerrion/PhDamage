@@ -184,11 +184,12 @@ describe("Curse of Doom", function()
         assert.are.equal(32, result.school)  -- SCHOOL_SHADOW
     end)
 
-    it("should have 60s duration and 1 tick: tickDamage equals expectedDamage", function()
+    it("should have 60s duration and 1 tick: tickDamage equals expectedDamageWithMiss", function()
         local result = Pipeline.Calculate(603, playerState)
         assert.are.equal(60, result.duration)
         assert.are.equal(1, result.numTicks)
-        assert.is_near(result.expectedDamage, result.tickDamage, 0.1)
+        -- tickDamage should now factor in hit chance
+        assert.is_near(result.expectedDamageWithMiss, result.tickDamage, 0.1)
     end)
 
     it("should have canCrit = false: expectedDamage equals damageAfterMods even with high crit", function()
