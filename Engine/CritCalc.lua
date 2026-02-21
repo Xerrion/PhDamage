@@ -6,7 +6,7 @@
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
 
-local ADDON_NAME, ns = ...
+local _, ns = ...
 
 local CritCalc = {}
 ns.Engine.CritCalc = CritCalc
@@ -152,6 +152,9 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
     -- Channels: duration IS the cast time, so just use duration
     -- DoTs with cast time: use castTime + duration
     local dpsDivisor
+    -- For channeled spells, castTime in SpellData equals the channel duration.
+    -- Use the channel duration (modResult.duration) as the DPS divisor since
+    -- the player is occupied for the entire channel.
     if spellData.isChanneled then
         dpsDivisor = modResult.duration or effectiveCastTime
     else

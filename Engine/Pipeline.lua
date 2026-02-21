@@ -6,7 +6,7 @@
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
 
-local ADDON_NAME, ns = ...
+local _, ns = ...
 
 local Pipeline = {}
 ns.Engine.Pipeline = Pipeline

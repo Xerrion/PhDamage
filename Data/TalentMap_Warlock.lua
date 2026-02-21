@@ -130,7 +130,7 @@ TalentMap["3:7"] = {
     effects = {
         { type = MOD.CRIT_BONUS, value = 0.01, perRank = true,
           filter = { spellNames = {"Shadow Bolt", "Shadowburn", "Searing Pain", "Soul Fire",
-                     "Incinerate", "Conflagrate", "Rain of Fire", "Hellfire", "Immolate"} } },
+                     "Incinerate", "Conflagrate", "Immolate"} } },
     },
 }
 

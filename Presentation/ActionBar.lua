@@ -53,7 +53,7 @@ end
 -------------------------------------------------------------------------------
 local function FormatNumber(n)
     if n >= 10000 then
-        return format("%.1fk", n / 1000)
+        return format("%.0fk", n / 1000)
     elseif n >= 1000 then
         return format("%.1fk", n / 1000)
     else

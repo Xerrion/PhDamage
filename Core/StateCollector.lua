@@ -6,7 +6,7 @@
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
 
-local ADDON_NAME, ns = ...
+local _, ns = ...
 
 -- Cache WoW API functions as locals
 local UnitLevel = UnitLevel

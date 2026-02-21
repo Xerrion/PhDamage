@@ -13,6 +13,9 @@ ns.Events = Events
 -- Cache WoW API
 local C_Timer = C_Timer
 
+-- Guard to skip redundant ActionBar.Initialize() calls after the first success
+local actionBarInitialized = false
+
 -- Events that should trigger a full state rebuild
 local STATE_EVENTS = {
     "PLAYER_ENTERING_WORLD",
@@ -75,8 +78,11 @@ function Events.OnStateEvent(event, arg1, ...)
     end
 
     -- Initialize ActionBar on first PLAYER_ENTERING_WORLD (buttons must exist)
-    if event == "PLAYER_ENTERING_WORLD" and ns.ActionBar and ns.ActionBar.Initialize then
-        ns.ActionBar.Initialize()
+    if event == "PLAYER_ENTERING_WORLD" and not actionBarInitialized then
+        if ns.ActionBar and ns.ActionBar.Initialize then
+            ns.ActionBar.Initialize()
+            actionBarInitialized = true
+        end
     end
 
     -- Throttle the state-changed message to avoid redundant recomputes

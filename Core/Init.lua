@@ -60,6 +60,10 @@ function PhDamage:OnDisable()
     if ns.Events and ns.Events.UnregisterAll then
         ns.Events.UnregisterAll()
     end
+    -- Invalidate cached state so stale data isn't served on re-enable
+    if ns.StateCollector and ns.StateCollector.Invalidate then
+        ns.StateCollector.Invalidate()
+    end
 end
 
 -------------------------------------------------------------------------------

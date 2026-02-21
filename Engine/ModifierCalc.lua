@@ -6,7 +6,7 @@
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
 
-local ADDON_NAME, ns = ...
+local _, ns = ...
 
 local MOD = ns.MOD
 
@@ -369,7 +369,7 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     -- Combined
     result.coefficient = directCoeff + dotCoeff
     result.spellPowerBonus = directSpBonus + dotSpBonus
-    result.avgBaseDamage = baseResult.avgBaseDamage
+    result.avgBaseDamage = baseResult.avgBaseDamage + mods.flatDamageBonus
     result.damageBeforeMods = baseResult.totalDamage
     result.totalDamage = directAvg + dotDamage
 
