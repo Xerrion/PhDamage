@@ -127,6 +127,18 @@ TalentMap["2:16"] = {
 -- TODO: integrate with pet stat snapshot from StateCollector.
 
 -------------------------------------------------------------------------------
+-- Demonic Tactics (Demonology, Tier 9) — +1/2/3/4/5% crit to all spells
+-- Talent index 2:19 is a placeholder — needs in-game verification
+-------------------------------------------------------------------------------
+TalentMap["2:19"] = {
+    name = "Demonic Tactics",
+    maxRank = 5,
+    effects = {
+        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
+    },
+}
+
+-------------------------------------------------------------------------------
 -- Tab 3: Destruction
 -------------------------------------------------------------------------------
 

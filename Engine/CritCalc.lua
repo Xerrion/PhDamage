@@ -18,6 +18,9 @@ ns.Engine.CritCalc = CritCalc
 -------------------------------------------------------------------------------
 function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modifiers)
     local GCD = ns.GLOBAL_COOLDOWN
+    local hastePercent = playerState.stats.spellHaste or 0
+    local hastedGCD = GCD / (1 + hastePercent)
+    if hastedGCD < 1.0 then hastedGCD = 1.0 end
 
     ---------------------------------------------------------------------------
     -- Utility spells (Life Tap) — no crit/hit, just pass through
@@ -32,7 +35,7 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
             spellPowerBonus = modifiedResult.spellPowerBonus,
             healthCost = modifiedResult.healthCost,
             manaGain = modifiedResult.manaGain,
-            castTime = math.max(modifiedResult.castTime or 0, GCD),
+            castTime = math.max(modifiedResult.castTime or 0, hastedGCD),
             dps = 0,
             isDot = false,
             isChanneled = false,
@@ -68,14 +71,17 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     if hitChance < 0 then
         hitChance = 0
     end
+    if spellData.noMiss then hitChance = 1.0 end
 
     ---------------------------------------------------------------------------
     -- Effective cast time (minimum GCD for instants)
     ---------------------------------------------------------------------------
-    local effectiveCastTime = modifiedResult.castTime or 0
-    if effectiveCastTime < GCD then
-        effectiveCastTime = GCD
+    local rawCastTime = modifiedResult.castTime or 0
+    local hastedCast = rawCastTime
+    if rawCastTime > 0 then
+        hastedCast = rawCastTime / (1 + hastePercent)
     end
+    local effectiveCastTime = math.max(hastedCast, hastedGCD)
 
     ---------------------------------------------------------------------------
     -- Build final result based on spell type
@@ -94,7 +100,7 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
 
     -- DoT / Channel
     return CritCalc.BuildPeriodicResult(
-        modifiedResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime
+        modifiedResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, hastePercent
     )
 end
 
@@ -140,7 +146,7 @@ end
 -------------------------------------------------------------------------------
 -- BuildPeriodicResult — final result for DoT and channel spells
 -------------------------------------------------------------------------------
-function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime)
+function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, hastePercent)
     local totalDmg = modResult.totalDamage
     local tickDmg = modResult.tickDamage
 
@@ -152,14 +158,18 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
     -- DPS: for DoTs/channels, include cast time in denominator for throughput DPS
     -- Channels: duration IS the cast time, so just use duration
     -- DoTs with cast time: use castTime + duration
+    hastePercent = hastePercent or 0
+    local effectiveDuration = modResult.duration
+    if spellData.isChanneled and hastePercent > 0 and effectiveDuration then
+        effectiveDuration = effectiveDuration / (1 + hastePercent)
+    end
+
+    -- DPS divisor: channels use their (hasted) duration, DoTs use cast + duration
     local dpsDivisor
-    -- For channeled spells, castTime in SpellData equals the channel duration.
-    -- Use the channel duration (modResult.duration) as the DPS divisor since
-    -- the player is occupied for the entire channel.
     if spellData.isChanneled then
-        dpsDivisor = modResult.duration or effectiveCastTime
+        dpsDivisor = effectiveDuration or effectiveCastTime
     else
-        dpsDivisor = effectiveCastTime + (modResult.duration or 0)
+        dpsDivisor = effectiveCastTime + (effectiveDuration or 0)
     end
     if dpsDivisor <= 0 then
         dpsDivisor = effectiveCastTime
@@ -195,7 +205,7 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
         -- DoT-specific
         tickDamage = expectedTick,
         numTicks = modResult.numTicks,
-        duration = modResult.duration,
+        duration = effectiveDuration,
     }
 end
 

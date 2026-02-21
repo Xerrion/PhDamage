@@ -404,3 +404,108 @@ describe("Soul Siphon (1:5)", function()
         end)
     end)
 end)
+
+-------------------------------------------------------------------------------
+-- Demonic Tactics (talent 2:19) — +1% crit per rank, 5 ranks max
+-------------------------------------------------------------------------------
+describe("Demonic Tactics", function()
+    local playerState
+    local SpellCalc = ns.Engine.SpellCalc
+    local ModifierCalc = ns.Engine.ModifierCalc
+    local Pipeline = ns.Engine.Pipeline
+
+    before_each(function()
+        playerState = makePlayerState()
+    end)
+
+    describe("modifier accumulation", function()
+        it("should add 1% crit at rank 1", function()
+            playerState.talents["2:19"] = 1
+            -- Test with Shadow Bolt (686)
+            local spellData = ns.SpellData[686]
+            local rankData = spellData.ranks[1]
+            local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
+            local _, mods = ModifierCalc.ApplyModifiers(
+                base, spellData, playerState, ns.TalentMap, ns.AuraMap
+            )
+            assert.is_near(0.01, mods.critBonus, 0.001)
+        end)
+
+        it("should add 3% crit at rank 3", function()
+            playerState.talents["2:19"] = 3
+            local spellData = ns.SpellData[686]
+            local rankData = spellData.ranks[1]
+            local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
+            local _, mods = ModifierCalc.ApplyModifiers(
+                base, spellData, playerState, ns.TalentMap, ns.AuraMap
+            )
+            assert.is_near(0.03, mods.critBonus, 0.001)
+        end)
+
+        it("should add 5% crit at rank 5", function()
+            playerState.talents["2:19"] = 5
+            local spellData = ns.SpellData[686]
+            local rankData = spellData.ranks[1]
+            local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
+            local _, mods = ModifierCalc.ApplyModifiers(
+                base, spellData, playerState, ns.TalentMap, ns.AuraMap
+            )
+            assert.is_near(0.05, mods.critBonus, 0.001)
+        end)
+
+        it("should apply to fire spells too (no filter)", function()
+            playerState.talents["2:19"] = 5
+            -- Test with Searing Pain (5676) - fire spell
+            local spellData = ns.SpellData[5676]
+            local rankData = spellData.ranks[1]
+            local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
+            local _, mods = ModifierCalc.ApplyModifiers(
+                base, spellData, playerState, ns.TalentMap, ns.AuraMap
+            )
+            assert.is_near(0.05, mods.critBonus, 0.001)
+        end)
+    end)
+
+    describe("pipeline integration", function()
+        it("should increase expected damage with crit bonus", function()
+            -- Without talent
+            local resultBase = Pipeline.Calculate(686, playerState)
+            -- With talent rank 5
+            playerState.talents["2:19"] = 5
+            local resultTalent = Pipeline.Calculate(686, playerState)
+            assert.is_true(resultTalent.expectedDamage > resultBase.expectedDamage)
+            assert.is_near(resultBase.critChance + 0.05, resultTalent.critChance, 0.001)
+        end)
+
+        it("should stack with Devastation crit bonus", function()
+            -- Devastation (3:7) gives +5% crit to shadow/fire
+            playerState.talents["3:7"] = 5
+            local resultDev = Pipeline.Calculate(686, playerState)
+            -- Add Demonic Tactics rank 5
+            playerState.talents["2:19"] = 5
+            local resultBoth = Pipeline.Calculate(686, playerState)
+            -- Should have +10% total crit bonus
+            assert.is_near(resultDev.critChance + 0.05, resultBoth.critChance, 0.001)
+        end)
+
+        it("should affect Shadow Bolt expected damage correctly", function()
+            playerState.talents["2:19"] = 3  -- +3% crit
+            local result = Pipeline.Calculate(686, playerState)
+            -- Base crit is 0.10 (from playerState), +0.03 from talent = 0.13
+            assert.is_near(0.13, result.critChance, 0.001)
+        end)
+
+        it("should affect Immolate (hybrid) crit", function()
+            playerState.talents["2:19"] = 2  -- +2% crit
+            local result = Pipeline.Calculate(348, playerState)
+            assert.is_near(0.12, result.critChance, 0.001)
+        end)
+
+        it("should not affect canCrit=false spells (Corruption)", function()
+            playerState.talents["2:19"] = 5
+            local result = Pipeline.Calculate(172, playerState)
+            -- Corruption has canCrit=false, so critChance should be 0
+            assert.are.equal(0, result.critChance)
+        end)
+    end)
+end)

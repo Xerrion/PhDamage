@@ -55,6 +55,7 @@ function Pipeline.Calculate(spellID, playerState, rankIndex)
 
     -- Step 5: Attach rank number
     finalResult.rank = rankNum
+    finalResult.outputType = spellData.outputType
 
     return finalResult
 end

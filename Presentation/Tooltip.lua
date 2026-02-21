@@ -102,14 +102,24 @@ end
 --- Adds formatted PhDamage lines to the tooltip based on spell type.
 local function AddTooltipLines(r)
     if r.spellType == "utility" then
-        -- Life Tap style: health cost → mana gain (+SP bonus)
-        GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s HP \226\134\146 %s mana (|cff00ff00+%s SP|r)",
-                FormatNumber(r.healthCost),
-                FormatNumber(r.manaGain),
-                FormatNumber(r.spellPowerBonus or 0)),
-            1, 1, 1
-        )
+        if r.healthCost then
+            -- Life Tap style: health cost → mana gain (+SP bonus)
+            GameTooltip:AddLine(
+                format("|cffffd100PhDamage:|r %s HP \226\134\146 %s mana (|cff00ff00+%s SP|r)",
+                    FormatNumber(r.healthCost),
+                    FormatNumber(r.manaGain),
+                    FormatNumber(r.spellPowerBonus or 0)),
+                1, 1, 1
+            )
+        else
+            -- Dark Pact style: mana gain only (+SP bonus)
+            GameTooltip:AddLine(
+                format("|cffffd100PhDamage:|r %s mana (|cff00ff00+%s SP|r)",
+                    FormatNumber(r.manaGain),
+                    FormatNumber(r.spellPowerBonus or 0)),
+                1, 1, 1
+            )
+        end
     elseif r.spellType == "hybrid" then
         -- Immolate style: direct + DoT
         GameTooltip:AddLine(
@@ -121,11 +131,24 @@ local function AddTooltipLines(r)
         )
         AddDetailLine(r)
     else
-        -- Direct, DoT, or Channel: unified "expected (DPS)" format
+        -- Direct, DoT, or Channel
+        local valueLabel, rateLabel, rateStr
+        if r.outputType == "healing" then
+            valueLabel = "healing expected"
+            rateLabel = "HPS"
+        elseif r.outputType == "absorption" then
+            valueLabel = "absorption"
+            rateLabel = "APS"
+        else
+            valueLabel = "expected"
+            rateLabel = "DPS"
+        end
+        rateStr = format("|cff00ff00%s %s|r", FormatDPS(r.dps), rateLabel)
         GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s expected (|cff00ff00%s DPS|r)",
+            format("|cffffd100PhDamage:|r %s %s (%s)",
                 FormatNumber(r.expectedDamageWithMiss),
-                FormatDPS(r.dps)),
+                valueLabel,
+                rateStr),
             1, 1, 1
         )
         AddDetailLine(r)

@@ -115,10 +115,16 @@ function Diagnostics.PrintSpellSummary(r)
     local rankStr = r.rank and (" (R" .. r.rank .. ")") or ""
 
     if r.spellType == "utility" then
-        -- Life Tap style: health cost → mana gain
+        -- Utility: health/pet mana → player mana
+        local sourceStr
+        if r.healthCost then
+            sourceStr = COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET .. " HP \226\134\146 "
+        else
+            sourceStr = ""
+        end
         Diagnostics.Print(
             COLOR_SPELL .. r.spellName .. rankStr .. COLOR_RESET .. ": "
-            .. COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET .. " HP \226\134\146 "
+            .. sourceStr
             .. COLOR_GOOD .. FN(r.manaGain) .. COLOR_RESET .. " mana"
         )
         Diagnostics.Print(
@@ -169,13 +175,16 @@ function Diagnostics.PrintSpellSummary(r)
     end
 
     if r.isChanneled or r.spellType == "channel" then
-        -- Channel
+        -- Channel (damage or healing)
+        local isHealing = r.outputType == "healing"
+        local valueLabel = isHealing and "healing expected" or "expected"
+        local rateLabel = isHealing and "HPS" or "DPS"
         local durStr = r.duration and (FN(r.duration) .. "s channel") or "channel"
         Diagnostics.Print(
             COLOR_SPELL .. r.spellName .. rankStr .. COLOR_RESET .. ": "
-            .. schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET .. " expected | "
+            .. schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET .. " " .. valueLabel .. " | "
             .. durStr .. " | "
-            .. COLOR_GOOD .. FN(r.dps) .. " DPS" .. COLOR_RESET
+            .. COLOR_GOOD .. FN(r.dps) .. " " .. rateLabel .. COLOR_RESET
         )
         Diagnostics.Print(
             "  " .. LabelValue("Base", FN(r.avgBaseDamage))
@@ -185,15 +194,18 @@ function Diagnostics.PrintSpellSummary(r)
         return
     end
 
-    -- Direct damage (Shadow Bolt, etc.)
+    -- Direct (damage or absorption)
+    local isAbsorption = r.outputType == "absorption"
+    local valueLabel = isAbsorption and "absorption" or "expected"
+    local rateLabel = isAbsorption and "APS" or "DPS"
     local castStr = (r.castTime and r.castTime > 0)
         and (FN(r.castTime) .. "s cast")
         or "instant"
     Diagnostics.Print(
         COLOR_SPELL .. r.spellName .. rankStr .. COLOR_RESET .. ": "
-        .. schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET .. " expected | "
+        .. schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET .. " " .. valueLabel .. " | "
         .. castStr .. " | "
-        .. COLOR_GOOD .. FN(r.dps) .. " DPS" .. COLOR_RESET
+        .. COLOR_GOOD .. FN(r.dps) .. " " .. rateLabel .. COLOR_RESET
     )
     local critStr = (r.critChance or 0) > 0
         and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
@@ -303,53 +315,58 @@ end
 -- PrintSpellDirect — detailed direct damage spell
 -------------------------------------------------------------------------------
 function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
+    local noun = r.outputType == "absorption" and "absorption" or "damage"
+    local Noun = noun:sub(1, 1):upper() .. noun:sub(2)
     if r.baseDamage then
-        Diagnostics.Print("  " .. LabelValue("Base damage",
+        Diagnostics.Print("  " .. LabelValue("Base " .. noun,
             FN(r.baseDamage.min or 0) .. " - " .. FN(r.baseDamage.max or 0)
             .. " (avg " .. FN(r.avgBaseDamage) .. ")"))
     else
-        Diagnostics.Print("  " .. LabelValue("Base damage", FN(r.avgBaseDamage)))
+        Diagnostics.Print("  " .. LabelValue("Base " .. noun, FN(r.avgBaseDamage)))
     end
     Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("  " .. LabelValue("Spell power",
         schoolColor .. FN(r.spellPowerBonus / SafeCoefficient(r.coefficient)) .. " " .. schoolName .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
+    Diagnostics.Print("  " .. LabelValue(Noun .. " before mods", FN(r.damageBeforeMods)))
     if r.talentDamageBonus and r.talentDamageBonus > 0 then
         Diagnostics.Print("  " .. LabelValue("Talent Damage Bonus (additive)",
             "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
     end
-    Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
+    Diagnostics.Print("  " .. LabelValue(Noun .. " after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Crit chance",
         (r.critChance or 0) > 0
             and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. " multiplier)")
             or "n/a"))
-    Diagnostics.Print("  " .. LabelValue("Expected damage", COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
+    Diagnostics.Print("  " .. LabelValue("Expected " .. noun, COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
     Diagnostics.Print("  " .. LabelValue("Expected with miss",
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
     local castStr = (r.castTime and r.castTime > 0) and (FN(r.castTime) .. "s") or "instant"
     Diagnostics.Print("  " .. LabelValue("Cast time", castStr))
-    Diagnostics.Print("  " .. LabelValue("DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
+    Diagnostics.Print("  " .. LabelValue(r.outputType == "absorption" and "APS" or "DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
 -- PrintSpellChannel — detailed channel spell
 -------------------------------------------------------------------------------
 function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
-    Diagnostics.Print("  " .. LabelValue("Total base damage", FN(r.avgBaseDamage)))
+    local noun = r.outputType == "healing" and "healing" or "damage"
+    local Noun = noun:sub(1, 1):upper() .. noun:sub(2)
+    local rateLabel = r.outputType == "healing" and "HPS" or "DPS"
+    Diagnostics.Print("  " .. LabelValue("Total base " .. noun, FN(r.avgBaseDamage)))
     Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("  " .. LabelValue("Spell power",
         schoolColor .. FN(r.spellPowerBonus / SafeCoefficient(r.coefficient)) .. " " .. schoolName .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
+    Diagnostics.Print("  " .. LabelValue(Noun .. " before mods", FN(r.damageBeforeMods)))
     if r.talentDamageBonus and r.talentDamageBonus > 0 then
         Diagnostics.Print("  " .. LabelValue("Talent Damage Bonus (additive)",
             "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
     end
-    Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
+    Diagnostics.Print("  " .. LabelValue(Noun .. " after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Channel duration",
         FN(r.duration) .. "s (" .. (r.numTicks or "?") .. " ticks)"))
     Diagnostics.Print("  " .. LabelValue("Per tick", FN(r.tickDamage)))
@@ -357,7 +374,7 @@ function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
     Diagnostics.Print("  " .. LabelValue("Expected with miss",
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
+    Diagnostics.Print("  " .. LabelValue(rateLabel, COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
@@ -413,7 +430,9 @@ end
 -- PrintSpellUtility — detailed utility spell (Life Tap)
 -------------------------------------------------------------------------------
 function Diagnostics.PrintSpellUtility(r, FN, FP)
-    Diagnostics.Print("  " .. LabelValue("Health cost", COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET))
+    if r.healthCost then
+        Diagnostics.Print("  " .. LabelValue("Health cost", COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET))
+    end
     Diagnostics.Print("  " .. LabelValue("Mana gained", COLOR_GOOD .. FN(r.manaGain) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("  " .. LabelValue("SP contribution",

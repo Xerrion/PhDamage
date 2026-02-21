@@ -515,6 +515,79 @@ SpellData[30283] = {
     },
 }
 
+-------------------------------------------------------------------------------
+-- Dark Pact (Rank 1-4): Instant, Shadow, Utility (drains pet mana → player mana)
+-------------------------------------------------------------------------------
+SpellData[18220] = {
+    name = "Dark Pact",
+    school = SCHOOL_SHADOW,
+    coefficient = 0.96,
+    castTime = 0,
+    canCrit = false,
+    isDot = false,
+    isChanneled = false,
+    isAoe = false,
+    spellType = "utility",
+    ranks = {
+        [1] = { spellID = 18220, manaGain = 150, level = 40 },
+        [2] = { spellID = 18905, manaGain = 200, level = 48 },
+        [3] = { spellID = 18906, manaGain = 250, level = 56 },
+        [4] = { spellID = 27265, manaGain = 300, level = 64 },
+    },
+}
+
+-------------------------------------------------------------------------------
+-- Health Funnel (Rank 1-8): 10s Channel, Shadow, Heals pet
+-------------------------------------------------------------------------------
+SpellData[755] = {
+    name = "Health Funnel",
+    school = SCHOOL_SHADOW,
+    coefficient = 0.548,
+    castTime = 10,
+    duration = 10,
+    numTicks = 10,
+    canCrit = false,
+    isDot = false,
+    isChanneled = true,
+    isAoe = false,
+    spellType = "channel",
+    outputType = "healing",
+    noMiss = true,
+    ranks = {
+        [1] = { spellID = 755,   totalDmg = 120,  level = 12 },
+        [2] = { spellID = 3698,  totalDmg = 240,  level = 20 },
+        [3] = { spellID = 3699,  totalDmg = 400,  level = 28 },
+        [4] = { spellID = 3700,  totalDmg = 600,  level = 36 },
+        [5] = { spellID = 11693, totalDmg = 800,  level = 44 },
+        [6] = { spellID = 11694, totalDmg = 1140, level = 52 },
+        [7] = { spellID = 11695, totalDmg = 1440, level = 60 },
+        [8] = { spellID = 27259, totalDmg = 1880, level = 68 },
+    },
+}
+
+-------------------------------------------------------------------------------
+-- Shadow Ward (Rank 1-4): Instant, Shadow, Absorbs shadow damage
+-------------------------------------------------------------------------------
+SpellData[6229] = {
+    name = "Shadow Ward",
+    school = SCHOOL_SHADOW,
+    coefficient = 0.30,
+    castTime = 0,
+    canCrit = false,
+    isDot = false,
+    isChanneled = false,
+    isAoe = false,
+    spellType = "direct",
+    outputType = "absorption",
+    noMiss = true,
+    ranks = {
+        [1] = { spellID = 6229,  minDmg = 290, maxDmg = 290, level = 32 },
+        [2] = { spellID = 11739, minDmg = 470, maxDmg = 470, level = 42 },
+        [3] = { spellID = 11740, minDmg = 675, maxDmg = 675, level = 52 },
+        [4] = { spellID = 28610, minDmg = 875, maxDmg = 875, level = 62 },
+    },
+}
+
 for spellID, data in pairs(SpellData) do
     ns.SpellData[spellID] = data
 end
