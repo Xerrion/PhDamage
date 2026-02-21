@@ -23,6 +23,45 @@ local GetManaRegen = GetManaRegen
 local StateCollector = {}
 ns.StateCollector = StateCollector
 
+-- Affliction spell IDs for Soul Siphon counting
+-- Includes: Curses, Corruption, SoC, Siphon Life, UA, Drain Life, Fear, Immolate
+local AFFLICTION_SPELL_IDS = {
+    -- Corruption (all ranks - base spellID 172)
+    [172] = true, [6222] = true, [6223] = true, [7648] = true,
+    [11671] = true, [11672] = true, [25311] = true, [27216] = true,
+    -- Curse of Agony (all ranks - base 980)
+    [980] = true, [1014] = true, [6217] = true, [11711] = true,
+    [11712] = true, [11713] = true, [27218] = true,
+    -- Unstable Affliction (all ranks - base 30108)
+    [30108] = true, [30404] = true, [30405] = true,
+    -- Siphon Life (all ranks - base 18265)
+    [18265] = true, [18879] = true, [18880] = true, [18881] = true,
+    [27264] = true, [30911] = true,
+    -- Curse of Doom (all ranks)
+    [603] = true, [30910] = true,
+    -- Curse of Elements (all ranks)
+    [1490] = true, [11721] = true, [11722] = true, [27228] = true,
+    -- Curse of Shadow (all ranks)
+    [17862] = true, [17937] = true, [32862] = true,
+    -- Curse of Recklessness (all ranks)
+    [704] = true, [7658] = true, [7659] = true, [11717] = true, [27226] = true,
+    -- Curse of Tongues (all ranks)
+    [1714] = true, [11719] = true,
+    -- Curse of Weakness (all ranks)
+    [702] = true, [1108] = true, [6205] = true, [7646] = true,
+    [11707] = true, [11708] = true, [27224] = true, [30909] = true,
+    -- Seed of Corruption
+    [27243] = true,
+    -- Drain Life (all ranks - self counts as affliction effect)
+    [689] = true, [699] = true, [709] = true, [7651] = true,
+    [11699] = true, [11700] = true, [27219] = true, [27220] = true,
+    -- Fear
+    [5782] = true, [6213] = true, [6215] = true,
+    -- Immolate (all ranks - counts as affliction dot on target)
+    [348] = true, [707] = true, [1094] = true, [2941] = true,
+    [11665] = true, [11667] = true, [11668] = true, [25309] = true, [27215] = true,
+}
+
 -- School index to bitmask constant mapping
 -- GetSpellBonusDamage(school) uses: 1=Physical, 2=Holy, 3=Fire, 4=Nature, 5=Frost, 6=Shadow, 7=Arcane
 local schoolIndexToConstant = {
@@ -168,8 +207,25 @@ function StateCollector.CollectAuras(state)
         end
     end
 
-    -- Scan target debuffs via C_UnitAuras
-    scanUnit("target", "HARMFUL", "target")
+    -- Scan target debuffs via C_UnitAuras (also count affliction effects for Soul Siphon)
+    local afflictionCount = 0
+    if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
+        local i = 1
+        while true do
+            local ok, auraData = pcall(C_UnitAuras.GetAuraDataByIndex, "target", i, "HARMFUL")
+            if not ok or not auraData then break end
+            if auraData.spellId then
+                if watchedAuras[auraData.spellId] then
+                    state.auras.target[auraData.spellId] = true
+                end
+                if AFFLICTION_SPELL_IDS[auraData.spellId] then
+                    afflictionCount = afflictionCount + 1
+                end
+            end
+            i = i + 1
+        end
+    end
+    state.afflictionCountOnTarget = afflictionCount
 
     -- Scan player buffs via C_UnitAuras if GetPlayerAuraBySpellID was not available
     if not hasGetPlayerAura then

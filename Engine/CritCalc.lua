@@ -44,7 +44,8 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     local baseCrit = playerState.stats.spellCrit[spellData.school] or 0
     local critChance = baseCrit + modifiers.critBonus
-    if not spellData.canCrit then
+    -- If spell explicitly cannot crit, set crit chance to 0
+    if spellData.canCrit == false then
         critChance = 0
     end
     -- Clamp to [0, 1]

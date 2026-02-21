@@ -90,12 +90,40 @@ local function CreateModAccumulator()
 end
 
 -------------------------------------------------------------------------------
--- ApplyEffect(mods, effect, rank)
+-- ApplyEffect(mods, effect, rank, playerState)
 -- Applies a single modifier effect to the accumulator.
 -- rank = talent rank (for perRank effects) or 1 (for auras).
+-- playerState = optional, needed for count-based modifiers (e.g., Soul Siphon).
 -------------------------------------------------------------------------------
-local function ApplyEffect(mods, effect, rank)
+local function ApplyEffect(mods, effect, rank, playerState)
     local effectType = effect.type
+
+    -- Count-based modifier (e.g., Soul Siphon: +X% per affliction effect on target)
+    if effect.countField then
+        local count = playerState and playerState[effect.countField] or 0
+        local perCount
+        if type(effect.value) == "table" then
+            perCount = effect.value[rank] or effect.value[#effect.value]
+        else
+            perCount = effect.value
+        end
+        local bonus = perCount * count
+        -- Apply cap if maxBonus exists
+        if effect.maxBonus then
+            local cap = type(effect.maxBonus) == "table"
+                and (effect.maxBonus[rank] or effect.maxBonus[#effect.maxBonus])
+                or effect.maxBonus
+            if bonus > cap then
+                bonus = cap
+            end
+        end
+        -- Apply as multiplicative damage multiplier
+        if effectType == MOD.DAMAGE_MULTIPLIER then
+            mods.damageMultiplier = mods.damageMultiplier * (1 + bonus)
+        end
+        return  -- Skip normal processing
+    end
+
     local value = effect.value
 
     -- Resolve rank-specific value: table lookup and perRank scaling are mutually exclusive.
@@ -155,7 +183,7 @@ local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
     if entry.effects then
         for _, effect in ipairs(entry.effects) do
             if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
-                ApplyEffect(mods, effect, 1)
+                ApplyEffect(mods, effect, 1, playerState)
             end
         end
     end
@@ -171,7 +199,7 @@ local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
                         type = amp.effectType,
                         value = amp.perRank * talentRank,
                     }
-                    ApplyEffect(mods, syntheticEffect, 1)
+                    ApplyEffect(mods, syntheticEffect, 1, playerState)
                     break  -- Only amplify once per aura
                 end
             end
@@ -197,7 +225,7 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
             if entry and entry.effects then
                 for _, effect in ipairs(entry.effects) do
                     if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
-                        ApplyEffect(mods, effect, talentRank)
+                        ApplyEffect(mods, effect, talentRank, playerState)
                     end
                 end
             end

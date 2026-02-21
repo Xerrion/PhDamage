@@ -150,6 +150,25 @@ SpellData[17962] = {
     },
 }
 
+-- Death Coil — instant, Shadow
+-- Coefficient: 0.214 (instant, fixed damage, cannot crit)
+SpellData[6789] = {
+    name = "Death Coil",
+    school = SCHOOL_SHADOW,
+    coefficient = 0.214,
+    castTime = 1.5, -- instant (GCD)
+    canCrit = false,
+    isDot = false,
+    isChanneled = false,
+    spellType = "direct",
+    ranks = {
+        [1] = { spellID = 6789,  minDmg = 244, maxDmg = 244, level = 42 },
+        [2] = { spellID = 17925, minDmg = 319, maxDmg = 319, level = 50 },
+        [3] = { spellID = 17926, minDmg = 400, maxDmg = 400, level = 58 },
+        [4] = { spellID = 27223, minDmg = 519, maxDmg = 519, level = 68 },
+    },
+}
+
 -------------------------------------------------------------------------------
 -- DoT Spells
 -------------------------------------------------------------------------------
@@ -261,6 +280,26 @@ SpellData[18265] = {
         [4] = { spellID = 18881, totalDmg = 450, level = 58 },
         [5] = { spellID = 27264, totalDmg = 540, level = 63 },
         [6] = { spellID = 30911, totalDmg = 630, level = 70 },
+    },
+}
+
+-- Curse of Doom — instant, Shadow
+-- Coefficient: 2.0 (60s single tick, cannot crit)
+SpellData[603] = {
+    name = "Curse of Doom",
+    school = SCHOOL_SHADOW,
+    coefficient = 2.0,
+    castTime = 1.5, -- instant (GCD)
+    canCrit = false,
+    isDot = true,
+    isChanneled = false,
+    spellType = "dot",
+    duration = 60,
+    tickInterval = 60,
+    numTicks = 1,
+    ranks = {
+        [1] = { spellID = 603,   totalDmg = 3200, level = 60 },
+        [2] = { spellID = 30910, totalDmg = 4200, level = 70 },
     },
 }
 
@@ -454,6 +493,25 @@ SpellData[27243] = {
     detonationThreshold = 1044,
     ranks = {
         [1] = { spellID = 27243, minDmg = 1110, maxDmg = 1290, level = 70 },
+    },
+}
+
+-- Shadowfury — 0.5s cast, Shadow (AoE)
+-- Coefficient: 0.193
+SpellData[30283] = {
+    name = "Shadowfury",
+    school = SCHOOL_SHADOW,
+    coefficient = 0.193,
+    castTime = 0.5,
+    canCrit = true,
+    isDot = false,
+    isChanneled = false,
+    isAoe = true,
+    spellType = "direct",
+    ranks = {
+        [1] = { spellID = 30283, minDmg = 343, maxDmg = 407, level = 50 },
+        [2] = { spellID = 30413, minDmg = 459, maxDmg = 547, level = 60 },
+        [3] = { spellID = 30414, minDmg = 612, maxDmg = 728, level = 70 },
     },
 }
 

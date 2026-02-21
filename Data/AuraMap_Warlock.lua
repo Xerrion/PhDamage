@@ -87,6 +87,38 @@ AuraMap[34936] = {
     },
 }
 
+-- Master Demonologist (Succubus active): +2% all damage per talent rank
+-- The base effect value is 0 because the entire bonus comes from talentAmplify;
+-- the zero-value effect serves as a type-marker for talentAmplify to match against.
+-- With 5/5 talent: 0.02 * 5 = 0.10 → +10% damage multiplier.
+AuraMap[23761] = {
+    name = "Master Demonologist",
+    target = "player",
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0 },
+    },
+    talentAmplify = {
+        talentKey = "2:16",
+        perRank = 0.02,
+        effectType = MOD.DAMAGE_MULTIPLIER,
+    },
+}
+
+-- Master Demonologist (Felguard active): +1% all damage per talent rank
+-- With 5/5 talent: 0.01 * 5 = 0.05 → +5% damage multiplier.
+AuraMap[35702] = {
+    name = "Master Demonologist",
+    target = "player",
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0 },
+    },
+    talentAmplify = {
+        talentKey = "2:16",
+        perRank = 0.01,
+        effectType = MOD.DAMAGE_MULTIPLIER,
+    },
+}
+
 -------------------------------------------------------------------------------
 -- Target Debuffs (target = "target")
 -------------------------------------------------------------------------------

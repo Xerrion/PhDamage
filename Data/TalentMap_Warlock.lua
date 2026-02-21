@@ -38,6 +38,21 @@ TalentMap["1:2"] = {
     },
 }
 
+-- Soul Siphon: +2/4% damage per Affliction effect on target for Drain Life/Soul (capped)
+TalentMap["1:5"] = {
+    name = "Soul Siphon",
+    maxRank = 2,
+    effects = {
+        {
+            type = MOD.DAMAGE_MULTIPLIER,
+            value = { 0.02, 0.04 },
+            filter = { spellNames = { "Drain Life", "Drain Soul" } },
+            countField = "afflictionCountOnTarget",
+            maxBonus = { 0.24, 0.60 },
+        },
+    },
+}
+
 -- Improved Curse of Agony: +5% Curse of Agony damage per rank
 TalentMap["1:6"] = {
     name = "Improved Curse of Agony",
@@ -95,7 +110,15 @@ TalentMap["1:19"] = {
 -- Tab 2: Demonology
 -------------------------------------------------------------------------------
 
--- Demonic Sacrifice (2:16): 1 rank — sacrifice pet for a damage buff that depends on pet
+-- Master Demonologist: pet-dependent damage buff. Actual values come from AuraMap entries
+-- (spellIDs 23761/35702) which use talentAmplify to scale by this talent's rank.
+TalentMap["2:16"] = {
+    name = "Master Demonologist",
+    maxRank = 5,
+    effects = {},
+}
+
+-- Demonic Sacrifice (2:18): 1 rank — sacrifice pet for a damage buff that depends on pet
 -- type (Imp = +15% Fire, Succubus = +15% Shadow, etc.). Skipped for Phase 1 because it
 -- requires tracking which pet was sacrificed. TODO: implement pet-sacrifice state tracking.
 
@@ -123,6 +146,19 @@ TalentMap["3:3"] = {
     },
 }
 
+-- Improved Immolate: +5% Immolate direct damage per rank
+TalentMap["3:4"] = {
+    name = "Improved Immolate",
+    maxRank = 5,
+    effects = {
+        {
+            type = MOD.DIRECT_DAMAGE_MULTIPLIER,
+            value = 0.05, perRank = true,
+            filter = { spellNames = { "Immolate" } },
+        },
+    },
+}
+
 -- Devastation: +1% crit chance to Destruction spells per rank
 TalentMap["3:7"] = {
     name = "Devastation",
@@ -130,7 +166,7 @@ TalentMap["3:7"] = {
     effects = {
         { type = MOD.CRIT_BONUS, value = 0.01, perRank = true,
           filter = { spellNames = {"Shadow Bolt", "Shadowburn", "Searing Pain", "Soul Fire",
-                     "Incinerate", "Conflagrate", "Immolate"} } },
+                     "Incinerate", "Conflagrate", "Shadowfury", "Immolate"} } },
     },
 }
 
@@ -151,7 +187,7 @@ TalentMap["3:13"] = {
     effects = {
         { type = MOD.CRIT_MULT_BONUS, value = 0.5, perRank = false,
           filter = { spellNames = {"Shadow Bolt", "Shadowburn", "Searing Pain", "Soul Fire",
-                     "Incinerate", "Conflagrate", "Rain of Fire", "Hellfire", "Immolate"} } },
+                     "Incinerate", "Conflagrate", "Shadowfury", "Rain of Fire", "Hellfire", "Immolate"} } },
     },
 }
 
