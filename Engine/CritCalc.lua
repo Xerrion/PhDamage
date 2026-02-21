@@ -24,7 +24,7 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     if spellData.spellType == "utility" then
         return {
-            spellID = modifiedResult.rankData.spellID,
+            spellID = modifiedResult.rankData and modifiedResult.rankData.spellID,
             spellName = spellData.name,
             school = spellData.school,
             spellType = spellData.spellType,
@@ -106,7 +106,7 @@ function CritCalc.BuildDirectResult(modResult, spellData, critChance, critMultip
     local dps = expectedWithMiss / effectiveCastTime
 
     return {
-        spellID = modResult.rankData.spellID,
+        spellID = modResult.rankData and modResult.rankData.spellID,
         spellName = spellData.name,
         school = spellData.school,
         spellType = spellData.spellType,
@@ -161,7 +161,7 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
     local dps = expectedWithMiss / dpsDivisor
 
     return {
-        spellID = modResult.rankData.spellID,
+        spellID = modResult.rankData and modResult.rankData.spellID,
         spellName = spellData.name,
         school = spellData.school,
         spellType = spellData.spellType,
@@ -217,7 +217,7 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
     end
 
     return {
-        spellID = modResult.rankData.spellID,
+        spellID = modResult.rankData and modResult.rankData.spellID,
         spellName = spellData.name,
         school = spellData.school,
         spellType = spellData.spellType,
@@ -243,7 +243,9 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
         isChanneled = false,
         -- Hybrid-specific
         directDamage = expectedDirect,
+        directSpBonus = modResult.directSpBonus,
         dotDamage = dotDmg,
+        dotSpBonus = modResult.dotSpBonus,
         tickDamage = tickDmg,
         numTicks = modResult.numTicks,
         duration = modResult.duration,

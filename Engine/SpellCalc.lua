@@ -85,7 +85,9 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
     local sp = playerState.stats.spellPower[spellData.school] or 0
     local spBonus = sp * spellData.coefficient
     local totalDmg = rankData.totalDmg + spBonus
-    local tickDmg = totalDmg / spellData.numTicks
+    local numTicks = spellData.numTicks
+    if not numTicks or numTicks == 0 then numTicks = 1 end
+    local tickDmg = totalDmg / numTicks
 
     return {
         spellData = spellData,
@@ -95,7 +97,7 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
         spellPowerBonus = spBonus,
         totalDamage = totalDmg,
         tickDamage = tickDmg,
-        numTicks = spellData.numTicks,
+        numTicks = numTicks,
         duration = spellData.duration,
         castTime = spellData.castTime,
     }
@@ -115,7 +117,9 @@ function SpellCalc.ComputeHybrid(spellData, rankData, playerState)
     -- DoT portion
     local dotSpBonus = sp * spellData.dotCoefficient
     local dotDamage = rankData.dotDmg + dotSpBonus
-    local tickDamage = dotDamage / spellData.numTicks
+    local numTicks = spellData.numTicks
+    if not numTicks or numTicks == 0 then numTicks = 1 end
+    local tickDamage = dotDamage / numTicks
 
     return {
         spellData = spellData,
@@ -135,7 +139,7 @@ function SpellCalc.ComputeHybrid(spellData, rankData, playerState)
         dotBaseDamage = rankData.dotDmg,
         dotDamage = dotDamage,
         tickDamage = tickDamage,
-        numTicks = spellData.numTicks,
+        numTicks = numTicks,
         duration = spellData.duration,
         -- Combined
         coefficient = spellData.directCoefficient + spellData.dotCoefficient,
@@ -152,7 +156,9 @@ function SpellCalc.ComputeChannel(spellData, rankData, playerState)
     local sp = playerState.stats.spellPower[spellData.school] or 0
     local spBonus = sp * spellData.coefficient
     local totalDmg = rankData.totalDmg + spBonus
-    local tickDmg = totalDmg / spellData.numTicks
+    local numTicks = spellData.numTicks
+    if not numTicks or numTicks == 0 then numTicks = 1 end
+    local tickDmg = totalDmg / numTicks
 
     return {
         spellData = spellData,
@@ -162,7 +168,7 @@ function SpellCalc.ComputeChannel(spellData, rankData, playerState)
         spellPowerBonus = spBonus,
         totalDamage = totalDmg,
         tickDamage = tickDmg,
-        numTicks = spellData.numTicks,
+        numTicks = numTicks,
         duration = spellData.duration,
         castTime = spellData.castTime,
     }
