@@ -1,0 +1,21 @@
+package-as: PhDamage
+enable-toc-creation: yes
+
+externals:
+  Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
+  Libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk
+  Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
+  Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
+  Libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
+  Libs/AceDB-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDB-3.0
+
+ignore:
+  - README.md
+  - .github
+  - .gitignore
+  - .release
+  - "*.md"
+  - "!CHANGELOG.md"
+  - release-please-config.json
+  - .release-please-manifest.json
+  - .luacheckrc
