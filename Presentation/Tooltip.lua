@@ -63,7 +63,7 @@ end
 local function BuildSpellIDMap()
     for spellKey, spellData in pairs(ns.SpellData) do
         if spellData.ranks then
-            for rankIdx, rankData in ipairs(spellData.ranks) do
+            for rankIdx, rankData in pairs(spellData.ranks) do
                 spellIDMap[rankData.spellID] = { spellKey = spellKey, rankIndex = rankIdx }
             end
         end
@@ -145,7 +145,6 @@ local function OnTooltipSetSpell(tooltip)
 
     -- Guard against re-entry (OnTooltipSetSpell can fire more than once)
     if spellID == lastTooltipSpellID then return end
-    lastTooltipSpellID = spellID
 
     -- Look up the rank-specific spellID in the reverse map
     local lookup = spellIDMap[spellID]
@@ -158,6 +157,9 @@ local function OnTooltipSetSpell(tooltip)
     -- Run the full computation pipeline for the specific rank being hovered
     local result = ns.Engine.Pipeline.Calculate(lookup.spellKey, playerState, lookup.rankIndex)
     if not result then return end
+
+    -- Mark this spellID as processed only after all guards pass
+    lastTooltipSpellID = spellID
 
     -- Append formatted lines to the tooltip
     AddTooltipLines(result)

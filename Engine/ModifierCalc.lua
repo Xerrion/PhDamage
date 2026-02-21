@@ -76,6 +76,7 @@ end
 local function CreateModAccumulator()
     return {
         damageMultiplier = 1.0,
+        talentDamageBonus = 0.0,
         directDamageMultiplier = 1.0,
         dotDamageMultiplier = 1.0,
         coefficientBonus = 0.0,
@@ -98,84 +99,52 @@ local function ApplyEffect(mods, effect, rank)
     local effectType = effect.type
     local value = effect.value
 
-    -- Handle table-valued effects (e.g., Improved Searing Pain: {0.04, 0.07, 0.10})
-    -- When value is a table, index by rank to get the scalar value.
+    -- Resolve rank-specific value: table lookup and perRank scaling are mutually exclusive.
+    -- Table-valued effects already provide the rank-specific scalar; perRank scales a flat scalar.
     if type(value) == "table" then
+        -- Table already provides rank-specific value; no further scaling
         value = value[rank] or value[#value] or 0
+    elseif effect.perRank then
+        -- Scalar value scaled by talent rank
+        value = value * rank
     end
 
     if effectType == MOD.DAMAGE_MULTIPLIER then
-        if effect.perRank then
-            mods.damageMultiplier = mods.damageMultiplier * (1 + value * rank)
+        if effect.stacking == "additive" then
+            mods.talentDamageBonus = mods.talentDamageBonus + value
         else
             mods.damageMultiplier = mods.damageMultiplier * (1 + value)
         end
 
     elseif effectType == MOD.DIRECT_DAMAGE_MULTIPLIER then
-        if effect.perRank then
-            mods.directDamageMultiplier = mods.directDamageMultiplier * (1 + value * rank)
-        else
-            mods.directDamageMultiplier = mods.directDamageMultiplier * (1 + value)
-        end
+        mods.directDamageMultiplier = mods.directDamageMultiplier * (1 + value)
 
     elseif effectType == MOD.DOT_DAMAGE_MULTIPLIER then
-        if effect.perRank then
-            mods.dotDamageMultiplier = mods.dotDamageMultiplier * (1 + value * rank)
-        else
-            mods.dotDamageMultiplier = mods.dotDamageMultiplier * (1 + value)
-        end
+        mods.dotDamageMultiplier = mods.dotDamageMultiplier * (1 + value)
 
     elseif effectType == MOD.COEFFICIENT_BONUS then
-        if effect.perRank then
-            mods.coefficientBonus = mods.coefficientBonus + value * rank
-        else
-            mods.coefficientBonus = mods.coefficientBonus + value
-        end
+        mods.coefficientBonus = mods.coefficientBonus + value
 
     elseif effectType == MOD.CRIT_BONUS then
-        if effect.perRank then
-            mods.critBonus = mods.critBonus + value * rank
-        else
-            mods.critBonus = mods.critBonus + value
-        end
+        mods.critBonus = mods.critBonus + value
 
     elseif effectType == MOD.CRIT_MULT_BONUS then
-        if effect.perRank then
-            mods.critMultBonus = mods.critMultBonus + value * rank
-        else
-            mods.critMultBonus = mods.critMultBonus + value
-        end
+        mods.critMultBonus = mods.critMultBonus + value
 
     elseif effectType == MOD.CAST_TIME_REDUCTION then
-        if effect.perRank then
-            mods.castTimeReduction = mods.castTimeReduction + value * rank
-        else
-            mods.castTimeReduction = mods.castTimeReduction + value
-        end
+        mods.castTimeReduction = mods.castTimeReduction + value
 
     elseif effectType == MOD.CAST_TIME_OVERRIDE then
         mods.castTimeOverride = value
 
     elseif effectType == MOD.SPELL_HIT_BONUS then
-        if effect.perRank then
-            mods.spellHitBonus = mods.spellHitBonus + value * rank
-        else
-            mods.spellHitBonus = mods.spellHitBonus + value
-        end
+        mods.spellHitBonus = mods.spellHitBonus + value
 
     elseif effectType == MOD.FLAT_DAMAGE_BONUS then
-        if effect.perRank then
-            mods.flatDamageBonus = mods.flatDamageBonus + value * rank
-        else
-            mods.flatDamageBonus = mods.flatDamageBonus + value
-        end
+        mods.flatDamageBonus = mods.flatDamageBonus + value
 
     elseif effectType == MOD.SPELL_POWER_BONUS then
-        if effect.perRank then
-            mods.spellPowerBonus = mods.spellPowerBonus + value * rank
-        else
-            mods.spellPowerBonus = mods.spellPowerBonus + value
-        end
+        mods.spellPowerBonus = mods.spellPowerBonus + value
     end
 end
 
@@ -293,7 +262,6 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         result.hitBonus = mods.spellHitBonus
         return result
     end
-
     if spellData.spellType == "hybrid" then
         return ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods)
     end
@@ -315,9 +283,12 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         result.avgBaseDamage = avgBase
         result.damageBeforeMods = avgBase + spBonus
 
-        local totalAvg = (avgBase + spBonus) * mods.damageMultiplier * mods.directDamageMultiplier
-        local totalMin = (baseMin + spBonus) * mods.damageMultiplier * mods.directDamageMultiplier
-        local totalMax = (baseMax + spBonus) * mods.damageMultiplier * mods.directDamageMultiplier
+        local totalAvg = (avgBase + spBonus)
+            * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
+        local totalMin = (baseMin + spBonus)
+            * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
+        local totalMax = (baseMax + spBonus)
+            * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
 
         result.totalDamage = totalAvg
         result.totalMin = totalMin
@@ -328,7 +299,8 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         result.avgBaseDamage = baseTotalDmg
         result.damageBeforeMods = baseTotalDmg + spBonus
 
-        local totalDmg = (baseTotalDmg + spBonus) * mods.damageMultiplier * mods.dotDamageMultiplier
+        local totalDmg = (baseTotalDmg + spBonus)
+            * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.dotDamageMultiplier
         result.totalDamage = totalDmg
         local numTicks = baseResult.numTicks
         if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -339,6 +311,7 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
 
     result.critBonus = mods.critBonus
     result.hitBonus = mods.spellHitBonus
+    result.talentDamageBonus = mods.talentDamageBonus
 
     return result
 end
@@ -348,6 +321,10 @@ end
 -- Handles hybrid spells (Immolate) with separate direct + DoT portions.
 -------------------------------------------------------------------------------
 function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods)
+    if not baseResult.dotBaseDamage then
+        return nil
+    end
+
     local result = {}
     result.spellData = baseResult.spellData
     result.rankData = baseResult.rankData
@@ -356,9 +333,9 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     local directCoeff = (baseResult.directCoefficient or 0) + mods.coefficientBonus
     local directSpBonus = effectiveSp * directCoeff
     local directMin = (baseResult.minBaseDamage + mods.flatDamageBonus + directSpBonus)
-        * mods.damageMultiplier * mods.directDamageMultiplier
+        * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
     local directMax = (baseResult.maxBaseDamage + mods.flatDamageBonus + directSpBonus)
-        * mods.damageMultiplier * mods.directDamageMultiplier
+        * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
     local directAvg = (directMin + directMax) / 2
 
     result.directCoefficient = directCoeff
@@ -373,7 +350,7 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     local dotCoeff = baseResult.dotCoefficient or 0
     local dotSpBonus = effectiveSp * dotCoeff
     local dotDamage = (baseResult.dotBaseDamage + dotSpBonus)
-        * mods.damageMultiplier * mods.dotDamageMultiplier
+        * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.dotDamageMultiplier
 
     result.dotCoefficient = dotCoeff
     result.dotSpBonus = dotSpBonus
@@ -403,6 +380,7 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
 
     result.critBonus = mods.critBonus
     result.hitBonus = mods.spellHitBonus
+    result.talentDamageBonus = mods.talentDamageBonus
 
     return result
 end

@@ -65,7 +65,7 @@ TalentMap["1:15"] = {
     name = "Shadow Mastery",
     maxRank = 5,
     effects = {
-        { type = MOD.DAMAGE_MULTIPLIER, value = 0.02, perRank = true,
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.02, perRank = true, stacking = "additive",
           filter = { school = SCHOOL_SHADOW } },
     },
 }
@@ -75,7 +75,7 @@ TalentMap["1:16"] = {
     name = "Contagion",
     maxRank = 5,
     effects = {
-        { type = MOD.DAMAGE_MULTIPLIER, value = 0.01, perRank = true,
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.01, perRank = true, stacking = "additive",
           filter = { spellNames = {"Corruption", "Seed of Corruption", "Curse of Agony"} } },
     },
 }
@@ -160,7 +160,7 @@ TalentMap["3:14"] = {
     name = "Emberstorm",
     maxRank = 5,
     effects = {
-        { type = MOD.DAMAGE_MULTIPLIER, value = 0.02, perRank = true,
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.02, perRank = true, stacking = "additive",
           filter = { school = SCHOOL_FIRE } },
     },
 }

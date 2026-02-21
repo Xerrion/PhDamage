@@ -61,34 +61,34 @@ function StateCollector.CollectPlayerState()
     -- Collect spell power per school (skip physical at index 1)
     for i = 2, 7 do
         ok, result = pcall(GetSpellBonusDamage, i)
-        if ok and result then
+        if ok and result ~= nil then
             state.stats.spellPower[schoolIndexToConstant[i]] = result
         end
     end
 
     -- Healing power
     ok, result = pcall(GetSpellBonusHealing)
-    if ok and result then
+    if ok and result ~= nil then
         state.stats.healingPower = result
     end
 
     -- Spell crit per school (same school indices as spell power)
     for i = 2, 7 do
         ok, result = pcall(GetSpellCritChance, i)
-        if ok and result then
+        if ok and result ~= nil then
             state.stats.spellCrit[schoolIndexToConstant[i]] = result / 100  -- Convert percentage to fraction
         end
     end
 
     -- Spell hit from rating (CR_HIT_SPELL)
     ok, result = pcall(GetCombatRatingBonus, ns.CR_HIT_SPELL)
-    if ok and result then
+    if ok and result ~= nil then
         state.stats.spellHit = result / 100
     end
 
     -- Spell haste from rating (CR_HASTE_SPELL)
     ok, result = pcall(GetCombatRatingBonus, ns.CR_HASTE_SPELL)
-    if ok and result then
+    if ok and result ~= nil then
         state.stats.spellHaste = result / 100
     end
 

@@ -282,6 +282,10 @@ function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
+    if r.talentDamageBonus and r.talentDamageBonus > 0 then
+        Diagnostics.Print("  " .. LabelValue("Talent Damage Bonus (additive)",
+            "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
+    end
     Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Duration",
         FN(r.duration) .. "s (" .. (r.numTicks or "?") .. " ticks)"))
@@ -312,6 +316,10 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
+    if r.talentDamageBonus and r.talentDamageBonus > 0 then
+        Diagnostics.Print("  " .. LabelValue("Talent Damage Bonus (additive)",
+            "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
+    end
     Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Crit chance",
         (r.critChance or 0) > 0
@@ -337,6 +345,10 @@ function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
+    if r.talentDamageBonus and r.talentDamageBonus > 0 then
+        Diagnostics.Print("  " .. LabelValue("Talent Damage Bonus (additive)",
+            "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
+    end
     Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Channel duration",
         FN(r.duration) .. "s (" .. (r.numTicks or "?") .. " ticks)"))
@@ -379,6 +391,10 @@ function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("    " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("    " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
+    if r.talentDamageBonus and r.talentDamageBonus > 0 then
+        Diagnostics.Print("    " .. LabelValue("Talent Damage Bonus (additive)",
+            "+" .. string.format("%.1f%%", r.talentDamageBonus * 100)))
+    end
     Diagnostics.Print("    " .. LabelValue("Crit chance",
         (r.critChance or 0) > 0
             and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0)
@@ -481,8 +497,10 @@ function Diagnostics.PrintState()
     table.sort(sortedKeys, function(a, b)
         local aTab, aIdx = a:match("^(%d+):(%d+)$")
         local bTab, bIdx = b:match("^(%d+):(%d+)$")
-        aTab, aIdx = tonumber(aTab), tonumber(aIdx)
-        bTab, bIdx = tonumber(bTab), tonumber(bIdx)
+        aTab = tonumber(aTab) or 99
+        aIdx = tonumber(aIdx) or 99
+        bTab = tonumber(bTab) or 99
+        bIdx = tonumber(bIdx) or 99
         if aTab ~= bTab then
             return aTab < bTab
         end

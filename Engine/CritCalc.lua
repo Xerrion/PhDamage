@@ -33,6 +33,7 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
             healthCost = modifiedResult.healthCost,
             manaGain = modifiedResult.manaGain,
             castTime = math.max(modifiedResult.castTime or 0, GCD),
+            dps = 0,
             isDot = false,
             isChanneled = false,
         }
@@ -117,7 +118,8 @@ function CritCalc.BuildDirectResult(modResult, spellData, critChance, critMultip
         spellPowerBonus = modResult.spellPowerBonus,
         -- Modifier values
         damageBeforeMods = modResult.damageBeforeMods,
-        damageAfterMods = totalDmg,
+        damageAfterMods = modResult.totalDamage,
+        talentDamageBonus = modResult.talentDamageBonus,
         -- Crit values
         critChance = critChance,
         critMultiplier = critMultiplier,
@@ -172,6 +174,7 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
         -- Modifier values
         damageBeforeMods = modResult.damageBeforeMods,
         damageAfterMods = totalDmg,
+        talentDamageBonus = modResult.talentDamageBonus,
         -- Crit values
         critChance = critChance,
         critMultiplier = critMultiplier,
@@ -227,7 +230,8 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
         spellPowerBonus = modResult.spellPowerBonus,
         -- Modifier values
         damageBeforeMods = modResult.damageBeforeMods,
-        damageAfterMods = modResult.totalDamage,
+        damageAfterMods = directDmg + dotDmg,
+        talentDamageBonus = modResult.talentDamageBonus,
         -- Crit values
         critChance = critChance,
         critMultiplier = critMultiplier,
