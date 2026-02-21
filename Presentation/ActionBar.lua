@@ -163,7 +163,10 @@ function ActionBar.UpdateButton(button)
 
     if not baseSpellID then
         if overlay then
-            overlay:SetText("")
+            if overlay.phdLastText then
+                overlay:SetText("")
+                overlay.phdLastText = nil
+            end
             overlay:Hide()
         end
         return
@@ -172,7 +175,10 @@ function ActionBar.UpdateButton(button)
     local playerState = ns.StateCollector.GetCachedState()
     if not playerState then
         if overlay then
-            overlay:SetText("")
+            if overlay.phdLastText then
+                overlay:SetText("")
+                overlay.phdLastText = nil
+            end
             overlay:Hide()
         end
         return
@@ -183,14 +189,21 @@ function ActionBar.UpdateButton(button)
 
     if not value or value <= 0 then
         if overlay then
-            overlay:SetText("")
+            if overlay.phdLastText then
+                overlay:SetText("")
+                overlay.phdLastText = nil
+            end
             overlay:Hide()
         end
         return
     end
 
     overlay = GetOrCreateOverlay(button)
-    overlay:SetText("|cffffffff" .. FormatNumber(value) .. "|r")
+    local newText = "|cffffffff" .. FormatNumber(value) .. "|r"
+    if newText ~= overlay.phdLastText then
+        overlay:SetText(newText)
+        overlay.phdLastText = newText
+    end
     overlay:Show()
 end
 
@@ -303,7 +316,6 @@ end
 -- Invalidates the spell ID map (in case spell data changed) and refreshes.
 -------------------------------------------------------------------------------
 local function OnStateChanged()
-    spellIDToBase = nil
     resultCache = {}
     ActionBar.Refresh()
 end

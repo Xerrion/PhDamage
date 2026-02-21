@@ -123,14 +123,22 @@ function StateCollector.CollectTalents(state)
     end
 end
 
-function StateCollector.CollectAuras(state)
-    -- Build a set of aura spellIDs we care about for quick lookup
-    local watchedAuras = {}
+-- Cached watched-auras set; ns.AuraMap is static after addon init
+local watchedAurasCache = nil
+
+local function GetWatchedAuras()
+    if watchedAurasCache then return watchedAurasCache end
+    watchedAurasCache = {}
     if ns.AuraMap then
         for spellID, entry in pairs(ns.AuraMap) do
-            watchedAuras[spellID] = entry.target
+            watchedAurasCache[spellID] = entry.target
         end
     end
+    return watchedAurasCache
+end
+
+function StateCollector.CollectAuras(state)
+    local watchedAuras = GetWatchedAuras()
 
     -- Scan player buffs using C_UnitAuras.GetPlayerAuraBySpellID if available
     local hasGetPlayerAura = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID

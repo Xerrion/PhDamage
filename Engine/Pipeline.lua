@@ -64,17 +64,22 @@ end
 -- Runs the full pipeline for every spell in ns.SpellData.
 -- Returns an array of SpellResult tables, sorted by spell name.
 -------------------------------------------------------------------------------
+local allResults = {}
+
 function Pipeline.CalculateAll(playerState)
-    local results = {}
+    -- Wipe and reuse module-level table to reduce GC pressure
+    for k in pairs(allResults) do allResults[k] = nil end
+    local n = 0
 
     for spellID, _ in pairs(ns.SpellData) do
         local result = Pipeline.Calculate(spellID, playerState)
         if result then
-            results[#results + 1] = result
+            n = n + 1
+            allResults[n] = result
         end
     end
 
-    table.sort(results, function(a, b)
+    table.sort(allResults, function(a, b)
         local aDps = a.dps or 0
         local bDps = b.dps or 0
         if aDps ~= bDps then
@@ -83,7 +88,7 @@ function Pipeline.CalculateAll(playerState)
         return a.spellName < b.spellName
     end)
 
-    return results
+    return allResults
 end
 
 -------------------------------------------------------------------------------

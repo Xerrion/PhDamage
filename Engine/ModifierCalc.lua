@@ -47,16 +47,15 @@ function ModifierCalc.MatchesFilter(filter, spellData, rankData)
         return false
     end
 
-    -- Spell name in list
+    -- Spell name in list (lazy-built hash set for O(1) lookup)
     if filter.spellNames then
-        local found = false
-        for _, name in ipairs(filter.spellNames) do
-            if name == spellData.name then
-                found = true
-                break
+        if not filter._spellNamesSet then
+            filter._spellNamesSet = {}
+            for _, name in ipairs(filter.spellNames) do
+                filter._spellNamesSet[name] = true
             end
         end
-        if not found then
+        if not filter._spellNamesSet[spellData.name] then
             return false
         end
     end
@@ -149,6 +148,38 @@ local function ApplyEffect(mods, effect, rank)
 end
 
 -------------------------------------------------------------------------------
+-- ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+-- Applies effects and talentAmplify from a single active aura entry.
+-------------------------------------------------------------------------------
+local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+    if entry.effects then
+        for _, effect in ipairs(entry.effects) do
+            if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                ApplyEffect(mods, effect, 1)
+            end
+        end
+    end
+
+    if entry.talentAmplify then
+        local amp = entry.talentAmplify
+        local talentRank = playerState.talents[amp.talentKey] or 0
+        if talentRank > 0 and entry.effects then
+            for _, effect in ipairs(entry.effects) do
+                if effect.type == amp.effectType
+                        and ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                    local syntheticEffect = {
+                        type = amp.effectType,
+                        value = amp.perRank * talentRank,
+                    }
+                    ApplyEffect(mods, syntheticEffect, 1)
+                    break  -- Only amplify once per aura
+                end
+            end
+        end
+    end
+end
+
+-------------------------------------------------------------------------------
 -- ApplyModifiers(baseResult, spellData, playerState, talentMap, auraMap)
 -- Collects modifiers from talents and auras, then applies them to baseResult.
 -- Returns: modifiedResult (new table), modifiers accumulator
@@ -158,60 +189,34 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
     local rankData = baseResult.rankData
 
     ---------------------------------------------------------------------------
-    -- 1. Talent modifiers
+    -- 1. Talent modifiers (iterate active talents, look up in talentMap)
     ---------------------------------------------------------------------------
-    for key, entry in pairs(talentMap) do
-        local talentRank = playerState.talents[key]
-        if talentRank and talentRank > 0 and entry.effects then
-            for _, effect in ipairs(entry.effects) do
-                if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
-                    ApplyEffect(mods, effect, talentRank)
+    for key, talentRank in pairs(playerState.talents) do
+        if talentRank > 0 then
+            local entry = talentMap[key]
+            if entry and entry.effects then
+                for _, effect in ipairs(entry.effects) do
+                    if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                        ApplyEffect(mods, effect, talentRank)
+                    end
                 end
             end
         end
     end
 
     ---------------------------------------------------------------------------
-    -- 2. Aura modifiers
+    -- 2. Aura modifiers (iterate active auras, look up in auraMap)
     ---------------------------------------------------------------------------
-    for spellID, entry in pairs(auraMap) do
-        if not entry.alreadyInStats then
-            local isActive = false
-            if entry.target == "player" then
-                isActive = playerState.auras.player[spellID]
-            elseif entry.target == "target" then
-                isActive = playerState.auras.target[spellID]
-            end
-
-            if isActive then
-                if entry.effects then
-                    for _, effect in ipairs(entry.effects) do
-                        if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
-                            ApplyEffect(mods, effect, 1)
-                        end
-                    end
-                end
-
-                -- talentAmplify: talent that adds extra value to this aura's effect
-                if entry.talentAmplify then
-                    local amp = entry.talentAmplify
-                    local talentRank = playerState.talents[amp.talentKey] or 0
-                    if talentRank > 0 and entry.effects then
-                        -- Create a synthetic effect matching the aura's first matching filter
-                        for _, effect in ipairs(entry.effects) do
-                            if effect.type == amp.effectType
-                                    and ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
-                                local syntheticEffect = {
-                                    type = amp.effectType,
-                                    value = amp.perRank * talentRank,
-                                }
-                                ApplyEffect(mods, syntheticEffect, 1)
-                                break  -- Only amplify once per aura
-                            end
-                        end
-                    end
-                end
-            end
+    for spellID, _ in pairs(playerState.auras.player) do
+        local entry = auraMap[spellID]
+        if entry and not entry.alreadyInStats and entry.target == "player" then
+            ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+        end
+    end
+    for spellID, _ in pairs(playerState.auras.target) do
+        local entry = auraMap[spellID]
+        if entry and not entry.alreadyInStats and entry.target == "target" then
+            ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
         end
     end
 

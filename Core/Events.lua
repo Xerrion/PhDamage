@@ -10,6 +10,9 @@ local ADDON_NAME, ns = ...
 local Events = {}
 ns.Events = Events
 
+-- Cache WoW API
+local C_Timer = C_Timer
+
 -- Events that should trigger a full state rebuild
 local STATE_EVENTS = {
     "PLAYER_ENTERING_WORLD",
@@ -50,13 +53,23 @@ function Events.UnregisterAll()
     end
 end
 
+-- State change throttling: coalesce rapid events into a single SendMessage
+local stateChangePending = false
+local function FlushStateChange()
+    stateChangePending = false
+    local addon = GetAddon()
+    if addon then
+        addon:SendMessage("PHDAMAGE_STATE_CHANGED")
+    end
+end
+
 function Events.OnStateEvent(event, arg1, ...)
     -- UNIT_AURA and UNIT_STATS fire for all units; care about player and target
     if (event == "UNIT_AURA" or event == "UNIT_STATS") and arg1 ~= "player" and arg1 ~= "target" then
         return
     end
 
-    -- Invalidate cached state
+    -- Invalidate cached state (cheap: just sets dirty flag)
     if ns.StateCollector then
         ns.StateCollector.Invalidate()
     end
@@ -66,9 +79,9 @@ function Events.OnStateEvent(event, arg1, ...)
         ns.ActionBar.Initialize()
     end
 
-    -- Fire internal message for any listeners
-    local addon = GetAddon()
-    if addon then
-        addon:SendMessage("PHDAMAGE_STATE_CHANGED", event)
+    -- Throttle the state-changed message to avoid redundant recomputes
+    if not stateChangePending then
+        stateChangePending = true
+        C_Timer.After(0.1, FlushStateChange)
     end
 end
