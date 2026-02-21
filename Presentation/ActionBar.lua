@@ -20,26 +20,13 @@ local format = string.format
 local floor = math.floor
 
 -------------------------------------------------------------------------------
--- Button name patterns to scan
--------------------------------------------------------------------------------
-local BUTTON_PATTERNS = {
-    { prefix = "ActionButton", count = 12 },
-    { prefix = "MultiBarBottomLeftButton", count = 12 },
-    { prefix = "MultiBarBottomRightButton", count = 12 },
-    { prefix = "MultiBarRightButton", count = 12 },
-    { prefix = "MultiBarLeftButton", count = 12 },
-    { prefix = "MultiBar5Button", count = 12 },
-    { prefix = "MultiBar6Button", count = 12 },
-    { prefix = "MultiBar7Button", count = 12 },
-}
-
--------------------------------------------------------------------------------
 -- Module state
 -------------------------------------------------------------------------------
-local trackedButtons = {}   -- array of discovered button frames
-local spellIDToBase = nil   -- reverse map: any rank spellID → base spellID
-local resultCache = {}      -- spellID → result cache, cleared on state change
-local initialized = false   -- guard to prevent duplicate initialization
+local allButtons = {}           -- array of discovered button frames
+local registeredButtons = {}    -- set keyed by button frame, prevents duplicates
+local spellIDToBase = nil       -- reverse map: any rank spellID → base spellID
+local resultCache = {}          -- spellID → result cache, cleared on state change
+local initialized = false       -- guard to prevent duplicate initialization
 
 -------------------------------------------------------------------------------
 -- BuildSpellIDMap()
@@ -80,8 +67,14 @@ end
 -- Returns the base spellID (key in ns.SpellData) or nil.
 -------------------------------------------------------------------------------
 local function ResolveSpellID(button)
-    local slot = button.action or (button.GetAttribute and button:GetAttribute("action"))
-    if not slot or not HasAction(slot) then
+    local slot = button.action
+    if not slot and button.GetAttribute then
+        slot = button:GetAttribute("action")
+    end
+    if type(slot) ~= "number" or slot == 0 then
+        return nil
+    end
+    if not HasAction(slot) then
         return nil
     end
 
@@ -207,23 +200,70 @@ end
 -------------------------------------------------------------------------------
 function ActionBar.Refresh()
     resultCache = {}
-    for _, button in ipairs(trackedButtons) do
+    for _, button in ipairs(allButtons) do
         ActionBar.UpdateButton(button)
     end
 end
 
 -------------------------------------------------------------------------------
+-- RegisterButton(button)
+-- Registers a single action button for tracking. Skips duplicates.
+-- Creates the FontString overlay and adds the button to allButtons.
+-------------------------------------------------------------------------------
+local function RegisterButton(button)
+    if not button or registeredButtons[button] then
+        return
+    end
+    registeredButtons[button] = true
+    GetOrCreateOverlay(button)
+    allButtons[#allButtons + 1] = button
+end
+
+-------------------------------------------------------------------------------
 -- DiscoverButtons()
--- Scans _G for all action bar buttons and populates trackedButtons.
+-- Discovers action bar buttons via ActionBarButtonEventsFrame and known
+-- name prefixes (Blizzard default + ElvUI). Populates allButtons.
 -------------------------------------------------------------------------------
 local function DiscoverButtons()
-    trackedButtons = {}
+    -- Try modern generic discovery first
+    if ActionBarButtonEventsFrame then
+        if ActionBarButtonEventsFrame.ForEachFrame then
+            ActionBarButtonEventsFrame:ForEachFrame(function(button)
+                RegisterButton(button)
+            end)
+        elseif ActionBarButtonEventsFrame.frames then
+            for _, button in pairs(ActionBarButtonEventsFrame.frames) do
+                RegisterButton(button)
+            end
+        end
+    end
+
+    -- Fallback: scan known prefixes (covers Blizzard + ElvUI)
+    local BUTTON_PATTERNS = {
+        { prefix = "ActionButton", count = 12 },
+        { prefix = "MultiBarBottomLeftButton", count = 12 },
+        { prefix = "MultiBarBottomRightButton", count = 12 },
+        { prefix = "MultiBarRightButton", count = 12 },
+        { prefix = "MultiBarLeftButton", count = 12 },
+        { prefix = "MultiBar5Button", count = 12 },
+        { prefix = "MultiBar6Button", count = 12 },
+        { prefix = "MultiBar7Button", count = 12 },
+        { prefix = "ElvUI_Bar1Button", count = 12 },
+        { prefix = "ElvUI_Bar2Button", count = 12 },
+        { prefix = "ElvUI_Bar3Button", count = 12 },
+        { prefix = "ElvUI_Bar4Button", count = 12 },
+        { prefix = "ElvUI_Bar5Button", count = 12 },
+        { prefix = "ElvUI_Bar6Button", count = 12 },
+        { prefix = "ElvUI_Bar7Button", count = 12 },
+        { prefix = "ElvUI_Bar8Button", count = 12 },
+        { prefix = "ElvUI_Bar9Button", count = 12 },
+        { prefix = "ElvUI_Bar10Button", count = 12 },
+    }
     for _, pattern in ipairs(BUTTON_PATTERNS) do
         for i = 1, pattern.count do
             local button = _G[pattern.prefix .. i]
             if button then
-                GetOrCreateOverlay(button)
-                trackedButtons[#trackedButtons + 1] = button
+                RegisterButton(button)
             end
         end
     end
@@ -239,8 +279,11 @@ local function OnActionBarSlotChanged(event, slot)
         return
     end
 
-    for _, button in ipairs(trackedButtons) do
-        local btnSlot = button.action or (button.GetAttribute and button:GetAttribute("action"))
+    for _, button in ipairs(allButtons) do
+        local btnSlot = button.action
+        if not btnSlot and button.GetAttribute then
+            btnSlot = button:GetAttribute("action")
+        end
         if btnSlot and btnSlot == slot then
             ActionBar.UpdateButton(button)
         end
@@ -284,6 +327,23 @@ function ActionBar.Initialize()
     BuildSpellIDMap()
     DiscoverButtons()
     ActionBar.Refresh()
+
+    -- Hook ActionButton_Update to refresh overlays when individual buttons change
+    if ActionButton_Update then
+        hooksecurefunc("ActionButton_Update", function(button)
+            if button.phDamageText then
+                ActionBar.UpdateButton(button)
+            end
+        end)
+    end
+
+    -- Hook RegisterFrame to catch late-registered buttons (e.g. addon bars loaded after init)
+    if ActionBarButtonEventsFrame and ActionBarButtonEventsFrame.RegisterFrame then
+        hooksecurefunc(ActionBarButtonEventsFrame, "RegisterFrame", function(self, button)
+            RegisterButton(button)
+            ActionBar.UpdateButton(button)
+        end)
+    end
 
     -- WoW events
     addon:RegisterEvent("ACTIONBAR_SLOT_CHANGED", OnActionBarSlotChanged)

@@ -154,8 +154,8 @@ local function OnTooltipSetSpell(tooltip)
     local playerState = ns.StateCollector.GetCachedState()
     if not playerState then return end
 
-    -- Run the full computation pipeline
-    local result = ns.Engine.Pipeline.Calculate(lookup.spellKey, playerState)
+    -- Run the full computation pipeline for the specific rank being hovered
+    local result = ns.Engine.Pipeline.Calculate(lookup.spellKey, playerState, lookup.rankIndex)
     if not result then return end
 
     -- Append formatted lines to the tooltip

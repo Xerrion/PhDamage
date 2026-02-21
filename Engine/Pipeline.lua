@@ -12,11 +12,12 @@ local Pipeline = {}
 ns.Engine.Pipeline = Pipeline
 
 -------------------------------------------------------------------------------
--- Calculate(spellID, playerState)
+-- Calculate(spellID, playerState, rankIndex)
 -- Full pipeline for a single spell: base → modifiers → crit/hit → result.
+-- If rankIndex is provided, uses that specific rank instead of the highest.
 -- Returns a SpellResult table, or nil if spellID is unknown.
 -------------------------------------------------------------------------------
-function Pipeline.Calculate(spellID, playerState)
+function Pipeline.Calculate(spellID, playerState, rankIndex)
     local spellData = ns.SpellData[spellID]
     if not spellData then
         return nil
@@ -27,7 +28,13 @@ function Pipeline.Calculate(spellID, playerState)
     local CritCalc = ns.Engine.CritCalc
 
     -- Step 1: Determine rank
-    local rankNum, rankData = SpellCalc.GetCurrentRank(spellData, playerState)
+    local rankNum, rankData
+    if rankIndex and spellData.ranks and spellData.ranks[rankIndex] then
+        rankNum = rankIndex
+        rankData = spellData.ranks[rankIndex]
+    else
+        rankNum, rankData = SpellCalc.GetCurrentRank(spellData, playerState)
+    end
     if not rankNum then
         return nil
     end
