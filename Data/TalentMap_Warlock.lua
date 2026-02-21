@@ -175,4 +175,6 @@ TalentMap["3:18"] = {
     },
 }
 
-ns.TalentMap = TalentMap
+for key, data in pairs(TalentMap) do
+    ns.TalentMap[key] = data
+end

@@ -146,8 +146,15 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
     local expectedTick = tickDmg * (1 + critChance * (critMultiplier - 1))
     local expectedWithMiss = expectedDamage * hitChance
 
-    -- DPS uses duration for DoTs/channels, not cast time
-    local dpsDivisor = modResult.duration or effectiveCastTime
+    -- DPS: for DoTs/channels, include cast time in denominator for throughput DPS
+    -- Channels: duration IS the cast time, so just use duration
+    -- DoTs with cast time: use castTime + duration
+    local dpsDivisor
+    if spellData.isChanneled then
+        dpsDivisor = modResult.duration or effectiveCastTime
+    else
+        dpsDivisor = effectiveCastTime + (modResult.duration or 0)
+    end
     if dpsDivisor <= 0 then
         dpsDivisor = effectiveCastTime
     end
@@ -201,6 +208,8 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
     local expectedWithMiss = expectedTotal * hitChance
 
     -- DPS: use cast time + DoT duration for hybrid total damage throughput
+    -- This represents the total time investment (cast + ticking), giving a "total throughput DPS"
+    -- rather than separate direct/DoT DPS values. This may differ from other addon displays.
     local totalDuration = effectiveCastTime + (modResult.duration or 0)
     local dps = 0
     if totalDuration > 0 then

@@ -362,7 +362,9 @@ function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods
     result.directMin = directMin
     result.directMax = directMax
 
-    -- DoT portion (coefficient bonus does not apply to DoT side by default)
+    -- Design: coefficientBonus applies only to the direct coefficient for hybrid spells.
+    -- The DoT portion uses its base coefficient unchanged. To add DoT-specific coefficient
+    -- bonuses, a separate dotCoefficientBonus modifier type would be needed.
     local dotCoeff = baseResult.dotCoefficient or 0
     local dotSpBonus = effectiveSp * dotCoeff
     local dotDamage = (baseResult.dotBaseDamage + dotSpBonus)

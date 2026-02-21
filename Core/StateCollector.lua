@@ -14,7 +14,6 @@ local UnitClass = UnitClass
 local GetSpellBonusDamage = GetSpellBonusDamage
 local GetSpellBonusHealing = GetSpellBonusHealing
 local GetSpellCritChance = GetSpellCritChance
-local GetCombatRating = GetCombatRating
 local GetCombatRatingBonus = GetCombatRatingBonus
 local GetTalentInfo = GetTalentInfo
 local GetNumTalentTabs = GetNumTalentTabs
@@ -108,9 +107,11 @@ function StateCollector.CollectPlayerState()
     end
 
     -- Mana regen
-    local ok2, base, casting = pcall(GetManaRegen)
-    if ok2 then
-        state.stats.manaRegen = { base = base or 0, casting = casting or 0 }
+    do
+        local ok, base, casting = pcall(GetManaRegen)
+        if ok then
+            state.stats.manaRegen = { base = base or 0, casting = casting or 0 }
+        end
     end
 
     -- Talents
@@ -145,12 +146,13 @@ function StateCollector.CollectAuras(state)
         end
     end
 
-    -- Scan player buffs using GetPlayerAuraBySpellID if available
-    if GetPlayerAuraBySpellID then
+    -- Scan player buffs using C_UnitAuras.GetPlayerAuraBySpellID if available
+    local hasGetPlayerAura = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
+    if hasGetPlayerAura then
         for spellID, target in pairs(watchedAuras) do
             if target == "player" then
-                local name = GetPlayerAuraBySpellID(spellID)
-                if name then
+                local auraData = C_UnitAuras.GetPlayerAuraBySpellID(spellID)
+                if auraData then
                     state.auras.player[spellID] = true
                 end
             end
@@ -176,7 +178,7 @@ function StateCollector.CollectAuras(state)
     scanUnit("target", "HARMFUL", "target")
 
     -- Scan player buffs via C_UnitAuras if GetPlayerAuraBySpellID was not available
-    if not GetPlayerAuraBySpellID then
+    if not hasGetPlayerAura then
         scanUnit("player", "HELPFUL", "player")
     end
 end

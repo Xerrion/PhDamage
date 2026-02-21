@@ -12,8 +12,6 @@ ignore = {
 
 globals = {
     "PhDamageDB",
-    "SLASH_PHDAMAGE1",
-    "SLASH_PHDAMAGE2",
     "SlashCmdList",
 }
 
@@ -33,7 +31,6 @@ read_globals = {
     "GetSpellBonusDamage",
     "GetSpellBonusHealing",
     "GetSpellCritChance",
-    "GetCombatRating",
     "GetCombatRatingBonus",
     "GetSpellHitModifier",
     "GetHitModifier",
@@ -52,7 +49,7 @@ read_globals = {
     "IsSpellKnown",
 
     -- WoW API - Auras
-    "GetPlayerAuraBySpellID",
+    -- (GetPlayerAuraBySpellID accessed via C_UnitAuras namespace)
 
     -- WoW API - C_ namespaces
     "C_UnitAuras",

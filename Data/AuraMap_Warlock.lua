@@ -36,6 +36,7 @@ AuraMap[28176] = {
     name = "Fel Armor",
     target = "player",
     alreadyInStats = true,
+    -- effects listed for documentation; not applied at runtime due to alreadyInStats = true
     effects = {
         { type = MOD.SPELL_POWER_BONUS, value = 50 },
     },
@@ -46,6 +47,7 @@ AuraMap[28189] = {
     name = "Fel Armor",
     target = "player",
     alreadyInStats = true,
+    -- effects listed for documentation; not applied at runtime due to alreadyInStats = true
     effects = {
         { type = MOD.SPELL_POWER_BONUS, value = 100 },
     },
@@ -210,4 +212,6 @@ AuraMap[15258] = {
     },
 }
 
-ns.AuraMap = AuraMap
+for spellID, data in pairs(AuraMap) do
+    ns.AuraMap[spellID] = data
+end
