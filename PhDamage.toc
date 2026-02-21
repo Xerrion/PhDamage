@@ -1,0 +1,34 @@
+## Interface: 20505
+## Title: PhDamage
+## Notes: Spell damage/healing computation engine
+## Author: Torchlight
+## Version: @project-version@
+## SavedVariables: PhDamageDB
+## X-Category: Combat
+## X-License: MIT
+## X-Curse-Project-ID: 0
+## X-WoWI-ID: 0
+## X-Wago-ID: 0
+
+# Libraries
+Libs\embeds.xml
+
+# Core
+Core\Constants.lua
+Core\Init.lua
+Core\Events.lua
+Core\StateCollector.lua
+
+# Data
+Data\SpellData_Warlock.lua
+Data\TalentMap_Warlock.lua
+Data\AuraMap_Warlock.lua
+
+# Engine
+Engine\SpellCalc.lua
+Engine\ModifierCalc.lua
+Engine\CritCalc.lua
+Engine\Pipeline.lua
+
+# Presentation
+Presentation\Diagnostics.lua
