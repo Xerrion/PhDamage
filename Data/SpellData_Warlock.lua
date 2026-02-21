@@ -459,4 +459,6 @@ SpellData[27243] = {
     },
 }
 
-ns.SpellData = SpellData
+for spellID, data in pairs(SpellData) do
+    ns.SpellData[spellID] = data
+end

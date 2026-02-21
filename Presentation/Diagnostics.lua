@@ -67,6 +67,10 @@ local function GetSchoolName(school)
     return ns.SCHOOL_NAMES[school] or "Unknown"
 end
 
+local function SafeCoefficient(coeff)
+    return (coeff and coeff > 0) and coeff or 1
+end
+
 local function LabelValue(label, value)
     return COLOR_LABEL .. label .. ": " .. COLOR_RESET .. COLOR_VALUE .. value .. COLOR_RESET
 end
@@ -272,31 +276,7 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
     end
     Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("  " .. LabelValue("Spell power",
-        schoolColor .. FN(r.spellPowerBonus / (r.coefficient or 1)) .. " " .. schoolName .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("SP contribution",
-        COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
-    Diagnostics.Print("  " .. LabelValue("Damage after mods", FN(r.damageAfterMods)))
-    Diagnostics.Print("  " .. LabelValue("Crit chance",
-        FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier)
-        .. " multiplier)"))
-    Diagnostics.Print("  " .. LabelValue("Expected damage", COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
-    Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
-    Diagnostics.Print("  " .. LabelValue("Expected with miss",
-        schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
-    local castStr = (r.castTime and r.castTime > 0) and (FN(r.castTime) .. "s") or "instant"
-    Diagnostics.Print("  " .. LabelValue("Cast time", castStr))
-    Diagnostics.Print("  " .. LabelValue("DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
-end
-
--------------------------------------------------------------------------------
--- PrintSpellDot — detailed DoT spell
--------------------------------------------------------------------------------
-function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
-    Diagnostics.Print("  " .. LabelValue("Total base damage", FN(r.avgBaseDamage)))
-    Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
-    Diagnostics.Print("  " .. LabelValue("Spell power",
-        schoolColor .. FN(r.spellPowerBonus / (r.coefficient or 1)) .. " " .. schoolName .. COLOR_RESET))
+        schoolColor .. FN(r.spellPowerBonus / SafeCoefficient(r.coefficient)) .. " " .. schoolName .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))
@@ -320,7 +300,7 @@ function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("Total base damage", FN(r.avgBaseDamage)))
     Diagnostics.Print("  " .. LabelValue("SP coefficient", string.format("%.4f", r.coefficient or 0)))
     Diagnostics.Print("  " .. LabelValue("Spell power",
-        schoolColor .. FN(r.spellPowerBonus / (r.coefficient or 1)) .. " " .. schoolName .. COLOR_RESET))
+        schoolColor .. FN(r.spellPowerBonus / SafeCoefficient(r.coefficient)) .. " " .. schoolName .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("SP contribution",
         COLOR_GOOD .. "+" .. FN(r.spellPowerBonus) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Damage before mods", FN(r.damageBeforeMods)))

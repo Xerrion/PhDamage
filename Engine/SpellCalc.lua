@@ -19,6 +19,7 @@ ns.Engine.SpellCalc = SpellCalc
 function SpellCalc.GetCurrentRank(spellData, playerState)
     local bestRank, bestData = nil, nil
 
+    -- pairs used intentionally: handles sparse rank tables gracefully
     for rank, data in pairs(spellData.ranks) do
         if data.level <= playerState.level then
             if bestRank == nil or rank > bestRank then

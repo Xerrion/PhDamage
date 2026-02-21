@@ -68,6 +68,11 @@ function Pipeline.CalculateAll(playerState)
     end
 
     table.sort(results, function(a, b)
+        local aDps = a.dps or 0
+        local bDps = b.dps or 0
+        if aDps ~= bDps then
+            return aDps > bDps
+        end
         return a.spellName < b.spellName
     end)
 
