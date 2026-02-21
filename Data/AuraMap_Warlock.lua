@@ -112,13 +112,13 @@ AuraMap[17803] = {
     },
 }
 
--- Curse of the Elements Rank 3: +8% Fire/Frost/Arcane/Shadow damage, -75 resistances
+-- Curse of the Elements Rank 3: +8% Fire/Frost/Arcane damage, -75 resistances
 AuraMap[11722] = {
     name = "Curse of the Elements",
     target = "target",
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.08,
-          filter = { schools = {SCHOOL_FIRE, SCHOOL_SHADOW, SCHOOL_ARCANE,
+          filter = { schools = {SCHOOL_FIRE, SCHOOL_ARCANE,
                                 SCHOOL_FROST} } },
     },
     talentAmplify = {
@@ -128,14 +128,14 @@ AuraMap[11722] = {
     },
 }
 
--- Curse of the Elements Rank 4 (max in TBC): +10% Fire/Frost/Arcane/Shadow damage,
+-- Curse of the Elements Rank 4 (max in TBC): +10% Fire/Frost/Arcane damage,
 -- -88 resistances
 AuraMap[27228] = {
     name = "Curse of the Elements",
     target = "target",
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.10,
-          filter = { schools = {SCHOOL_FIRE, SCHOOL_SHADOW, SCHOOL_ARCANE,
+          filter = { schools = {SCHOOL_FIRE, SCHOOL_ARCANE,
                                 SCHOOL_FROST} } },
     },
     talentAmplify = {

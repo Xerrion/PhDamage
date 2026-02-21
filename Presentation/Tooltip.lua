@@ -139,7 +139,8 @@ end
 -------------------------------------------------------------------------------
 
 local function OnTooltipSetSpell(tooltip)
-    local name, spellID = tooltip:GetSpell()
+    local spellName, a, b = tooltip:GetSpell()
+    local spellID = (type(b) == "number" and b) or (type(a) == "number" and a)
     if not spellID then return end
 
     -- Guard against re-entry (OnTooltipSetSpell can fire more than once)

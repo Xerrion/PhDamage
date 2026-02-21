@@ -155,14 +155,12 @@ SpellData[17962] = {
 -------------------------------------------------------------------------------
 
 -- Corruption — base 2.0s cast (instant with 5/5 Improved Corruption), Shadow
--- Coefficient: duration / 15 = 18 / 15 = 1.2, but with cast time penalty:
---   (baseCastTime / 3.5) / ((baseCastTime / 3.5) + (duration / 15)) * (duration / 15)
---   = (2.0/3.5) / ((2.0/3.5) + (18/15)) * (18/15)
---   = 0.5714 / (0.5714 + 1.2) * 1.2 = 0.5714 / 1.7714 * 1.2 = 0.387
--- Wait — TBC actually uses a simpler model for Corruption:
--- Total coefficient = (duration / 15) = 1.2, penalized by cast time:
--- Effective = 1.2 * (1 - penalty). The commonly cited value is ~0.936.
--- This accounts for the 2.0s base cast time reducing the DoT coefficient.
+-- Spell coefficient: 0.936 total (0.156 per tick × 6 ticks)
+-- Source: Wowhead TBC Classic tooltip data (spell 27216)
+-- Corruption's 2.0s base cast time applies a penalty vs the standard
+-- DoT formula (duration/15 = 1.2), reducing it to 0.936.
+-- Note: The base cast time determines the coefficient even when
+-- talents (Improved Corruption) reduce it to instant.
 SpellData[172] = {
     name = "Corruption",
     school = SCHOOL_SHADOW,
@@ -216,10 +214,10 @@ SpellData[980] = {
 }
 
 -- Unstable Affliction — 1.5s cast, Shadow
--- Coefficient: cast time penalty applies to DoT portion
--- Base: (1.5/3.5) + (18/15) = 0.4286 + 1.2 = 1.6286 total budget
--- DoT portion: 1.2 / 1.6286 * 1.6286 = 1.2 (DoT gets duration/15 share)
--- Commonly cited as ~1.2 total coefficient
+-- Spell coefficient: 1.2 total (0.200 per tick × 6 ticks)
+-- Source: Wowhead TBC Classic tooltip data (spell 30405)
+-- UA's 1.5s cast time equals the GCD minimum, so no cast-time
+-- penalty is applied. Full DoT formula: duration/15 = 18/15 = 1.2
 SpellData[30108] = {
     name = "Unstable Affliction",
     school = SCHOOL_SHADOW,
