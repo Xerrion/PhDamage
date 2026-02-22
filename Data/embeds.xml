@@ -1,0 +1,14 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!-- Warlock -->
+    <Script file="SpellData_Warlock.lua"/>
+    <Script file="TalentMap_Warlock.lua"/>
+    <Script file="AuraMap_Warlock.lua"/>
+    <!-- Hunter -->
+    <Script file="SpellData_Hunter.lua"/>
+    <Script file="TalentMap_Hunter.lua"/>
+    <Script file="AuraMap_Hunter.lua"/>
+    <!-- Mage -->
+    <Script file="SpellData_Mage.lua"/>
+    <Script file="TalentMap_Mage.lua"/>
+    <Script file="AuraMap_Mage.lua"/>
+</Ui>

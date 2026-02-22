@@ -148,7 +148,9 @@ function Diagnostics.PrintSpellSummary(r)
         local directBase = (r.baseDamage and baseMin > 0)
             and FN((baseMin + baseMax) / 2)
             or FN(r.avgBaseDamage)
-        local hybridDetailLine = "  " .. LabelValue("Direct", directBase .. " base + " .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
+        local hybridDetailLine = "  "
+            .. LabelValue("Direct", directBase .. " base + "
+                .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
             .. " | " .. LabelValue("Crit", (r.critChance or 0) > 0
                 and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
                 or "n/a")
@@ -369,7 +371,9 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName, state)
             "-" .. string.format("%.1f%%", r.armorReduction * 100)
             .. " (" .. Diagnostics.FormatNumber(armorVal) .. " armor)"))
     end
-    Diagnostics.Print("  " .. LabelValue(r.outputType == "absorption" and "APS" or "DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
+    Diagnostics.Print("  " .. LabelValue(
+        r.outputType == "absorption" and "APS" or "DPS",
+        COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
@@ -410,7 +414,7 @@ end
 -------------------------------------------------------------------------------
 -- PrintSpellHybrid — detailed hybrid spell (Immolate)
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName, state)
+function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, _schoolName, state)
     -- Direct portion
     Diagnostics.Print("  " .. COLOR_HEADER .. "Direct Portion" .. COLOR_RESET)
     if r.baseDamage then
@@ -465,7 +469,7 @@ end
 -------------------------------------------------------------------------------
 -- PrintSpellUtility — detailed utility spell (Life Tap)
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellUtility(r, FN, FP)
+function Diagnostics.PrintSpellUtility(r, FN, _FP)
     if r.healthCost then
         Diagnostics.Print("  " .. LabelValue("Health cost", COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET))
     end

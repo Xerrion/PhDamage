@@ -23,6 +23,8 @@ local UnitRangedAttackPower = UnitRangedAttackPower
 local GetRangedCritChance = GetRangedCritChance
 local UnitCreatureType = UnitCreatureType
 local UnitExists = UnitExists
+local UnitHealth = UnitHealth
+local UnitHealthMax = UnitHealthMax
 local UnitCanAttack = UnitCanAttack
 local UnitRangedDamage = UnitRangedDamage
 
@@ -226,6 +228,7 @@ function StateCollector.CollectPlayerState()
             state.stats.rangedAttackPower = base + pos + neg
         end
 
+        local val
         ok, val = pcall(GetRangedCritChance)
         if ok and val then
             state.stats.rangedCrit = val / 100
@@ -261,6 +264,15 @@ function StateCollector.CollectPlayerState()
     -- Target creature type (for Monster/Humanoid Slaying talents)
     if UnitExists("target") then
         state.targetCreatureType = UnitCreatureType("target")
+    end
+
+    -- Target health percentage (for Molten Fury etc.)
+    if UnitExists("target") then
+        local hp = UnitHealth("target")
+        local hpMax = UnitHealthMax("target")
+        state.targetHealthPercent = (hpMax > 0) and (hp / hpMax * 100) or 100
+    else
+        state.targetHealthPercent = 100
     end
 
     return state

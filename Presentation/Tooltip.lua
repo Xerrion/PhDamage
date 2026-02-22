@@ -14,7 +14,6 @@ ns.Tooltip = Tooltip
 local GameTooltip = GameTooltip
 local CreateFrame = CreateFrame
 local pairs = pairs
-local ipairs = ipairs
 local format = string.format
 local floor = math.floor
 
@@ -169,7 +168,7 @@ end
 -------------------------------------------------------------------------------
 
 local function OnTooltipSetSpell(tooltip)
-    local spellName, a, b = tooltip:GetSpell()
+    local _, a, b = tooltip:GetSpell()
     local spellID = (type(b) == "number" and b) or (type(a) == "number" and a)
     if not spellID then return end
 

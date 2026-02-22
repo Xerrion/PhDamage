@@ -9,6 +9,7 @@ exclude_files = {
 ignore = {
     "212/self",         -- unused self in methods
     "211/ADDON_NAME",   -- captured but only used in Init.lua
+    "421",              -- shadowing variable in nested scope (intentional do-block pattern)
 }
 
 globals = {
@@ -43,6 +44,18 @@ read_globals = {
     "GetHitModifier",
     "GetManaRegen",
 
+    -- WoW API - Ranged Combat
+    "UnitRangedAttackPower",
+    "GetRangedCritChance",
+    "UnitRangedDamage",
+
+    -- WoW API - Unit Info
+    "UnitCreatureType",
+    "UnitExists",
+    "UnitHealth",
+    "UnitHealthMax",
+    "UnitCanAttack",
+
     -- WoW API - Talents
     "GetTalentInfo",
     "GetNumTalentTabs",
@@ -51,14 +64,48 @@ read_globals = {
     -- WoW API - Spells
     "GetSpellInfo",
 
+    -- WoW API - Action Bar
+    "HasAction",
+    "GetActionInfo",
+    "GetMacroSpell",
+    "ActionBarButtonEventsFrame",
+    "ActionButton_Update",
+    "hooksecurefunc",
+
+    -- WoW API - UI
+    "GameTooltip",
+    "C_Timer",
+
     -- WoW API - Auras (GetPlayerAuraBySpellID accessed via C_UnitAuras namespace)
     "C_UnitAuras",
 
     -- Ace3
     "LibStub",
 
-    -- WoW globals (used or anticipated for Phase 2)
+    -- WoW globals
     "DEFAULT_CHAT_FRAME",
     "RAID_CLASS_COLORS",
     "Enum",
+}
+
+-- Test files use busted framework globals and may write to Enum
+files["tests/**"] = {
+    read_globals = {
+        "describe",
+        "it",
+        "before_each",
+        "after_each",
+        "setup",
+        "teardown",
+        "pending",
+        "spy",
+        "stub",
+        "mock",
+        "assert",    -- busted's enhanced assert
+        "loadfile",
+        "arg",
+    },
+    globals = {
+        "Enum",
+    },
 }
