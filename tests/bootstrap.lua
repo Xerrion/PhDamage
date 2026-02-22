@@ -40,6 +40,9 @@ LoadFile("Data/AuraMap_Warlock.lua")
 LoadFile("Data/SpellData_Hunter.lua")
 LoadFile("Data/TalentMap_Hunter.lua")
 LoadFile("Data/AuraMap_Hunter.lua")
+LoadFile("Data/SpellData_Mage.lua")
+LoadFile("Data/TalentMap_Mage.lua")
+LoadFile("Data/AuraMap_Mage.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -141,6 +144,34 @@ local function MakeHunterState()
 end
 
 -------------------------------------------------------------------------------
+-- Default Mage player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_MAGE_STATE = {
+    level = 70,
+    class = "MAGE",
+    stats = {
+        spellPower = { [4] = 1000, [16] = 1000, [64] = 1000 },
+        healingPower = 0,
+        spellCrit = { [4] = 0.10, [16] = 0.10, [64] = 0.10 },
+        spellHit = 0.03,
+        spellHaste = 0,
+    },
+    talents = {},
+    auras = { player = {}, target = {} },
+    gear = { setBonuses = {} },
+    targetHealthPercent = 100,
+    targetCreatureType = nil,
+    afflictionCountOnTarget = 0,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Mage state
+-------------------------------------------------------------------------------
+local function MakeMageState()
+    return DeepCopy(DEFAULT_MAGE_STATE)
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -197,4 +228,5 @@ return {
     ns = ns,
     makePlayerState = MakePlayerState,
     makeHunterState = MakeHunterState,
+    makeMageState = MakeMageState,
 }

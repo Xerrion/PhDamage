@@ -55,7 +55,7 @@ describe("CritCalc", function()
             local expectedDamage = modResult.totalDamage * (1 + 0.20 * 0.5)
             local expectedWithMiss = expectedDamage * hitChance
 
-            assert.is_near(hitChance, result.hitChance, 0.001)
+            assert.is_near(hitChance, result.hitProbability, 0.001)
             assert.is_near(expectedWithMiss, result.expectedDamageWithMiss, 0.1)
         end)
 
@@ -120,7 +120,7 @@ describe("CritCalc", function()
             local result = runFullChain(686, playerState)
 
             -- rawHit = 1 - 0.17 + 0.20 = 1.03, capped at 0.99
-            assert.is_near(0.99, result.hitChance, 0.001)
+            assert.is_near(0.99, result.hitProbability, 0.001)
         end)
     end)
 
@@ -184,7 +184,7 @@ describe("CritCalc", function()
 
             local hitChance = 0.86
             local expectedWithMiss = modResult.totalDamage * hitChance
-            assert.is_near(hitChance, result.hitChance, 0.001)
+            assert.is_near(hitChance, result.hitProbability, 0.001)
             assert.is_near(expectedWithMiss, result.expectedDamageWithMiss, 0.1)
         end)
     end)

@@ -79,6 +79,14 @@ function ModifierCalc.MatchesFilter(filter, spellData, rankData, playerState)
         if not found then return false end
     end
 
+    -- Target health percentage filter (Molten Fury: below X% HP)
+    if filter.targetHealthBelow then
+        local healthPct = playerState and playerState.targetHealthPercent or 100
+        if healthPct >= filter.targetHealthBelow then
+            return false
+        end
+    end
+
     return true
 end
 
@@ -377,7 +385,7 @@ end
 -- BuildHybridResult(baseResult, spellData, effectiveSp, mods)
 -- Handles hybrid spells (Immolate) with separate direct + DoT portions.
 -------------------------------------------------------------------------------
-function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods)
+function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mods)
     if not baseResult.dotBaseDamage then
         return nil
     end

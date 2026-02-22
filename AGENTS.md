@@ -93,8 +93,47 @@ Sub-namespaces:
 
 ---
 
+## Wowhead Research
+
+Use the `wowhead-researcher` agent (defined in the project-level `opencode.json`) for all Wowhead data lookups. This agent has its own persistent Playwright browser with cookies stored between sessions.
+
+### When to Use
+
+- Verifying spell damage values and ranks for a new class
+- Checking talent tooltip text for exact per-rank percentages  
+- Confirming aura/buff effects and their spell IDs
+- Validating that a class spell list is complete
+
+### Invocation
+
+```
+task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball for Mage on Wowhead TBC Classic...")
+```
+
+### Key URL Patterns
+
+| Purpose | URL Pattern |
+|---------|------------|
+| Class spell list | `https://www.wowhead.com/tbc/class={classID}/{classname}#spells;type:7;{offset}+1-3+10` |
+| Individual spell | `https://www.wowhead.com/tbc/spell={spellID}` |
+| Spell tooltip JSON | `https://www.wowhead.com/tbc/tooltip/spell/{spellID}` |
+
+### Class IDs
+
+1=Warrior, 2=Paladin, 3=Hunter, 4=Rogue, 5=Priest, 7=Shaman, 8=Mage, 9=Warlock, 11=Druid
+
+### Verification Checklist (New Class)
+
+1. Open class spell list page, paginate through all offsets (0, 50, 100, ...)
+2. Filter to damage-dealing abilities only (type:7)
+3. For each spell, open individual spell page to get all rank IDs and damage values
+4. Cross-reference rank count against in-game talent calculator
+5. Confirm base spellID = Rank 1 spellID
+
+---
+
 ## Current Scope
 
-- **Phase 1**: TBC Anniversary only, Warlock only, diagnostics slash command only
-- **Phase 2** (active): Tooltip hooks, actionbar text overlay
-- **Future**: Additional classes, multi-version support, options panel
+- **Phase 1-5**: Complete — TBC Anniversary, Warlock + Hunter + Mage, diagnostics + tooltip + action bar
+- **Phase 6** (active): Mage class support
+- **Future**: Additional classes (Priest, Shaman, Druid, Paladin), multi-version support, options panel

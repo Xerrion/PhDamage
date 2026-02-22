@@ -8,7 +8,6 @@ local ns = bootstrap.ns
 local makePlayerState = bootstrap.makePlayerState
 
 local Pipeline = ns.Engine.Pipeline
-local SpellCalc = ns.Engine.SpellCalc
 
 -------------------------------------------------------------------------------
 -- Dark Pact (base spellID 18220)
@@ -115,7 +114,7 @@ describe("Phase 4 Spells", function()
 
         it("should not miss (noMiss)", function()
             local result = Pipeline.Calculate(755, playerState, 1)
-            assert.is_near(1.0, result.hitChance, 0.01)
+            assert.is_near(1.0, result.hitProbability, 0.01)
         end)
 
         it("should not crit", function()
@@ -184,7 +183,7 @@ describe("Phase 4 Spells", function()
 
         it("should not miss (noMiss)", function()
             local result = Pipeline.Calculate(6229, playerState, 1)
-            assert.is_near(1.0, result.hitChance, 0.01)
+            assert.is_near(1.0, result.hitProbability, 0.01)
         end)
 
         it("should not crit", function()

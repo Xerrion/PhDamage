@@ -8,9 +8,6 @@ local ns = bootstrap.ns
 local makePlayerState = bootstrap.makePlayerState
 
 local Pipeline = ns.Engine.Pipeline
-local CritCalc = ns.Engine.CritCalc
-local SpellCalc = ns.Engine.SpellCalc
-local ModifierCalc = ns.Engine.ModifierCalc
 
 local GCD = 1.5
 

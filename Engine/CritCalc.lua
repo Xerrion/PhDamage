@@ -99,19 +99,18 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     -- Hit chance
     ---------------------------------------------------------------------------
-    local rawHit, maxHit
+    local hitBonus, hitProbability
     if isRanged then
-        rawHit = 1 - ns.BASE_RANGED_MISS_RATE + (playerState.stats.rangedHit or 0) + modifiers.spellHitBonus
-        maxHit = ns.MAX_RANGED_HIT
+        hitBonus = (playerState.stats.rangedHit or 0) + modifiers.spellHitBonus
+        hitProbability = math.min(ns.MAX_RANGED_HIT, 1 - ns.BASE_RANGED_MISS_RATE + hitBonus)
     else
-        rawHit = 1 - ns.BASE_SPELL_MISS_RATE + (playerState.stats.spellHit or 0) + modifiers.spellHitBonus
-        maxHit = ns.MAX_SPELL_HIT
+        hitBonus = (playerState.stats.spellHit or 0) + modifiers.spellHitBonus
+        hitProbability = math.min(ns.MAX_SPELL_HIT, 1 - ns.BASE_SPELL_MISS_RATE + hitBonus)
     end
-    local hitChance = math.min(maxHit, rawHit)
-    if hitChance < 0 then
-        hitChance = 0
+    if hitProbability < 0 then
+        hitProbability = 0
     end
-    if spellData.noMiss then hitChance = 1.0 end
+    if spellData.noMiss then hitProbability = 1.0 end
 
     ---------------------------------------------------------------------------
     -- Effective cast time
@@ -128,29 +127,35 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     if spellData.spellType == "hybrid" then
         return CritCalc.BuildHybridResult(
-            modifiedResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, playerState
+            modifiedResult, spellData, critChance, critMultiplier,
+            hitBonus, hitProbability, effectiveCastTime, playerState
         )
     end
 
     if spellData.spellType == "direct" then
         return CritCalc.BuildDirectResult(
-            modifiedResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, playerState
+            modifiedResult, spellData, critChance, critMultiplier,
+            hitBonus, hitProbability, effectiveCastTime, playerState
         )
     end
 
     -- DoT / Channel
     return CritCalc.BuildPeriodicResult(
-        modifiedResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, hastePercent, playerState
+        modifiedResult, spellData, critChance, critMultiplier,
+        hitBonus, hitProbability, effectiveCastTime,
+        hastePercent, playerState
     )
 end
 
 -------------------------------------------------------------------------------
 -- BuildDirectResult — final result for direct damage spells
 -------------------------------------------------------------------------------
-function CritCalc.BuildDirectResult(modResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, playerState)
+function CritCalc.BuildDirectResult(
+    modResult, spellData, critChance, critMultiplier,
+    hitBonus, hitProbability, effectiveCastTime, playerState)
     local totalDmg = modResult.totalDamage
     local expectedDamage = totalDmg * (1 + critChance * (critMultiplier - 1))
-    local expectedWithMiss = expectedDamage * hitChance
+    local expectedWithMiss = expectedDamage * hitProbability
 
     -- Armor reduction for physical damage
     local armorReduction = 0
@@ -173,10 +178,14 @@ function CritCalc.BuildDirectResult(modResult, spellData, critChance, critMultip
         damageBeforeMods = modResult.damageBeforeMods,
         damageAfterMods = modResult.totalDamage,
         talentDamageBonus = modResult.talentDamageBonus,
+        minDmg = modResult.totalMin,
+        maxDmg = modResult.totalMax,
         critChance = critChance,
         critMultiplier = critMultiplier,
+        critMult = critMultiplier,
         expectedDamage = expectedDamage,
-        hitChance = hitChance,
+        hitChance = hitBonus,
+        hitProbability = hitProbability,
         expectedDamageWithMiss = expectedWithMiss,
         armorReduction = armorReduction,
         castTime = effectiveCastTime,
@@ -189,13 +198,16 @@ end
 -------------------------------------------------------------------------------
 -- BuildPeriodicResult — final result for DoT and channel spells
 -------------------------------------------------------------------------------
-function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, hastePercent, playerState)
+function CritCalc.BuildPeriodicResult(
+    modResult, spellData, critChance, critMultiplier,
+    hitBonus, hitProbability, effectiveCastTime,
+    hastePercent, playerState)
     local totalDmg = modResult.totalDamage
     local tickDmg = modResult.tickDamage
 
     local expectedDamage = totalDmg * (1 + critChance * (critMultiplier - 1))
-    local expectedWithMiss = expectedDamage * hitChance
-    local expectedTick = (tickDmg * (1 + critChance * (critMultiplier - 1))) * hitChance
+    local expectedWithMiss = expectedDamage * hitProbability
+    local expectedTick = (tickDmg * (1 + critChance * (critMultiplier - 1))) * hitProbability
 
     -- Armor reduction for physical periodic damage
     local armorReduction = 0
@@ -233,10 +245,14 @@ function CritCalc.BuildPeriodicResult(modResult, spellData, critChance, critMult
         damageBeforeMods = modResult.damageBeforeMods,
         damageAfterMods = totalDmg,
         talentDamageBonus = modResult.talentDamageBonus,
+        totalDmg = totalDmg,
+        tickDmg = tickDmg,
         critChance = critChance,
         critMultiplier = critMultiplier,
+        critMult = critMultiplier,
         expectedDamage = expectedDamage,
-        hitChance = hitChance,
+        hitChance = hitBonus,
+        hitProbability = hitProbability,
         expectedDamageWithMiss = expectedWithMiss,
         armorReduction = armorReduction,
         castTime = effectiveCastTime,
@@ -252,15 +268,16 @@ end
 -------------------------------------------------------------------------------
 -- BuildHybridResult — final result for hybrid spells (Immolate)
 -------------------------------------------------------------------------------
-function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultiplier, hitChance, effectiveCastTime, playerState)
+function CritCalc.BuildHybridResult(
+    modResult, spellData, critChance, critMultiplier,
+    hitBonus, hitProbability, effectiveCastTime, playerState)
     local directDmg = modResult.directDamage
     local expectedDirect = directDmg * (1 + critChance * (critMultiplier - 1))
 
     local dotDmg = modResult.dotDamage
-    local tickDmg = modResult.tickDamage
 
     local expectedTotal = expectedDirect + dotDmg
-    local expectedWithMiss = expectedTotal * hitChance
+    local expectedWithMiss = expectedTotal * hitProbability
 
     -- Armor reduction for physical hybrid damage
     local armorReduction = 0
@@ -269,8 +286,8 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
         expectedWithMiss = expectedWithMiss * (1 - armorReduction)
     end
 
-    local directWithHit = expectedDirect * hitChance * (1 - armorReduction)
-    local dotWithHit = dotDmg * hitChance * (1 - armorReduction)
+    local directWithHit = expectedDirect * hitProbability * (1 - armorReduction)
+    local dotWithHit = dotDmg * hitProbability * (1 - armorReduction)
 
     local totalDuration = effectiveCastTime + (modResult.duration or 0)
     local dps = 0
@@ -289,10 +306,15 @@ function CritCalc.BuildHybridResult(modResult, spellData, critChance, critMultip
         damageBeforeMods = modResult.damageBeforeMods,
         damageAfterMods = directDmg + dotDmg,
         talentDamageBonus = modResult.talentDamageBonus,
+        directMin = modResult.directMin,
+        directMax = modResult.directMax,
+        dotTotalDmg = modResult.dotDamage,
         critChance = critChance,
         critMultiplier = critMultiplier,
+        critMult = critMultiplier,
         expectedDamage = expectedTotal,
-        hitChance = hitChance,
+        hitChance = hitBonus,
+        hitProbability = hitProbability,
         expectedDamageWithMiss = expectedWithMiss,
         armorReduction = armorReduction,
         castTime = effectiveCastTime,

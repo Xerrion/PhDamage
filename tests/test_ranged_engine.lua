@@ -207,7 +207,7 @@ describe("Ranged Engine", function()
             local state = makeHunterState()
             state.stats.rangedHit = 0.09  -- 9% bonus hit = 100% total
             local result = Pipeline.Calculate(3044, state)
-            assert.is_near(1.0, result.hitChance, 0.001)
+            assert.is_near(1.0, result.hitProbability, 0.001)
         end)
 
         it("should use 9% base miss for ranged (not 17%)", function()
@@ -215,14 +215,14 @@ describe("Ranged Engine", function()
             state.stats.rangedHit = 0
             local result = Pipeline.Calculate(3044, state)
             -- base hit = 1 - 0.09 = 0.91
-            assert.is_near(0.91, result.hitChance, 0.001)
+            assert.is_near(0.91, result.hitProbability, 0.001)
         end)
 
         it("should allow 100% hit for ranged (not capped at 99%)", function()
             local state = makeHunterState()
             state.stats.rangedHit = 0.15  -- way over cap
             local result = Pipeline.Calculate(3044, state)
-            assert.is_near(1.0, result.hitChance, 0.001)
+            assert.is_near(1.0, result.hitProbability, 0.001)
         end)
 
         it("should apply rangedHaste to cast time", function()
