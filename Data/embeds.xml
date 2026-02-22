@@ -11,4 +11,8 @@
     <Script file="SpellData_Mage.lua"/>
     <Script file="TalentMap_Mage.lua"/>
     <Script file="AuraMap_Mage.lua"/>
+    <!-- Priest -->
+    <Script file="SpellData_Priest.lua"/>
+    <Script file="TalentMap_Priest.lua"/>
+    <Script file="AuraMap_Priest.lua"/>
 </Ui>
