@@ -7,9 +7,9 @@
 local ADDON_NAME, ns = ...
 ns.TalentMap = ns.TalentMap or {}
 
-local SCHOOL_FIRE = 4
-local SCHOOL_FROST = 16
-local SCHOOL_ARCANE = 64
+local SCHOOL_FIRE = ns.SCHOOL_FIRE
+local SCHOOL_FROST = ns.SCHOOL_FROST
+local SCHOOL_ARCANE = ns.SCHOOL_ARCANE
 local MOD = ns.MOD
 
 local TalentMap = {}

@@ -16,6 +16,7 @@ ns.ActionBar = ActionBar
 local HasAction = HasAction
 local GetActionInfo = GetActionInfo
 local GetMacroSpell = GetMacroSpell
+local wipe = wipe
 local format = string.format
 local floor = math.floor
 
@@ -212,7 +213,7 @@ end
 -- Updates all tracked buttons. Clears the per-refresh cache first.
 -------------------------------------------------------------------------------
 function ActionBar.Refresh()
-    resultCache = {}
+    wipe(resultCache)
     for _, button in ipairs(allButtons) do
         ActionBar.UpdateButton(button)
     end
@@ -316,7 +317,7 @@ end
 -- Invalidates the spell ID map (in case spell data changed) and refreshes.
 -------------------------------------------------------------------------------
 local function OnStateChanged()
-    resultCache = {}
+    wipe(resultCache)
     ActionBar.Refresh()
 end
 
