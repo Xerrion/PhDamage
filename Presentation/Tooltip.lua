@@ -29,6 +29,7 @@ local COLOR_GOLD = "|cffffd100"
 local COLOR_GREEN = "|cff00ff00"
 local COLOR_WHITE = "|cffffffff"
 local COLOR_RESET = "|r"
+local COLOR_LABEL = "|cffc0a060"   -- Soft gold for labels
 
 -------------------------------------------------------------------------------
 -- Companion tooltip frame
@@ -203,40 +204,39 @@ local function AddScalingLine(r)
     -- Skip for utility spells
     if r.spellType == "utility" then return end
 
-    local parts = {}
     local isMelee = r.dodgeChance ~= nil
 
-    -- Coefficient (skip for melee)
+    -- Coefficient line (skip for melee)
     if not isMelee then
         if r.spellType == "hybrid" and r.directSpBonus and r.dotSpBonus then
-            -- Show both direct and dot coefficients
             local directCoeff = (r.spellPowerBonus or 0) > 0
                 and (r.directSpBonus / r.spellPowerBonus) or 0
             local dotCoeff = (r.spellPowerBonus or 0) > 0
                 and (r.dotSpBonus / r.spellPowerBonus) or 0
-            parts[#parts + 1] = format("%.2f+%.2f coeff", directCoeff, dotCoeff)
+            AddLine(format("  %sCoeff:%s  %s%.2f+%.2f%s",
+                COLOR_LABEL, COLOR_RESET, COLOR_WHITE, directCoeff, dotCoeff, COLOR_RESET))
         elseif r.coefficient then
-            parts[#parts + 1] = format("%.3f coeff", r.coefficient)
+            AddLine(format("  %sCoeff:%s  %s%.3f%s",
+                COLOR_LABEL, COLOR_RESET, COLOR_WHITE, r.coefficient, COLOR_RESET))
         end
     end
 
-    -- Cast time (use baseCastTime to detect instants)
+    -- Cast time line
     if (r.baseCastTime or 0) <= 0 then
-        parts[#parts + 1] = "instant"
+        AddLine(format("  %sCast:%s  %sinstant%s",
+            COLOR_LABEL, COLOR_RESET, COLOR_WHITE, COLOR_RESET))
     elseif r.spellType == "channel" then
-        parts[#parts + 1] = format("%.1fs channel", r.castTime)
+        AddLine(format("  %sCast:%s  %s%.1fs channel%s",
+            COLOR_LABEL, COLOR_RESET, COLOR_WHITE, r.castTime, COLOR_RESET))
     else
-        parts[#parts + 1] = format("%.1fs cast", r.castTime)
+        AddLine(format("  %sCast:%s  %s%.1fs%s",
+            COLOR_LABEL, COLOR_RESET, COLOR_WHITE, r.castTime, COLOR_RESET))
     end
 
-    -- Talent damage bonus
+    -- Talent damage bonus line
     if (r.talentDamageBonus or 0) > 0 then
-        parts[#parts + 1] = format("+%.0f%% talents", r.talentDamageBonus * 100)
-    end
-
-    if #parts > 0 then
-        AddLine(
-            "  Scaling:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
+        AddLine(format("  %sTalents:%s  %s+%.0f%%%s",
+            COLOR_LABEL, COLOR_RESET, COLOR_GREEN, r.talentDamageBonus * 100, COLOR_RESET))
     end
 end
 
@@ -245,48 +245,57 @@ end
 -------------------------------------------------------------------------------
 
 local function AddStatsLine(r)
-    local parts = {}
     local powerLabel = GetPowerLabel(r)
+    local parts = {}
 
-    parts[#parts + 1] = format("+%s %s", FN(r.spellPowerBonus or 0), powerLabel)
+    parts[#parts + 1] = format("%s+%s%s %s", COLOR_WHITE, FN(r.spellPowerBonus or 0), COLOR_RESET, powerLabel)
 
     if (r.critChance or 0) > 0 then
-        parts[#parts + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
+        parts[#parts + 1] = format("%s%.1f%%%s crit (%s\195\151%.2f%s)",
+            COLOR_WHITE, r.critChance * 100, COLOR_RESET,
+            COLOR_WHITE, r.critMultiplier or 0, COLOR_RESET)
     end
 
     if r.hitChance then
-        parts[#parts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
+        parts[#parts + 1] = format("%s%d%%%s hit",
+            COLOR_WHITE, floor(r.hitChance * 100 + 0.5), COLOR_RESET)
     end
 
-    AddLine("  Stats:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine(format("  %sStats:%s  ", COLOR_LABEL, COLOR_RESET) .. concat(parts, "  |  "))
 end
 
 --- Adds melee-specific stats as two lines (AP/crit, then hit/dodge/armor)
 local function AddMeleeStatsLines(r)
     -- Line 1: AP + crit
     local parts1 = {}
-    parts1[#parts1 + 1] = format("+%s AP", FN(r.spellPowerBonus or 0))
+    parts1[#parts1 + 1] = format("%s+%s%s AP", COLOR_WHITE, FN(r.spellPowerBonus or 0), COLOR_RESET)
     if (r.critChance or 0) > 0 then
-        parts1[#parts1 + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
+        parts1[#parts1 + 1] = format("%s%.1f%%%s crit (%s\195\151%.2f%s)",
+            COLOR_WHITE, r.critChance * 100, COLOR_RESET,
+            COLOR_WHITE, r.critMultiplier or 0, COLOR_RESET)
     end
-    AddLine("  Stats:  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
+    AddLine(format("  %sStats:%s  ", COLOR_LABEL, COLOR_RESET) .. concat(parts1, "  |  "))
 
-    -- Line 2: hit + dodge + parry (if from front) + armor
+    -- Line 2: hit + dodge + parry + armor
     local parts2 = {}
     if r.hitChance then
-        parts2[#parts2 + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
+        parts2[#parts2 + 1] = format("%s%d%%%s hit",
+            COLOR_WHITE, floor(r.hitChance * 100 + 0.5), COLOR_RESET)
     end
     if r.dodgeChance and r.dodgeChance > 0 then
-        parts2[#parts2 + 1] = format("%.1f%% dodge", r.dodgeChance * 100)
+        parts2[#parts2 + 1] = format("%s%.1f%%%s dodge",
+            COLOR_WHITE, r.dodgeChance * 100, COLOR_RESET)
     end
     if r.parryChance and r.parryChance > 0 then
-        parts2[#parts2 + 1] = format("%.1f%% parry", r.parryChance * 100)
+        parts2[#parts2 + 1] = format("%s%.1f%%%s parry",
+            COLOR_WHITE, r.parryChance * 100, COLOR_RESET)
     end
     if r.armorReduction and r.armorReduction > 0 then
-        parts2[#parts2 + 1] = format("%.0f%% armor", r.armorReduction * 100)
+        parts2[#parts2 + 1] = format("%s%.0f%%%s armor",
+            COLOR_WHITE, r.armorReduction * 100, COLOR_RESET)
     end
     if #parts2 > 0 then
-        AddLine("  Avoidance:  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
+        AddLine(format("  %sAvoidance:%s  ", COLOR_LABEL, COLOR_RESET) .. concat(parts2, "  |  "))
     end
 end
 
@@ -333,8 +342,7 @@ local function AddDotLines(r)
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
     AddLine(
-        format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
-        0.67, 0.67, 0.67
+        format("  %sBreakdown:%s  %s/tick  |  %s total  (%s)", COLOR_LABEL, COLOR_RESET, tickStr, totalStr, durStr)
     )
 
     AddStatsLine(r)
@@ -349,28 +357,30 @@ local function AddHybridLines(r)
 
     -- Direct line
     local directStr = sc .. FN(r.directDamage or 0) .. COLOR_RESET
-    local directParts = { format("Direct:  %s", directStr) }
+    local directParts = { format("%sDirect:%s  %s", COLOR_LABEL, COLOR_RESET, directStr) }
     if (r.critChance or 0) > 0 then
-        directParts[#directParts + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
+        directParts[#directParts + 1] = format("%s%.1f%%%s crit (%s\195\151%.2f%s)",
+            COLOR_WHITE, r.critChance * 100, COLOR_RESET,
+            COLOR_WHITE, r.critMultiplier or 0, COLOR_RESET)
     end
-    AddLine("  " .. concat(directParts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine("  " .. concat(directParts, "  |  "))
 
     -- DoT line
     local tickStr = sc .. FN(r.tickDamage or 0) .. COLOR_RESET
     local dotTotalStr = sc .. FN(r.dotDamage or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
     AddLine(
-        format("  DoT:  %s/tick  |  %s total  (%s)", tickStr, dotTotalStr, durStr),
-        0.67, 0.67, 0.67
+        format("  %sDoT:%s  %s/tick  |  %s total  (%s)", COLOR_LABEL, COLOR_RESET, tickStr, dotTotalStr, durStr)
     )
 
     -- Stats line (no crit — already shown on direct line)
     local statParts = {}
-    statParts[#statParts + 1] = format("+%s SP", FN(r.spellPowerBonus or 0))
+    statParts[#statParts + 1] = format("%s+%s%s SP", COLOR_WHITE, FN(r.spellPowerBonus or 0), COLOR_RESET)
     if r.hitChance then
-        statParts[#statParts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
+        statParts[#statParts + 1] = format("%s%d%%%s hit",
+            COLOR_WHITE, floor(r.hitChance * 100 + 0.5), COLOR_RESET)
     end
-    AddLine("  Stats:  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine(format("  %sStats:%s  ", COLOR_LABEL, COLOR_RESET) .. concat(statParts, "  |  "))
 end
 
 --- Channel spell (4 lines)
@@ -384,8 +394,7 @@ local function AddChannelLines(r)
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
     AddLine(
-        format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
-        0.67, 0.67, 0.67
+        format("  %sBreakdown:%s  %s/tick  |  %s total  (%s)", COLOR_LABEL, COLOR_RESET, tickStr, totalStr, durStr)
     )
 
     AddStatsLine(r)
