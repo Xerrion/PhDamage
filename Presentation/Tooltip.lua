@@ -30,8 +30,79 @@ local COLOR_GREEN = "|cff00ff00"
 local COLOR_WHITE = "|cffffffff"
 local COLOR_RESET = "|r"
 
--- Separator line (gray dashes)
-local SEPARATOR = string.rep("\226\128\148", 20) -- em-dash ─ repeated
+-------------------------------------------------------------------------------
+-- Companion tooltip frame
+-------------------------------------------------------------------------------
+
+local PADDING = 10
+local LINE_SPACING = 2
+local MIN_WIDTH = 150
+
+-- Created at init time
+local companionFrame
+
+-- FontString pool
+local fontStrings = {}
+local numActiveLines = 0
+
+local function GetFontString(index)
+    if fontStrings[index] then return fontStrings[index] end
+    local fs = companionFrame:CreateFontString(nil, "ARTWORK")
+    fs:SetFontObject(GameTooltipText)
+    fs:SetJustifyH("LEFT")
+    fontStrings[index] = fs
+    return fs
+end
+
+local function AddLine(text, r, g, b)
+    numActiveLines = numActiveLines + 1
+    local fs = GetFontString(numActiveLines)
+    if r and g and b then
+        text = format("|cff%02x%02x%02x%s|r",
+            floor(r * 255 + 0.5), floor(g * 255 + 0.5), floor(b * 255 + 0.5), text)
+    end
+    fs:SetText(text)
+    fs:Show()
+end
+
+local function ResetLines()
+    for i = 1, numActiveLines do
+        fontStrings[i]:Hide()
+    end
+    numActiveLines = 0
+end
+
+local function FinalizeFrame()
+    if numActiveLines == 0 then
+        companionFrame:Hide()
+        return
+    end
+
+    -- Measure widest line
+    local maxWidth = MIN_WIDTH
+    for i = 1, numActiveLines do
+        local w = fontStrings[i]:GetStringWidth()
+        if w > maxWidth then maxWidth = w end
+    end
+
+    -- Layout lines vertically
+    local lineHeight = select(2, fontStrings[1]:GetFont())
+    for i = 1, numActiveLines do
+        fontStrings[i]:ClearAllPoints()
+        fontStrings[i]:SetPoint("TOPLEFT", companionFrame, "TOPLEFT",
+            PADDING, -PADDING - (i - 1) * (lineHeight + LINE_SPACING))
+    end
+
+    local totalHeight = PADDING * 2 + numActiveLines * lineHeight
+        + (numActiveLines - 1) * LINE_SPACING
+
+    companionFrame:SetSize(maxWidth + PADDING * 2, totalHeight)
+
+    -- Re-anchor to GameTooltip (it may have moved)
+    companionFrame:ClearAllPoints()
+    companionFrame:SetPoint("TOPLEFT", GameTooltip, "TOPRIGHT", 4, 0)
+    companionFrame:Show()
+end
 
 -------------------------------------------------------------------------------
 -- Formatting Helpers (exposed on ns.Tooltip for testability)
@@ -125,14 +196,6 @@ local function GetPowerLabel(r)
 end
 
 -------------------------------------------------------------------------------
--- Separator
--------------------------------------------------------------------------------
-
-local function AddSeparator()
-    GameTooltip:AddLine(SEPARATOR, 0.4, 0.4, 0.4)
-end
-
--------------------------------------------------------------------------------
 -- Scaling line builder
 -------------------------------------------------------------------------------
 
@@ -172,7 +235,7 @@ local function AddScalingLine(r)
     end
 
     if #parts > 0 then
-        GameTooltip:AddLine(
+        AddLine(
             "  Scaling:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
     end
 end
@@ -195,7 +258,7 @@ local function AddStatsLine(r)
         parts[#parts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
     end
 
-    GameTooltip:AddLine("  Stats:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine("  Stats:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
 end
 
 --- Adds melee-specific stats as two lines (AP/crit, then hit/dodge/armor)
@@ -206,7 +269,7 @@ local function AddMeleeStatsLines(r)
     if (r.critChance or 0) > 0 then
         parts1[#parts1 + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
     end
-    GameTooltip:AddLine("  Stats:  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
+    AddLine("  Stats:  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
 
     -- Line 2: hit + dodge + parry (if from front) + armor
     local parts2 = {}
@@ -223,7 +286,7 @@ local function AddMeleeStatsLines(r)
         parts2[#parts2 + 1] = format("%.0f%% armor", r.armorReduction * 100)
     end
     if #parts2 > 0 then
-        GameTooltip:AddLine("  Avoidance:  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
+        AddLine("  Avoidance:  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
     end
 end
 
@@ -238,7 +301,7 @@ local function AddHeaderLine(r)
     local dmgStr = schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET
     local dpsStr = COLOR_GREEN .. FD(r.dps) .. " " .. rateLabel .. COLOR_RESET
 
-    GameTooltip:AddLine(
+    AddLine(
         format("%sPhDamage:%s  %s %s  (%s)", COLOR_GOLD, COLOR_RESET, dmgStr, valueLabel, dpsStr),
         1, 1, 1
     )
@@ -269,7 +332,7 @@ local function AddDotLines(r)
     local tickStr = sc .. FN(r.tickDamage or r.tickDmg or 0) .. COLOR_RESET
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
-    GameTooltip:AddLine(
+    AddLine(
         format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
         0.67, 0.67, 0.67
     )
@@ -290,13 +353,13 @@ local function AddHybridLines(r)
     if (r.critChance or 0) > 0 then
         directParts[#directParts + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
     end
-    GameTooltip:AddLine("  " .. concat(directParts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine("  " .. concat(directParts, "  |  "), 0.67, 0.67, 0.67)
 
     -- DoT line
     local tickStr = sc .. FN(r.tickDamage or 0) .. COLOR_RESET
     local dotTotalStr = sc .. FN(r.dotDamage or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
-    GameTooltip:AddLine(
+    AddLine(
         format("  DoT:  %s/tick  |  %s total  (%s)", tickStr, dotTotalStr, durStr),
         0.67, 0.67, 0.67
     )
@@ -307,7 +370,7 @@ local function AddHybridLines(r)
     if r.hitChance then
         statParts[#statParts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
     end
-    GameTooltip:AddLine("  Stats:  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
+    AddLine("  Stats:  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
 end
 
 --- Channel spell (4 lines)
@@ -320,7 +383,7 @@ local function AddChannelLines(r)
     local tickStr = sc .. FN(r.tickDamage or r.tickDmg or 0) .. COLOR_RESET
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
-    GameTooltip:AddLine(
+    AddLine(
         format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
         0.67, 0.67, 0.67
     )
@@ -332,7 +395,7 @@ end
 local function AddUtilityLines(r)
     if r.healthCost then
         -- Life Tap style: health cost → mana gain (+SP bonus)
-        GameTooltip:AddLine(
+        AddLine(
             format("%sPhDamage:%s  %s HP \226\134\146 %s mana  (%s+%s SP%s)",
                 COLOR_GOLD, COLOR_RESET,
                 FN(r.healthCost),
@@ -342,7 +405,7 @@ local function AddUtilityLines(r)
         )
     else
         -- Dark Pact style: mana gain only (+SP bonus)
-        GameTooltip:AddLine(
+        AddLine(
             format("%sPhDamage:%s  %s mana  (%s+%s SP%s)",
                 COLOR_GOLD, COLOR_RESET,
                 FN(r.manaGain),
@@ -357,7 +420,7 @@ end
 -------------------------------------------------------------------------------
 
 local function AddTooltipLines(r)
-    AddSeparator()
+    ResetLines()
 
     if r.spellType == "utility" then
         AddUtilityLines(r)
@@ -371,7 +434,7 @@ local function AddTooltipLines(r)
         AddDirectLines(r)
     end
 
-    GameTooltip:Show()
+    FinalizeFrame()
 end
 
 -------------------------------------------------------------------------------
@@ -415,6 +478,7 @@ local function HookTooltip()
     -- Clear the re-entry guard when the tooltip is cleared
     GameTooltip:HookScript("OnTooltipCleared", function()
         lastTooltipSpellID = nil
+        if companionFrame then companionFrame:Hide() end
     end)
 end
 
@@ -428,6 +492,26 @@ initFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         self:UnregisterEvent("PLAYER_LOGIN")
         BuildSpellIDMap()
+
+        -- Create companion tooltip frame
+        companionFrame = CreateFrame("Frame", "PhDamageTooltip", UIParent, "BackdropTemplate")
+        companionFrame:SetFrameStrata("TOOLTIP")
+        companionFrame:SetClampedToScreen(true)
+        companionFrame:Hide()
+
+        if ElvUI then
+            local E = unpack(ElvUI)
+            E:SetTemplate(companionFrame, "Transparent")
+        else
+            companionFrame:SetBackdrop({
+                bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+                edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+                tile = true, tileSize = 16, edgeSize = 16,
+                insets = { left = 4, right = 4, top = 4, bottom = 4 },
+            })
+            companionFrame:SetBackdropColor(0, 0, 0, 0.8)
+        end
+
         HookTooltip()
     end
 end)

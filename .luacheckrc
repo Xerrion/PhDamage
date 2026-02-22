@@ -83,7 +83,12 @@ read_globals = {
 
     -- WoW API - UI
     "GameTooltip",
+    "GameTooltipText",
+    "UIParent",
     "C_Timer",
+
+    -- Third-party addons (optional at runtime)
+    "ElvUI",
 
     -- WoW API - Auras (GetPlayerAuraBySpellID accessed via C_UnitAuras namespace)
     "C_UnitAuras",
