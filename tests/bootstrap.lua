@@ -37,6 +37,9 @@ LoadFile("Core/Constants.lua")
 LoadFile("Data/SpellData_Warlock.lua")
 LoadFile("Data/TalentMap_Warlock.lua")
 LoadFile("Data/AuraMap_Warlock.lua")
+LoadFile("Data/SpellData_Hunter.lua")
+LoadFile("Data/TalentMap_Hunter.lua")
+LoadFile("Data/AuraMap_Hunter.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -98,6 +101,46 @@ local function MakePlayerState()
 end
 
 -------------------------------------------------------------------------------
+-- Default Hunter player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_HUNTER_STATE = {
+    level = 70,
+    class = "HUNTER",
+    stats = {
+        spellPower = {},
+        healingPower = 0,
+        spellCrit = {},
+        spellHit = 0,
+        spellHaste = 0,
+        rangedAttackPower = 1000,
+        rangedCrit = 0.15,
+        rangedHit = 0.05,
+        rangedHaste = 0,
+        weaponDamage = { min = 100, max = 200 },
+        rangedSpeed = 2.8,
+        manaRegen = { base = 100, casting = 50 },
+    },
+    talents = {},
+    auras = {
+        player = {},
+        target = {},
+    },
+    gear = {
+        setBonuses = {},
+    },
+    targetArmor = 0,
+    targetCreatureType = nil,
+    afflictionCountOnTarget = 0,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Hunter state
+-------------------------------------------------------------------------------
+local function MakeHunterState()
+    return DeepCopy(DEFAULT_HUNTER_STATE)
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -153,4 +196,5 @@ end
 return {
     ns = ns,
     makePlayerState = MakePlayerState,
+    makeHunterState = MakeHunterState,
 }

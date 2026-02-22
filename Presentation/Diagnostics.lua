@@ -148,12 +148,15 @@ function Diagnostics.PrintSpellSummary(r)
         local directBase = (r.baseDamage and baseMin > 0)
             and FN((baseMin + baseMax) / 2)
             or FN(r.avgBaseDamage)
-        Diagnostics.Print(
-            "  " .. LabelValue("Direct", directBase .. " base + " .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
+        local hybridDetailLine = "  " .. LabelValue("Direct", directBase .. " base + " .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
             .. " | " .. LabelValue("Crit", (r.critChance or 0) > 0
                 and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
                 or "n/a")
-        )
+        if r.armorReduction and r.armorReduction > 0 then
+            hybridDetailLine = hybridDetailLine .. " | " .. LabelValue("Armor",
+                "-" .. string.format("%.1f%%", r.armorReduction * 100))
+        end
+        Diagnostics.Print(hybridDetailLine)
         return
     end
 
@@ -166,11 +169,14 @@ function Diagnostics.PrintSpellSummary(r)
             .. durStr .. " | "
             .. COLOR_GOOD .. FN(r.dps) .. " DPS" .. COLOR_RESET
         )
-        Diagnostics.Print(
-            "  " .. LabelValue("Base", FN(r.avgBaseDamage))
+        local dotDetailLine = "  " .. LabelValue("Base", FN(r.avgBaseDamage))
             .. " | " .. LabelValue("+SP", FN(r.spellPowerBonus))
             .. " | " .. LabelValue("Crit", "n/a")
-        )
+        if r.armorReduction and r.armorReduction > 0 then
+            dotDetailLine = dotDetailLine .. " | " .. LabelValue("Armor",
+                "-" .. string.format("%.1f%%", r.armorReduction * 100))
+        end
+        Diagnostics.Print(dotDetailLine)
         return
     end
 
@@ -186,11 +192,14 @@ function Diagnostics.PrintSpellSummary(r)
             .. durStr .. " | "
             .. COLOR_GOOD .. FN(r.dps) .. " " .. rateLabel .. COLOR_RESET
         )
-        Diagnostics.Print(
-            "  " .. LabelValue("Base", FN(r.avgBaseDamage))
+        local chanDetailLine = "  " .. LabelValue("Base", FN(r.avgBaseDamage))
             .. " | " .. LabelValue("+SP", FN(r.spellPowerBonus))
             .. " | " .. LabelValue("Ticks", (r.numTicks or "?") .. "\195\151" .. FN(r.tickDamage))
-        )
+        if r.armorReduction and r.armorReduction > 0 then
+            chanDetailLine = chanDetailLine .. " | " .. LabelValue("Armor",
+                "-" .. string.format("%.1f%%", r.armorReduction * 100))
+        end
+        Diagnostics.Print(chanDetailLine)
         return
     end
 
@@ -210,11 +219,14 @@ function Diagnostics.PrintSpellSummary(r)
     local critStr = (r.critChance or 0) > 0
         and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
         or "n/a"
-    Diagnostics.Print(
-        "  " .. LabelValue("Base", FN(r.avgBaseDamage))
+    local detailLine = "  " .. LabelValue("Base", FN(r.avgBaseDamage))
         .. " | " .. LabelValue("+SP", FN(r.spellPowerBonus))
         .. " | " .. LabelValue("Crit", critStr)
-    )
+    if r.armorReduction and r.armorReduction > 0 then
+        detailLine = detailLine .. " | " .. LabelValue("Armor",
+            "-" .. string.format("%.1f%%", r.armorReduction * 100))
+    end
+    Diagnostics.Print(detailLine)
 end
 
 -------------------------------------------------------------------------------
@@ -259,28 +271,28 @@ function Diagnostics.PrintSpell(spellName)
     end
 
     if r.spellType == "hybrid" then
-        Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
+        Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName, state)
         return
     end
 
     if r.spellType == "dot" then
-        Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
+        Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName, state)
         return
     end
 
     if r.spellType == "channel" then
-        Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
+        Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName, state)
         return
     end
 
     -- Direct damage
-    Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
+    Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName, state)
 end
 
 -------------------------------------------------------------------------------
 -- PrintSpellDot — detailed DoT spell
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
+function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName, state)
     if r.baseDamage then
         Diagnostics.Print("  " .. LabelValue("Base damage",
             FN(r.baseDamage.min or 0) .. " - " .. FN(r.baseDamage.max or 0)
@@ -308,13 +320,19 @@ function Diagnostics.PrintSpellDot(r, FN, FP, schoolColor, schoolName)
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
     local castStr = (r.castTime and r.castTime > 0) and (FN(r.castTime) .. "s") or "instant"
     Diagnostics.Print("  " .. LabelValue("Cast time", castStr))
+    if r.armorReduction and r.armorReduction > 0 then
+        local armorVal = state and state.targetArmor or 0
+        Diagnostics.Print("  " .. LabelValue("Armor",
+            "-" .. string.format("%.1f%%", r.armorReduction * 100)
+            .. " (" .. Diagnostics.FormatNumber(armorVal) .. " armor)"))
+    end
     Diagnostics.Print("  " .. LabelValue("DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
 -- PrintSpellDirect — detailed direct damage spell
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
+function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName, state)
     local noun = r.outputType == "absorption" and "absorption" or "damage"
     local Noun = noun:sub(1, 1):upper() .. noun:sub(2)
     if r.baseDamage then
@@ -345,13 +363,19 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName)
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
     local castStr = (r.castTime and r.castTime > 0) and (FN(r.castTime) .. "s") or "instant"
     Diagnostics.Print("  " .. LabelValue("Cast time", castStr))
+    if r.armorReduction and r.armorReduction > 0 then
+        local armorVal = state and state.targetArmor or 0
+        Diagnostics.Print("  " .. LabelValue("Armor",
+            "-" .. string.format("%.1f%%", r.armorReduction * 100)
+            .. " (" .. Diagnostics.FormatNumber(armorVal) .. " armor)"))
+    end
     Diagnostics.Print("  " .. LabelValue(r.outputType == "absorption" and "APS" or "DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
 -- PrintSpellChannel — detailed channel spell
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
+function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName, state)
     local noun = r.outputType == "healing" and "healing" or "damage"
     local Noun = noun:sub(1, 1):upper() .. noun:sub(2)
     local rateLabel = r.outputType == "healing" and "HPS" or "DPS"
@@ -374,13 +398,19 @@ function Diagnostics.PrintSpellChannel(r, FN, FP, schoolColor, schoolName)
     Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
     Diagnostics.Print("  " .. LabelValue("Expected with miss",
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
+    if r.armorReduction and r.armorReduction > 0 then
+        local armorVal = state and state.targetArmor or 0
+        Diagnostics.Print("  " .. LabelValue("Armor",
+            "-" .. string.format("%.1f%%", r.armorReduction * 100)
+            .. " (" .. Diagnostics.FormatNumber(armorVal) .. " armor)"))
+    end
     Diagnostics.Print("  " .. LabelValue(rateLabel, COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
 -------------------------------------------------------------------------------
 -- PrintSpellHybrid — detailed hybrid spell (Immolate)
 -------------------------------------------------------------------------------
-function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
+function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName, state)
     -- Direct portion
     Diagnostics.Print("  " .. COLOR_HEADER .. "Direct Portion" .. COLOR_RESET)
     if r.baseDamage then
@@ -423,6 +453,12 @@ function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, schoolName)
         schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET))
     local castStr = (r.castTime and r.castTime > 0) and (FN(r.castTime) .. "s") or "instant"
     Diagnostics.Print("    " .. LabelValue("Cast time", castStr))
+    if r.armorReduction and r.armorReduction > 0 then
+        local armorVal = state and state.targetArmor or 0
+        Diagnostics.Print("    " .. LabelValue("Armor",
+            "-" .. string.format("%.1f%%", r.armorReduction * 100)
+            .. " (" .. Diagnostics.FormatNumber(armorVal) .. " armor)"))
+    end
     Diagnostics.Print("    " .. LabelValue("DPS", COLOR_GOOD .. FN(r.dps) .. COLOR_RESET))
 end
 
@@ -464,36 +500,57 @@ function Diagnostics.PrintState()
         LabelValue("Class", state.class or "?")
         .. " | " .. LabelValue("Level", tostring(state.level or "?")))
 
-    -- Spell Power per school
-    Diagnostics.Print("")
-    Diagnostics.Print(COLOR_HEADER .. "Spell Power:" .. COLOR_RESET)
-    local spLine = {}
-    for _, school in ipairs(ns.MAGIC_SCHOOLS) do
-        local name = GetSchoolName(school)
-        local color = Diagnostics.GetSchoolColor(school)
-        local sp = state.stats.spellPower[school] or 0
-        spLine[#spLine + 1] = color .. name .. ": " .. COLOR_VALUE .. FN(sp) .. COLOR_RESET
+    if state.class == "HUNTER" then
+        -- Ranged Attack Power
+        Diagnostics.Print("")
+        Diagnostics.Print(COLOR_HEADER .. "Ranged Stats:" .. COLOR_RESET)
+        local rapColor = Diagnostics.GetSchoolColor(ns.SCHOOL_PHYSICAL)
+        Diagnostics.Print("  " .. LabelValue("RAP",
+            rapColor .. FN(state.stats.rangedAttackPower or 0) .. COLOR_RESET))
+
+        -- Ranged Crit / Hit / Haste
+        Diagnostics.Print(LabelValue("Ranged Crit", FP(state.stats.rangedCrit or 0)))
+        Diagnostics.Print(LabelValue("Ranged Hit", FP(state.stats.rangedHit or 0)))
+        Diagnostics.Print(LabelValue("Ranged Haste", FP(state.stats.rangedHaste or 0)))
+
+        -- Weapon damage
+        if state.stats.weaponDamage then
+            Diagnostics.Print(LabelValue("Weapon Damage",
+                FN(state.stats.weaponDamage.min or 0) .. " - " .. FN(state.stats.weaponDamage.max or 0)
+                .. " (" .. string.format("%.1f", state.stats.rangedSpeed or 0) .. "s)"))
+        end
+    else
+        -- Spell Power per school
+        Diagnostics.Print("")
+        Diagnostics.Print(COLOR_HEADER .. "Spell Power:" .. COLOR_RESET)
+        local spLine = {}
+        for _, school in ipairs(ns.MAGIC_SCHOOLS) do
+            local name = GetSchoolName(school)
+            local color = Diagnostics.GetSchoolColor(school)
+            local sp = state.stats.spellPower[school] or 0
+            spLine[#spLine + 1] = color .. name .. ": " .. COLOR_VALUE .. FN(sp) .. COLOR_RESET
+        end
+        Diagnostics.Print("  " .. table.concat(spLine, " | "))
+
+        -- Healing power
+        Diagnostics.Print(LabelValue("Healing Power", FN(state.stats.healingPower or 0)))
+
+        -- Spell Crit per school
+        Diagnostics.Print("")
+        Diagnostics.Print(COLOR_HEADER .. "Spell Crit:" .. COLOR_RESET)
+        local critLine = {}
+        for _, school in ipairs(ns.MAGIC_SCHOOLS) do
+            local name = GetSchoolName(school)
+            local color = Diagnostics.GetSchoolColor(school)
+            local crit = state.stats.spellCrit[school] or 0
+            critLine[#critLine + 1] = color .. name .. ": " .. COLOR_VALUE .. FP(crit) .. COLOR_RESET
+        end
+        Diagnostics.Print("  " .. table.concat(critLine, " | "))
+
+        -- Spell Hit and Haste
+        Diagnostics.Print(LabelValue("Spell Hit", FP(state.stats.spellHit or 0)))
+        Diagnostics.Print(LabelValue("Spell Haste", FP(state.stats.spellHaste or 0)))
     end
-    Diagnostics.Print("  " .. table.concat(spLine, " | "))
-
-    -- Healing power
-    Diagnostics.Print(LabelValue("Healing Power", FN(state.stats.healingPower or 0)))
-
-    -- Spell Crit per school
-    Diagnostics.Print("")
-    Diagnostics.Print(COLOR_HEADER .. "Spell Crit:" .. COLOR_RESET)
-    local critLine = {}
-    for _, school in ipairs(ns.MAGIC_SCHOOLS) do
-        local name = GetSchoolName(school)
-        local color = Diagnostics.GetSchoolColor(school)
-        local crit = state.stats.spellCrit[school] or 0
-        critLine[#critLine + 1] = color .. name .. ": " .. COLOR_VALUE .. FP(crit) .. COLOR_RESET
-    end
-    Diagnostics.Print("  " .. table.concat(critLine, " | "))
-
-    -- Spell Hit and Haste
-    Diagnostics.Print(LabelValue("Spell Hit", FP(state.stats.spellHit or 0)))
-    Diagnostics.Print(LabelValue("Spell Haste", FP(state.stats.spellHaste or 0)))
 
     -- Mana Regen
     if state.stats.manaRegen then
@@ -528,7 +585,7 @@ function Diagnostics.PrintState()
 
     for _, key in ipairs(sortedKeys) do
         local rank = state.talents[key]
-        local entry = ns.TalentMap[key]
+        local entry = ns.TalentMap[(state.class or "UNKNOWN") .. ":" .. key]
         local name = entry and entry.name or key
         local maxRank = entry and entry.maxRank or "?"
         talentLines[#talentLines + 1] = COLOR_LABEL .. key .. COLOR_RESET .. " "

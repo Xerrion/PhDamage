@@ -87,6 +87,35 @@ AuraMap[34936] = {
     },
 }
 
+-- Soul Link: +5% all damage when active
+AuraMap[25228] = {
+    name = "Soul Link",
+    target = "player",
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.05 },
+    },
+}
+
+-- Demonic Sacrifice: Felguard — +10% fire and shadow damage
+AuraMap[35701] = {
+    name = "Demonic Sacrifice: Felguard",
+    target = "player",
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.10,
+          filter = { schools = {SCHOOL_FIRE, SCHOOL_SHADOW} } },
+    },
+}
+
+-- Amplify Curse: +50% Curse of Agony / Curse of Doom damage
+AuraMap[18288] = {
+    name = "Amplify Curse",
+    target = "player",
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.50,
+          filter = { spellNames = {"Curse of Agony", "Curse of Doom"} } },
+    },
+}
+
 -- Master Demonologist (Succubus active): +2% all damage per talent rank
 -- The base effect value is 0 because the entire bonus comes from talentAmplify;
 -- the zero-value effect serves as a type-marker for talentAmplify to match against.
@@ -177,8 +206,8 @@ AuraMap[27228] = {
     },
 }
 
--- Curse of Shadow Rank 1: +8% Shadow and Arcane damage, -75 resistances
-AuraMap[17937] = {
+-- Curse of Shadow Rank 1: +8% Shadow and Arcane damage, -60 resistances
+AuraMap[17862] = {
     name = "Curse of Shadow",
     target = "target",
     effects = {
@@ -192,8 +221,8 @@ AuraMap[17937] = {
     },
 }
 
--- Curse of Shadow Rank 2: +10% Shadow and Arcane damage, -88 resistances
-AuraMap[32862] = {
+-- Curse of Shadow Rank 2: +10% Shadow and Arcane damage, -75 resistances
+AuraMap[17937] = {
     name = "Curse of Shadow",
     target = "target",
     effects = {

@@ -27,6 +27,7 @@ local STATE_EVENTS = {
     "PLAYER_TALENT_UPDATE",
     "ACTIVE_TALENT_GROUP_CHANGED",
     "PLAYER_EQUIPMENT_CHANGED",
+    "PLAYER_TARGET_CHANGED",
 }
 
 -- Resolve the Addon object lazily to handle load order gracefully

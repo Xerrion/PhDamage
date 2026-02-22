@@ -23,6 +23,9 @@ Core\StateCollector.lua
 Data\SpellData_Warlock.lua
 Data\TalentMap_Warlock.lua
 Data\AuraMap_Warlock.lua
+Data\SpellData_Hunter.lua
+Data\TalentMap_Hunter.lua
+Data\AuraMap_Hunter.lua
 
 # Engine
 Engine\SpellCalc.lua
