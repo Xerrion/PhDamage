@@ -43,6 +43,9 @@ LoadFile("Data/AuraMap_Hunter.lua")
 LoadFile("Data/SpellData_Mage.lua")
 LoadFile("Data/TalentMap_Mage.lua")
 LoadFile("Data/AuraMap_Mage.lua")
+LoadFile("Data/SpellData_Priest.lua")
+LoadFile("Data/TalentMap_Priest.lua")
+LoadFile("Data/AuraMap_Priest.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -172,6 +175,34 @@ local function MakeMageState()
 end
 
 -------------------------------------------------------------------------------
+-- Default Priest player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_PRIEST_STATE = {
+    level = 70,
+    class = "PRIEST",
+    stats = {
+        spellPower = { [2] = 1000, [32] = 1000 },
+        healingPower = 0,
+        spellCrit = { [2] = 0.10, [32] = 0.10 },
+        spellHit = 0.03,
+        spellHaste = 0,
+    },
+    talents = {},
+    auras = { player = {}, target = {} },
+    gear = { setBonuses = {} },
+    targetHealthPercent = 100,
+    targetCreatureType = nil,
+    afflictionCountOnTarget = 0,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Priest state
+-------------------------------------------------------------------------------
+local function MakePriestState()
+    return DeepCopy(DEFAULT_PRIEST_STATE)
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -229,4 +260,5 @@ return {
     makePlayerState = MakePlayerState,
     makeHunterState = MakeHunterState,
     makeMageState = MakeMageState,
+    makePriestState = MakePriestState,
 }
