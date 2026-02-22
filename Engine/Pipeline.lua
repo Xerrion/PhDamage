@@ -86,7 +86,7 @@ function Pipeline.CalculateAll(playerState)
         if aDps ~= bDps then
             return aDps > bDps
         end
-        return a.spellName < b.spellName
+        return (a.spellName or "") < (b.spellName or "")
     end)
 
     return allResults

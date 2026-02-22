@@ -7,9 +7,9 @@
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
-local SCHOOL_FIRE = 4
-local SCHOOL_FROST = 16
-local SCHOOL_ARCANE = 64
+local SCHOOL_FIRE = ns.SCHOOL_FIRE
+local SCHOOL_FROST = ns.SCHOOL_FROST
+local SCHOOL_ARCANE = ns.SCHOOL_ARCANE
 
 local SpellData = {}
 
@@ -26,8 +26,8 @@ SpellData[133] = {
     spellType = "hybrid",
     directCoefficient = 1.0,
     dotCoefficient = 0.0,
-    dotDuration = 8,
-    dotTicks = 4,
+    duration = 8,
+    numTicks = 4,
     castTime = 3.5,
     canCrit = true,
     ranks = {
@@ -101,8 +101,8 @@ SpellData[11366] = {
     spellType = "hybrid",
     directCoefficient = 1.15,
     dotCoefficient = 0.20,
-    dotDuration = 12,
-    dotTicks = 4,
+    duration = 12,
+    numTicks = 4,
     castTime = 6.0,
     canCrit = true,
     ranks = {
@@ -128,8 +128,8 @@ SpellData[2120] = {
     spellType = "hybrid",
     directCoefficient = 0.236,
     dotCoefficient = 0.12,
-    dotDuration = 8,
-    dotTicks = 4,
+    duration = 8,
+    numTicks = 4,
     castTime = 3.0,
     canCrit = true,
     ranks = {

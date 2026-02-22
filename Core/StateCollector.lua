@@ -277,13 +277,15 @@ function StateCollector.CollectPlayerState()
 
         state.stats.expertise = GetExpertise()
 
-        -- Main hand weapon damage
+        -- Main hand weapon damage (subtract AP contribution to get raw weapon damage,
+        -- since UnitDamage includes AP and the engine adds normalized AP separately)
         local minDmg, maxDmg, _, _, _, _, _ = UnitDamage("player")
-        state.stats.mainHandWeaponDmgMin = minDmg
-        state.stats.mainHandWeaponDmgMax = maxDmg
-
         local mainSpeed, _ = UnitAttackSpeed("player")
         state.stats.mainHandWeaponSpeed = mainSpeed
+
+        local apContribution = (state.stats.attackPower / 14) * mainSpeed
+        state.stats.mainHandWeaponDmgMin = minDmg - apContribution
+        state.stats.mainHandWeaponDmgMax = maxDmg - apContribution
 
         -- Determine weapon type for normalization
         local weaponLink = GetInventoryItemLink("player", 16)  -- INVSLOT_MAINHAND

@@ -7,7 +7,7 @@
 local ADDON_NAME, ns = ...
 ns.AuraMap = ns.AuraMap or {}
 
-local SCHOOL_SHADOW = 32
+local SCHOOL_SHADOW = ns.SCHOOL_SHADOW
 local MOD = ns.MOD
 
 local AuraMap = {}

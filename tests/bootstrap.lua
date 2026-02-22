@@ -93,7 +93,7 @@ local DEFAULT_PLAYER_STATE = {
         },
         spellHit = 0.03,
         spellHaste = 0,
-        manaRegen = 0,
+        manaRegen = { base = 50, casting = 20 },
     },
     talents = {},
     auras = {
@@ -103,6 +103,8 @@ local DEFAULT_PLAYER_STATE = {
     gear = {
         setBonuses = {},
     },
+    targetArmor = 0,
+    targetHealthPercent = 100,
 }
 
 -------------------------------------------------------------------------------
@@ -141,6 +143,8 @@ local DEFAULT_HUNTER_STATE = {
         setBonuses = {},
     },
     targetArmor = 0,
+    targetLevel = 73,
+    targetHealthPercent = 100,
     targetCreatureType = nil,
     afflictionCountOnTarget = 0,
 }
@@ -168,6 +172,8 @@ local DEFAULT_MAGE_STATE = {
     talents = {},
     auras = { player = {}, target = {} },
     gear = { setBonuses = {} },
+    targetArmor = 0,
+    targetLevel = 73,
     targetHealthPercent = 100,
     targetCreatureType = nil,
     afflictionCountOnTarget = 0,
@@ -196,6 +202,8 @@ local DEFAULT_PRIEST_STATE = {
     talents = {},
     auras = { player = {}, target = {} },
     gear = { setBonuses = {} },
+    targetArmor = 0,
+    targetLevel = 73,
     targetHealthPercent = 100,
     targetCreatureType = nil,
     afflictionCountOnTarget = 0,
@@ -236,6 +244,7 @@ local DEFAULT_WARRIOR_STATE = {
     gear = { setBonuses = {} },
     attackingFromBehind = true,
     targetArmor = 0,
+    targetHealthPercent = 100,
 }
 
 -------------------------------------------------------------------------------
@@ -279,6 +288,7 @@ local DEFAULT_ROGUE_STATE = {
     gear = { setBonuses = {} },
     attackingFromBehind = true,
     targetArmor = 0,
+    targetHealthPercent = 100,
 }
 
 -------------------------------------------------------------------------------
