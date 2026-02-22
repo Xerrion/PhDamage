@@ -100,7 +100,7 @@ local function FinalizeFrame()
 
     -- Re-anchor to GameTooltip (it may have moved)
     companionFrame:ClearAllPoints()
-    companionFrame:SetPoint("TOPLEFT", GameTooltip, "TOPRIGHT", 4, 0)
+    companionFrame:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 0, -4)
     companionFrame:Show()
 end
 
