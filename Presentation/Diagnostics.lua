@@ -20,15 +20,7 @@ local COLOR_GOOD = "|cff00ff00"     -- green
 local COLOR_RESET = "|r"
 
 -- School-specific colors
-local SCHOOL_COLORS = {
-    [ns.SCHOOL_SHADOW]   = "|cff9b59b6",
-    [ns.SCHOOL_FIRE]     = "|cffe74c3c",
-    [ns.SCHOOL_HOLY]     = "|cfff1c40f",
-    [ns.SCHOOL_NATURE]   = "|cff2ecc71",
-    [ns.SCHOOL_FROST]    = "|cff3498db",
-    [ns.SCHOOL_ARCANE]   = "|cff1abc9c",
-    [ns.SCHOOL_PHYSICAL] = "|cffbdc3c7",
-}
+local SCHOOL_COLORS = ns.SCHOOL_COLORS
 
 -- Decorative line characters (WoW chat supports UTF-8)
 local LINE_DOUBLE = string.rep("=", 40)  -- ═ repeated

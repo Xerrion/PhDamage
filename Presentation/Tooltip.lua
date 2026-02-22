@@ -16,6 +16,7 @@ local CreateFrame = CreateFrame
 local pairs = pairs
 local format = string.format
 local floor = math.floor
+local concat = table.concat
 
 -- SpellID reverse lookup: rankSpellID → { spellKey, rankIndex }
 local spellIDMap = {}
@@ -23,13 +24,22 @@ local spellIDMap = {}
 -- Re-entry guard: tracks the spellID last appended to avoid duplicate lines
 local lastTooltipSpellID = nil
 
+-- Color constants
+local COLOR_GOLD = "|cffffd100"
+local COLOR_GREEN = "|cff00ff00"
+local COLOR_WHITE = "|cffffffff"
+local COLOR_RESET = "|r"
+
+-- Separator line (gray dashes)
+local SEPARATOR = string.rep("\226\128\148", 20) -- em-dash ─ repeated
+
 -------------------------------------------------------------------------------
--- Helpers
+-- Formatting Helpers (exposed on ns.Tooltip for testability)
 -------------------------------------------------------------------------------
 
 --- Formats a number for compact tooltip display.
--- >= 10000 → "10.0k", >= 1000 → "1.2k", otherwise → integer "581"
-local function FormatNumber(n)
+-- >= 10000 → "15k", >= 1000 → "1.5k", otherwise → integer "581"
+function Tooltip.FormatNumber(n)
     if n == nil then return "?" end
     if n >= 10000 then
         return format("%.0fk", n / 1000)
@@ -40,9 +50,9 @@ local function FormatNumber(n)
     end
 end
 
---- Formats a DPS value with one decimal place for readability.
+--- Formats a DPS/HPS value with one decimal place.
 -- Uses the same "k" suffix logic for large values.
-local function FormatDPS(n)
+function Tooltip.FormatDPS(n)
     if n == nil then return "?" end
     if n >= 10000 then
         return format("%.0fk", n / 1000)
@@ -52,6 +62,21 @@ local function FormatDPS(n)
         return format("%.1f", n)
     end
 end
+
+--- Returns the color escape code for a spell school bitmask.
+-- Falls back to white for unknown schools.
+function Tooltip.GetSchoolColor(school)
+    return ns.SCHOOL_COLORS and ns.SCHOOL_COLORS[school] or COLOR_WHITE
+end
+
+--- Wraps a formatted string in school color codes.
+function Tooltip.ColorValue(text, school)
+    return Tooltip.GetSchoolColor(school) .. text .. COLOR_RESET
+end
+
+-- Local aliases for brevity inside this file
+local FN = Tooltip.FormatNumber
+local FD = Tooltip.FormatDPS
 
 -------------------------------------------------------------------------------
 -- BuildSpellIDMap
@@ -78,14 +103,44 @@ function Tooltip.GetSpellIDMap()
 end
 
 -------------------------------------------------------------------------------
--- Tooltip line formatting
+-- Output type helpers
 -------------------------------------------------------------------------------
 
---- Adds a gray detail line with SP bonus, optional crit info, and hit chance.
-local function AddDetailLine(r)
-    local parts = {}
+local function GetValueLabel(outputType)
+    if outputType == "healing" then return "healing expected"
+    elseif outputType == "absorption" then return "absorption"
+    else return "expected" end
+end
 
-    parts[#parts + 1] = format("+%s SP", FormatNumber(r.spellPowerBonus or 0))
+local function GetRateLabel(outputType)
+    if outputType == "healing" then return "HPS"
+    elseif outputType == "absorption" then return "APS"
+    else return "DPS" end
+end
+
+local function GetPowerLabel(r)
+    -- Melee results have dodgeChance set by CritCalc
+    if r.dodgeChance ~= nil then return "AP" end
+    return "SP"
+end
+
+-------------------------------------------------------------------------------
+-- Separator
+-------------------------------------------------------------------------------
+
+local function AddSeparator()
+    GameTooltip:AddLine(SEPARATOR, 0.4, 0.4, 0.4)
+end
+
+-------------------------------------------------------------------------------
+-- Stats line builder
+-------------------------------------------------------------------------------
+
+local function AddStatsLine(r)
+    local parts = {}
+    local powerLabel = GetPowerLabel(r)
+
+    parts[#parts + 1] = format("+%s %s", FN(r.spellPowerBonus or 0), powerLabel)
 
     if (r.critChance or 0) > 0 then
         parts[#parts + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
@@ -95,69 +150,176 @@ local function AddDetailLine(r)
         parts[#parts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
     end
 
-    GameTooltip:AddLine(table.concat(parts, " | "), 0.67, 0.67, 0.67)
+    GameTooltip:AddLine("  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
 end
 
---- Adds formatted PhDamage lines to the tooltip based on spell type.
-local function AddTooltipLines(r)
-    local armorSuffix = ""
-    if r.armorReduction and r.armorReduction > 0 then
-        armorSuffix = format(" (AR: -%.1f%%)", r.armorReduction * 100)
+--- Adds melee-specific stats as two lines (AP/crit, then hit/dodge/armor)
+local function AddMeleeStatsLines(r)
+    -- Line 1: AP + crit
+    local parts1 = {}
+    parts1[#parts1 + 1] = format("+%s AP", FN(r.spellPowerBonus or 0))
+    if (r.critChance or 0) > 0 then
+        parts1[#parts1 + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
     end
+    GameTooltip:AddLine("  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
+
+    -- Line 2: hit + dodge + parry (if from front) + armor
+    local parts2 = {}
+    if r.hitChance then
+        parts2[#parts2 + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
+    end
+    if r.dodgeChance and r.dodgeChance > 0 then
+        parts2[#parts2 + 1] = format("%.1f%% dodge", r.dodgeChance * 100)
+    end
+    if r.parryChance and r.parryChance > 0 then
+        parts2[#parts2 + 1] = format("%.1f%% parry", r.parryChance * 100)
+    end
+    if r.armorReduction and r.armorReduction > 0 then
+        parts2[#parts2 + 1] = format("%.0f%% armor", r.armorReduction * 100)
+    end
+    if #parts2 > 0 then
+        GameTooltip:AddLine("  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
+    end
+end
+
+-------------------------------------------------------------------------------
+-- Header line (shared across all damage/heal types)
+-------------------------------------------------------------------------------
+
+local function AddHeaderLine(r)
+    local valueLabel = GetValueLabel(r.outputType)
+    local rateLabel = GetRateLabel(r.outputType)
+    local schoolColor = Tooltip.GetSchoolColor(r.school)
+    local dmgStr = schoolColor .. FN(r.expectedDamageWithMiss) .. COLOR_RESET
+    local dpsStr = COLOR_GREEN .. FD(r.dps) .. " " .. rateLabel .. COLOR_RESET
+
+    GameTooltip:AddLine(
+        format("%sPhDamage:%s  %s %s  (%s)", COLOR_GOLD, COLOR_RESET, dmgStr, valueLabel, dpsStr),
+        1, 1, 1
+    )
+end
+
+-------------------------------------------------------------------------------
+-- Spell-type-specific line builders
+-------------------------------------------------------------------------------
+
+--- Direct damage/heal spell (3 lines, or 4 for melee)
+local function AddDirectLines(r)
+    AddHeaderLine(r)
+    if r.dodgeChance ~= nil then
+        AddMeleeStatsLines(r)
+    else
+        AddStatsLine(r)
+    end
+end
+
+--- DoT spell (4 lines)
+local function AddDotLines(r)
+    AddHeaderLine(r)
+
+    -- Tick info line
+    local sc = Tooltip.GetSchoolColor(r.school)
+    local tickStr = sc .. FN(r.tickDamage or r.tickDmg or 0) .. COLOR_RESET
+    local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
+    local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
+    GameTooltip:AddLine(
+        format("  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
+        0.67, 0.67, 0.67
+    )
+
+    AddStatsLine(r)
+end
+
+--- Hybrid spell (5 lines)
+local function AddHybridLines(r)
+    AddHeaderLine(r)
+
+    local sc = Tooltip.GetSchoolColor(r.school)
+
+    -- Direct line
+    local directStr = sc .. FN(r.directDamage or 0) .. COLOR_RESET
+    local directParts = { format("Direct:  %s", directStr) }
+    if (r.critChance or 0) > 0 then
+        directParts[#directParts + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
+    end
+    GameTooltip:AddLine("  " .. concat(directParts, "  |  "), 0.67, 0.67, 0.67)
+
+    -- DoT line
+    local tickStr = sc .. FN(r.tickDamage or 0) .. COLOR_RESET
+    local dotTotalStr = sc .. FN(r.dotDamage or 0) .. COLOR_RESET
+    local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
+    GameTooltip:AddLine(
+        format("  DoT:  %s/tick  |  %s total  (%s)", tickStr, dotTotalStr, durStr),
+        0.67, 0.67, 0.67
+    )
+
+    -- Stats line (no crit — already shown on direct line)
+    local statParts = {}
+    statParts[#statParts + 1] = format("+%s SP", FN(r.spellPowerBonus or 0))
+    if r.hitChance then
+        statParts[#statParts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
+    end
+    GameTooltip:AddLine("  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
+end
+
+--- Channel spell (4 lines)
+local function AddChannelLines(r)
+    AddHeaderLine(r)
+
+    -- Tick info line
+    local sc = Tooltip.GetSchoolColor(r.school)
+    local tickStr = sc .. FN(r.tickDamage or r.tickDmg or 0) .. COLOR_RESET
+    local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
+    local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
+    GameTooltip:AddLine(
+        format("  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
+        0.67, 0.67, 0.67
+    )
+
+    AddStatsLine(r)
+end
+
+--- Utility spell (2 lines)
+local function AddUtilityLines(r)
+    if r.healthCost then
+        -- Life Tap style: health cost → mana gain (+SP bonus)
+        GameTooltip:AddLine(
+            format("%sPhDamage:%s  %s HP \226\134\146 %s mana  (%s+%s SP%s)",
+                COLOR_GOLD, COLOR_RESET,
+                FN(r.healthCost),
+                FN(r.manaGain),
+                COLOR_GREEN, FN(r.spellPowerBonus or 0), COLOR_RESET),
+            1, 1, 1
+        )
+    else
+        -- Dark Pact style: mana gain only (+SP bonus)
+        GameTooltip:AddLine(
+            format("%sPhDamage:%s  %s mana  (%s+%s SP%s)",
+                COLOR_GOLD, COLOR_RESET,
+                FN(r.manaGain),
+                COLOR_GREEN, FN(r.spellPowerBonus or 0), COLOR_RESET),
+            1, 1, 1
+        )
+    end
+end
+
+-------------------------------------------------------------------------------
+-- Main dispatcher
+-------------------------------------------------------------------------------
+
+local function AddTooltipLines(r)
+    AddSeparator()
 
     if r.spellType == "utility" then
-        if r.healthCost then
-            -- Life Tap style: health cost → mana gain (+SP bonus)
-            GameTooltip:AddLine(
-                format("|cffffd100PhDamage:|r %s HP \226\134\146 %s mana (|cff00ff00+%s SP|r)",
-                    FormatNumber(r.healthCost),
-                    FormatNumber(r.manaGain),
-                    FormatNumber(r.spellPowerBonus or 0)),
-                1, 1, 1
-            )
-        else
-            -- Dark Pact style: mana gain only (+SP bonus)
-            GameTooltip:AddLine(
-                format("|cffffd100PhDamage:|r %s mana (|cff00ff00+%s SP|r)",
-                    FormatNumber(r.manaGain),
-                    FormatNumber(r.spellPowerBonus or 0)),
-                1, 1, 1
-            )
-        end
+        AddUtilityLines(r)
     elseif r.spellType == "hybrid" then
-        -- Immolate style: direct + DoT
-        GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s direct + %s DoT (|cff00ff00%s DPS|r)%s",
-                FormatNumber(r.directDamage),
-                FormatNumber(r.dotDamage),
-                FormatDPS(r.dps),
-                armorSuffix),
-            1, 1, 1
-        )
-        AddDetailLine(r)
+        AddHybridLines(r)
+    elseif r.spellType == "dot" then
+        AddDotLines(r)
+    elseif r.spellType == "channel" then
+        AddChannelLines(r)
     else
-        -- Direct, DoT, or Channel
-        local valueLabel, rateLabel, rateStr
-        if r.outputType == "healing" then
-            valueLabel = "healing expected"
-            rateLabel = "HPS"
-        elseif r.outputType == "absorption" then
-            valueLabel = "absorption"
-            rateLabel = "APS"
-        else
-            valueLabel = "expected"
-            rateLabel = "DPS"
-        end
-        rateStr = format("|cff00ff00%s %s|r", FormatDPS(r.dps), rateLabel)
-        GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s %s (%s)%s",
-                FormatNumber(r.expectedDamageWithMiss),
-                valueLabel,
-                rateStr,
-                armorSuffix),
-            1, 1, 1
-        )
-        AddDetailLine(r)
+        AddDirectLines(r)
     end
 
     GameTooltip:Show()

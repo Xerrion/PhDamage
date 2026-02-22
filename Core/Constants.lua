@@ -132,3 +132,16 @@ ns.SPELL_TYPE = {
     CHANNEL   = "channel",
     UTILITY   = "utility",
 }
+
+-------------------------------------------------------------------------------
+-- School Colors — shared by Tooltip and Diagnostics
+-------------------------------------------------------------------------------
+ns.SCHOOL_COLORS = {
+    [ns.SCHOOL_SHADOW]   = "|cff9b59b6",
+    [ns.SCHOOL_FIRE]     = "|cffe74c3c",
+    [ns.SCHOOL_HOLY]     = "|cfff1c40f",
+    [ns.SCHOOL_NATURE]   = "|cff2ecc71",
+    [ns.SCHOOL_FROST]    = "|cff3498db",
+    [ns.SCHOOL_ARCANE]   = "|cff1abc9c",
+    [ns.SCHOOL_PHYSICAL] = "|cffbdc3c7",
+}
