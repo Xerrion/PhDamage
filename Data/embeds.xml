@@ -27,4 +27,8 @@
     <Script file="SpellData_Druid.lua"/>
     <Script file="TalentMap_Druid.lua"/>
     <Script file="AuraMap_Druid.lua"/>
+    <!-- Shaman -->
+    <Script file="SpellData_Shaman.lua"/>
+    <Script file="TalentMap_Shaman.lua"/>
+    <Script file="AuraMap_Shaman.lua"/>
 </Ui>

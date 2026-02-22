@@ -55,6 +55,9 @@ LoadFile("Data/AuraMap_Rogue.lua")
 LoadFile("Data/SpellData_Druid.lua")
 LoadFile("Data/TalentMap_Druid.lua")
 LoadFile("Data/AuraMap_Druid.lua")
+LoadFile("Data/SpellData_Shaman.lua")
+LoadFile("Data/TalentMap_Shaman.lua")
+LoadFile("Data/AuraMap_Shaman.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -353,6 +356,64 @@ local function makeDruidState(overrides)
 end
 
 -------------------------------------------------------------------------------
+-- Default Shaman player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_SHAMAN_STATE = {
+    level = 70,
+    targetLevel = 73,
+    class = "SHAMAN",
+    stats = {
+        spellPower = {
+            [4] = 800,     -- Fire (for Flame Shock)
+            [8] = 800,     -- Nature (for Lightning Bolt, Chain Lightning, shocks, heals)
+            [16] = 800,    -- Frost (for Frost Shock)
+        },
+        healingPower = 0,
+        spellCrit = {
+            [4] = 0.10,
+            [8] = 0.10,
+            [16] = 0.10,
+        },
+        spellHit = 0.03,
+        spellHaste = 0,
+        intellect = 350,
+        attackPower = 2000,
+        meleeCrit = 0.25,
+        meleeHit = 0,
+        meleeHaste = 0,
+        expertise = 0,
+        mainHandWeaponDmgMin = 100,
+        mainHandWeaponDmgMax = 200,
+        mainHandWeaponSpeed = 2.6,
+        mainHandWeaponType = "ONE_HAND",
+    },
+    talents = {},
+    auras = {
+        player = {},
+        target = {},
+    },
+    gear = {
+        setBonuses = {},
+    },
+    attackingFromBehind = true,
+    targetArmor = 0,
+    targetHealthPercent = 100,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Shaman state
+-------------------------------------------------------------------------------
+local function makeShamanState(overrides)
+    local state = DeepCopy(DEFAULT_SHAMAN_STATE)
+    if overrides then
+        for k, v in pairs(overrides) do
+            state[k] = v
+        end
+    end
+    return state
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -414,4 +475,5 @@ return {
     makeWarriorState = makeWarriorState,
     makeRogueState = makeRogueState,
     makeDruidState = makeDruidState,
+    makeShamanState = makeShamanState,
 }

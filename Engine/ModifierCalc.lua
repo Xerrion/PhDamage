@@ -87,6 +87,18 @@ function ModifierCalc.MatchesFilter(filter, spellData, rankData, playerState)
         end
     end
 
+    -- Heal filter (Purification, Nature's Blessing etc.)
+    if filter.isHeal then
+        if not spellData.isHeal and not spellData.isHealing then
+            return false
+        end
+    end
+
+    -- Scaling type filter (melee/ranged abilities)
+    if filter.scalingType and filter.scalingType ~= spellData.scalingType then
+        return false
+    end
+
     return true
 end
 

@@ -271,7 +271,7 @@ function StateCollector.CollectPlayerState()
     -- Melee combat stats
     ---------------------------------------------------------------------------
     if state.class == "WARRIOR" or state.class == "ROGUE" or state.class == "PALADIN"
-        or state.class == "DEATHKNIGHT" or state.class == "DRUID" then
+        or state.class == "DEATHKNIGHT" or state.class == "DRUID" or state.class == "SHAMAN" then
         local base, posBuff, negBuff = UnitAttackPower("player")
         state.stats.attackPower = base + posBuff + negBuff
 
