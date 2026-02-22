@@ -58,6 +58,9 @@ LoadFile("Data/AuraMap_Druid.lua")
 LoadFile("Data/SpellData_Shaman.lua")
 LoadFile("Data/TalentMap_Shaman.lua")
 LoadFile("Data/AuraMap_Shaman.lua")
+LoadFile("Data/SpellData_Paladin.lua")
+LoadFile("Data/TalentMap_Paladin.lua")
+LoadFile("Data/AuraMap_Paladin.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -414,6 +417,42 @@ local function makeShamanState(overrides)
 end
 
 -------------------------------------------------------------------------------
+-- Default Paladin player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_PALADIN_STATE = {
+    level = 70,
+    targetLevel = 73,
+    class = "PALADIN",
+    stats = {
+        spellPower = { [2] = 800 },   -- SCHOOL_HOLY
+        healingPower = 900,
+        spellCrit = { [2] = 0.15 },
+        spellHit = 0.05,
+        spellHaste = 0,
+        intellect = 350,
+        attackPower = 200,
+    },
+    talents = {},
+    auras = { player = {}, target = {} },
+    gear = { setBonuses = {} },
+    targetArmor = 0,
+    targetHealthPercent = 100,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Paladin state
+-------------------------------------------------------------------------------
+local function makePaladinState(overrides)
+    local state = DeepCopy(DEFAULT_PALADIN_STATE)
+    if overrides then
+        for k, v in pairs(overrides) do
+            state[k] = v
+        end
+    end
+    return state
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -476,4 +515,5 @@ return {
     makeRogueState = makeRogueState,
     makeDruidState = makeDruidState,
     makeShamanState = makeShamanState,
+    makePaladinState = makePaladinState,
 }

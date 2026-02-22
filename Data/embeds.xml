@@ -31,4 +31,8 @@
     <Script file="SpellData_Shaman.lua"/>
     <Script file="TalentMap_Shaman.lua"/>
     <Script file="AuraMap_Shaman.lua"/>
+    <!-- Paladin -->
+    <Script file="SpellData_Paladin.lua"/>
+    <Script file="TalentMap_Paladin.lua"/>
+    <Script file="AuraMap_Paladin.lua"/>
 </Ui>
