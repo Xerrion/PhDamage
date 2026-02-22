@@ -42,10 +42,13 @@ end
 function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modifiers)
     local GCD = ns.GLOBAL_COOLDOWN
     local isRanged = spellData.scalingType == "ranged"
+    local isMelee = spellData.scalingType == "melee"
 
     local hastePercent
     if isRanged then
         hastePercent = playerState.stats.rangedHaste or 0
+    elseif isMelee then
+        hastePercent = playerState.stats.meleeHaste or 0
     else
         hastePercent = playerState.stats.spellHaste or 0
     end
@@ -78,6 +81,8 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     local baseCrit
     if isRanged then
         baseCrit = playerState.stats.rangedCrit or 0
+    elseif isMelee then
+        baseCrit = playerState.stats.meleeCrit or 0
     else
         baseCrit = playerState.stats.spellCrit[spellData.school] or 0
     end
@@ -94,15 +99,34 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     -- Crit multiplier
     ---------------------------------------------------------------------------
-    local critMultiplier = ns.BASE_CRIT_MULTIPLIER + modifiers.critMultBonus
+    local baseCritMult
+    if isMelee then
+        baseCritMult = ns.BASE_MELEE_CRIT_MULTIPLIER
+    else
+        baseCritMult = ns.BASE_CRIT_MULTIPLIER
+    end
+    local critMultiplier = baseCritMult + modifiers.critMultBonus
 
     ---------------------------------------------------------------------------
     -- Hit chance
     ---------------------------------------------------------------------------
     local hitBonus, hitProbability
+    local dodgeChance, parryChance = 0, 0
     if isRanged then
         hitBonus = (playerState.stats.rangedHit or 0) + modifiers.spellHitBonus
         hitProbability = math.min(ns.MAX_RANGED_HIT, 1 - ns.BASE_RANGED_MISS_RATE + hitBonus)
+    elseif isMelee then
+        hitBonus = (playerState.stats.meleeHit or 0) + modifiers.spellHitBonus
+        local missChance = math.max(0, ns.BASE_MELEE_MISS_RATE - hitBonus)
+        -- Expertise reduces dodge and parry
+        local expertiseReduction = (playerState.stats.expertise or 0) * 0.0025
+        dodgeChance = math.max(0, ns.BOSS_DODGE_RATE - expertiseReduction)
+        parryChance = 0
+        if playerState.attackingFromBehind == false then
+            -- Only face attacks can be parried; default (true/nil) is attacking from behind
+            parryChance = math.max(0, ns.BOSS_PARRY_RATE - expertiseReduction)
+        end
+        hitProbability = math.max(0, 1 - missChance - dodgeChance - parryChance)
     else
         hitBonus = (playerState.stats.spellHit or 0) + modifiers.spellHitBonus
         hitProbability = math.min(ns.MAX_SPELL_HIT, 1 - ns.BASE_SPELL_MISS_RATE + hitBonus)
@@ -125,26 +149,33 @@ function CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modi
     ---------------------------------------------------------------------------
     -- Build final result based on spell type
     ---------------------------------------------------------------------------
+    local finalResult
     if spellData.spellType == "hybrid" then
-        return CritCalc.BuildHybridResult(
+        finalResult = CritCalc.BuildHybridResult(
             modifiedResult, spellData, critChance, critMultiplier,
             hitBonus, hitProbability, effectiveCastTime, playerState
         )
-    end
-
-    if spellData.spellType == "direct" then
-        return CritCalc.BuildDirectResult(
+    elseif spellData.spellType == "direct" then
+        finalResult = CritCalc.BuildDirectResult(
             modifiedResult, spellData, critChance, critMultiplier,
             hitBonus, hitProbability, effectiveCastTime, playerState
         )
+    else
+        -- DoT / Channel
+        finalResult = CritCalc.BuildPeriodicResult(
+            modifiedResult, spellData, critChance, critMultiplier,
+            hitBonus, hitProbability, effectiveCastTime,
+            hastePercent, playerState
+        )
     end
 
-    -- DoT / Channel
-    return CritCalc.BuildPeriodicResult(
-        modifiedResult, spellData, critChance, critMultiplier,
-        hitBonus, hitProbability, effectiveCastTime,
-        hastePercent, playerState
-    )
+    -- Attach melee avoidance info for UI display
+    if isMelee then
+        finalResult.dodgeChance = dodgeChance
+        finalResult.parryChance = parryChance
+    end
+
+    return finalResult
 end
 
 -------------------------------------------------------------------------------

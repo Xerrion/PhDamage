@@ -46,6 +46,12 @@ ns.SCHOOL_NAMES = {
 ns.BASE_CRIT_MULTIPLIER = 1.5
 
 -------------------------------------------------------------------------------
+-- Base Melee Crit Multiplier
+-- Melee abilities deal 200% damage on crit by default (2.0x multiplier)
+-------------------------------------------------------------------------------
+ns.BASE_MELEE_CRIT_MULTIPLIER = 2.0
+
+-------------------------------------------------------------------------------
 -- Hit Caps
 -- TBC boss (level 73 target vs level 70 caster) = 17% miss for spells
 -- Heroic mob (level 72) = 6%, same level = 4%
@@ -58,6 +64,21 @@ ns.MAX_SPELL_HIT = 0.99          -- cap (1% resist always remains)
 ns.BASE_RANGED_MISS_RATE = 0.09   -- vs boss
 ns.MAX_RANGED_HIT = 1.00          -- physical can reach 100% hit
 
+-- Melee combat constants (TBC values vs +3 level boss)
+ns.BASE_MELEE_MISS_RATE = 0.08      -- 8% yellow miss rate
+ns.MAX_MELEE_HIT = 1.00
+ns.BOSS_DODGE_RATE = 0.065           -- 6.5% dodge
+ns.BOSS_PARRY_RATE = 0.14            -- 14% parry (0 from behind)
+ns.EXPERTISE_PER_PERCENT = 4.0       -- 4 expertise = 1% dodge/parry reduction
+
+-- Normalized weapon speeds
+ns.NORMALIZED_WEAPON_SPEED = {
+    TWO_HAND = 3.3,
+    ONE_HAND = 2.4,
+    DAGGER = 1.7,
+    FIST = 2.4,
+}
+
 -------------------------------------------------------------------------------
 -- GCD and Cast Time
 -------------------------------------------------------------------------------
@@ -68,8 +89,10 @@ ns.GLOBAL_COOLDOWN = 1.5
 -------------------------------------------------------------------------------
 ns.CR_HIT_SPELL    = 8
 ns.CR_HIT_RANGED   = 7
+ns.CR_HIT_MELEE    = 6
 ns.CR_HASTE_SPELL  = 20
 ns.CR_HASTE_RANGED = 19
+ns.CR_HASTE_MELEE  = 18
 
 -------------------------------------------------------------------------------
 -- Modifier Effect Types (used by TalentMap and AuraMap descriptors)
@@ -94,6 +117,7 @@ ns.MOD = {
 ns.SCALING_TYPE = {
     SPELL  = "spell",   -- default: scales with spell power
     RANGED = "ranged",  -- scales with ranged attack power
+    MELEE  = "melee",   -- scales with melee attack power
 }
 
 -------------------------------------------------------------------------------
