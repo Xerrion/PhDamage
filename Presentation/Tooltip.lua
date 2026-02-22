@@ -150,7 +150,7 @@ local function AddStatsLine(r)
         parts[#parts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
     end
 
-    GameTooltip:AddLine("  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
+    GameTooltip:AddLine("  Stats:  " .. concat(parts, "  |  "), 0.67, 0.67, 0.67)
 end
 
 --- Adds melee-specific stats as two lines (AP/crit, then hit/dodge/armor)
@@ -161,7 +161,7 @@ local function AddMeleeStatsLines(r)
     if (r.critChance or 0) > 0 then
         parts1[#parts1 + 1] = format("%.1f%% crit (\195\151%.2f)", r.critChance * 100, r.critMultiplier or 0)
     end
-    GameTooltip:AddLine("  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
+    GameTooltip:AddLine("  Stats:  " .. concat(parts1, "  |  "), 0.67, 0.67, 0.67)
 
     -- Line 2: hit + dodge + parry (if from front) + armor
     local parts2 = {}
@@ -178,7 +178,7 @@ local function AddMeleeStatsLines(r)
         parts2[#parts2 + 1] = format("%.0f%% armor", r.armorReduction * 100)
     end
     if #parts2 > 0 then
-        GameTooltip:AddLine("  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
+        GameTooltip:AddLine("  Avoidance:  " .. concat(parts2, "  |  "), 0.67, 0.67, 0.67)
     end
 end
 
@@ -223,7 +223,7 @@ local function AddDotLines(r)
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
     GameTooltip:AddLine(
-        format("  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
+        format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
         0.67, 0.67, 0.67
     )
 
@@ -259,7 +259,7 @@ local function AddHybridLines(r)
     if r.hitChance then
         statParts[#statParts + 1] = format("%d%% hit", floor(r.hitChance * 100 + 0.5))
     end
-    GameTooltip:AddLine("  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
+    GameTooltip:AddLine("  Stats:  " .. concat(statParts, "  |  "), 0.67, 0.67, 0.67)
 end
 
 --- Channel spell (4 lines)
@@ -272,7 +272,7 @@ local function AddChannelLines(r)
     local totalStr = sc .. FN(r.expectedDamageWithMiss or 0) .. COLOR_RESET
     local durStr = format("%ds, %d ticks", r.duration or 0, r.numTicks or 0)
     GameTooltip:AddLine(
-        format("  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
+        format("  Breakdown:  %s/tick  |  %s total  (%s)", tickStr, totalStr, durStr),
         0.67, 0.67, 0.67
     )
 
