@@ -19,4 +19,8 @@
     <Script file="SpellData_Warrior.lua"/>
     <Script file="TalentMap_Warrior.lua"/>
     <Script file="AuraMap_Warrior.lua"/>
+    <!-- Rogue -->
+    <Script file="SpellData_Rogue.lua"/>
+    <Script file="TalentMap_Rogue.lua"/>
+    <Script file="AuraMap_Rogue.lua"/>
 </Ui>

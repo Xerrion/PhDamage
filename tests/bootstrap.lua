@@ -49,6 +49,9 @@ LoadFile("Data/AuraMap_Priest.lua")
 LoadFile("Data/SpellData_Warrior.lua")
 LoadFile("Data/TalentMap_Warrior.lua")
 LoadFile("Data/AuraMap_Warrior.lua")
+LoadFile("Data/SpellData_Rogue.lua")
+LoadFile("Data/TalentMap_Rogue.lua")
+LoadFile("Data/AuraMap_Rogue.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -249,6 +252,49 @@ local function makeWarriorState(overrides)
 end
 
 -------------------------------------------------------------------------------
+-- Default Rogue player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_ROGUE_STATE = {
+    level = 70,
+    targetLevel = 73,
+    class = "ROGUE",
+    stats = {
+        spellPower = {},
+        healingPower = 0,
+        spellCrit = {},
+        spellHit = 0,
+        spellHaste = 0,
+        attackPower = 2000,
+        meleeCrit = 0.25,
+        meleeHit = 0.00,
+        meleeHaste = 0.00,
+        expertise = 0,
+        mainHandWeaponDmgMin = 130,
+        mainHandWeaponDmgMax = 243,
+        mainHandWeaponSpeed = 2.6,
+        mainHandWeaponType = "ONE_HAND",
+    },
+    talents = {},
+    auras = { player = {}, target = {} },
+    gear = { setBonuses = {} },
+    attackingFromBehind = true,
+    targetArmor = 0,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Rogue state
+-------------------------------------------------------------------------------
+local function makeRogueState(overrides)
+    local state = DeepCopy(DEFAULT_ROGUE_STATE)
+    if overrides then
+        for k, v in pairs(overrides) do
+            state[k] = v
+        end
+    end
+    return state
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -308,4 +354,5 @@ return {
     makeMageState = MakeMageState,
     makePriestState = MakePriestState,
     makeWarriorState = makeWarriorState,
+    makeRogueState = makeRogueState,
 }

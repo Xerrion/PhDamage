@@ -164,20 +164,23 @@ function SpellCalc.ComputeMeleeDirect(spellData, rankData, playerState)
         }
 
     elseif spellData.apCoefficient then
-        -- Type 2: AP-based (Bloodthirst-style) — AP * coefficient
-        -- Base is 0; the modifier system computes AP * coefficient via spBonus
+        -- Type 2: AP-based — AP * coefficient + optional base damage
+        -- Bloodthirst-style (no base) and Eviscerate/Envenom-style (with base)
         local apDmg = ap * spellData.apCoefficient
+        local baseMin = rankData.minDmg or 0
+        local baseMax = rankData.maxDmg or 0
+        local avgBase = (baseMin + baseMax) / 2
         return {
             spellData = spellData,
             rankData = rankData,
-            avgBaseDamage = 0,
-            minBaseDamage = 0,
-            maxBaseDamage = 0,
+            avgBaseDamage = avgBase,
+            minBaseDamage = baseMin,
+            maxBaseDamage = baseMax,
             coefficient = spellData.apCoefficient,
             spellPowerBonus = apDmg,
-            totalDamage = apDmg,
-            totalMin = apDmg,
-            totalMax = apDmg,
+            totalDamage = avgBase + apDmg,
+            totalMin = baseMin + apDmg,
+            totalMax = baseMax + apDmg,
             castTime = spellData.castTime,
         }
 
@@ -209,7 +212,7 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
         scalingPower = playerState.stats.rangedAttackPower or 0
     elseif spellData.scalingType == "melee" then
         local ap = playerState.stats.attackPower or 0
-        local coefficient = spellData.coefficient or 0
+        local coefficient = spellData.coefficient or spellData.apCoefficient or 0
         local baseDmg = rankData.totalDmg or 0
         -- For melee bleeds with weapon scaling (like Rend)
         if spellData.weaponDotCoefficient then
