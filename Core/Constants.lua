@@ -53,6 +53,11 @@ ns.BASE_CRIT_MULTIPLIER = 1.5
 ns.BASE_SPELL_MISS_RATE = 0.17   -- vs boss
 ns.MAX_SPELL_HIT = 0.99          -- cap (1% resist always remains)
 
+-- Physical/ranged hit caps
+-- TBC boss (level 73 target vs level 70 attacker) = 9% miss for physical/ranged
+ns.BASE_RANGED_MISS_RATE = 0.09   -- vs boss
+ns.MAX_RANGED_HIT = 1.00          -- physical can reach 100% hit
+
 -------------------------------------------------------------------------------
 -- GCD and Cast Time
 -------------------------------------------------------------------------------
@@ -61,8 +66,10 @@ ns.GLOBAL_COOLDOWN = 1.5
 -------------------------------------------------------------------------------
 -- Combat Rating IDs (for GetCombatRatingBonus)
 -------------------------------------------------------------------------------
-ns.CR_HIT_SPELL   = 8
-ns.CR_HASTE_SPELL = 20
+ns.CR_HIT_SPELL    = 8
+ns.CR_HIT_RANGED   = 7
+ns.CR_HASTE_SPELL  = 20
+ns.CR_HASTE_RANGED = 19
 
 -------------------------------------------------------------------------------
 -- Modifier Effect Types (used by TalentMap and AuraMap descriptors)
@@ -79,6 +86,14 @@ ns.MOD = {
     DOT_DAMAGE_MULTIPLIER = "dotDamageMultiplier",
     DIRECT_DAMAGE_MULTIPLIER = "directDamageMultiplier",
     SPELL_POWER_BONUS    = "spellPowerBonus",
+}
+
+-------------------------------------------------------------------------------
+-- Scaling Types (how spells scale with player stats)
+-------------------------------------------------------------------------------
+ns.SCALING_TYPE = {
+    SPELL  = "spell",   -- default: scales with spell power
+    RANGED = "ranged",  -- scales with ranged attack power
 }
 
 -------------------------------------------------------------------------------

@@ -78,7 +78,7 @@ local function ResolveSpellID(button)
         return nil
     end
 
-    local actionType, id, subType = GetActionInfo(slot)
+    local actionType, id = GetActionInfo(slot)
     local spellID = nil
 
     if actionType == "spell" then
@@ -286,7 +286,7 @@ end
 -- OnActionBarSlotChanged(event, slot)
 -- Updates only the button(s) matching the changed action slot.
 -------------------------------------------------------------------------------
-local function OnActionBarSlotChanged(event, slot)
+local function OnActionBarSlotChanged(_event, slot)
     if not slot or slot == 0 then
         ActionBar.Refresh()
         return

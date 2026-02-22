@@ -20,9 +20,7 @@ Core\Events.lua
 Core\StateCollector.lua
 
 # Data
-Data\SpellData_Warlock.lua
-Data\TalentMap_Warlock.lua
-Data\AuraMap_Warlock.lua
+Data\embeds.xml
 
 # Engine
 Engine\SpellCalc.lua

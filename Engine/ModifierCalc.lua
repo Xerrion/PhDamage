@@ -14,11 +14,11 @@ local ModifierCalc = {}
 ns.Engine.ModifierCalc = ModifierCalc
 
 -------------------------------------------------------------------------------
--- MatchesFilter(filter, spellData, rankData)
+-- MatchesFilter(filter, spellData, rankData, playerState)
 -- Returns true if the spell matches all filter criteria (AND logic).
 -- A nil filter matches everything.
 -------------------------------------------------------------------------------
-function ModifierCalc.MatchesFilter(filter, spellData, rankData)
+function ModifierCalc.MatchesFilter(filter, spellData, rankData, playerState)
     if not filter then
         return true
     end
@@ -63,6 +63,28 @@ function ModifierCalc.MatchesFilter(filter, spellData, rankData)
     -- Spell ID match (check current rank only)
     if filter.spellID and filter.spellID ~= rankData.spellID then
         return false
+    end
+
+    -- Creature type filter (Monster/Humanoid Slaying etc.)
+    if filter.creatureTypes then
+        local targetType = playerState and playerState.targetCreatureType
+        if not targetType then return false end
+        local found = false
+        for _, ct in ipairs(filter.creatureTypes) do
+            if ct == targetType then
+                found = true
+                break
+            end
+        end
+        if not found then return false end
+    end
+
+    -- Target health percentage filter (Molten Fury: below X% HP)
+    if filter.targetHealthBelow then
+        local healthPct = playerState and playerState.targetHealthPercent or 100
+        if healthPct >= filter.targetHealthBelow then
+            return false
+        end
     end
 
     return true
@@ -182,7 +204,7 @@ end
 local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
     if entry.effects then
         for _, effect in ipairs(entry.effects) do
-            if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+            if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData, playerState) then
                 ApplyEffect(mods, effect, 1, playerState)
             end
         end
@@ -194,7 +216,7 @@ local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
         if talentRank > 0 and entry.effects then
             for _, effect in ipairs(entry.effects) do
                 if effect.type == amp.effectType
-                        and ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                        and ModifierCalc.MatchesFilter(effect.filter, spellData, rankData, playerState) then
                     local syntheticEffect = {
                         type = amp.effectType,
                         value = amp.perRank * talentRank,
@@ -219,12 +241,13 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
     ---------------------------------------------------------------------------
     -- 1. Talent modifiers (iterate active talents, look up in talentMap)
     ---------------------------------------------------------------------------
+    local classPrefix = (playerState.class or "WARLOCK") .. ":"
     for key, talentRank in pairs(playerState.talents) do
         if talentRank > 0 then
-            local entry = talentMap[key]
+            local entry = talentMap[classPrefix .. key]
             if entry and entry.effects then
                 for _, effect in ipairs(entry.effects) do
-                    if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData) then
+                    if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData, playerState) then
                         ApplyEffect(mods, effect, talentRank, playerState)
                     end
                 end
@@ -280,7 +303,12 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
     result.castTime = castTime
 
     -- Spell power with flat SP bonus
-    local baseSp = playerState.stats.spellPower[spellData.school] or 0
+    local baseSp
+    if spellData.scalingType == "ranged" then
+        baseSp = playerState.stats.rangedAttackPower or 0
+    else
+        baseSp = playerState.stats.spellPower[spellData.school] or 0
+    end
     local effectiveSp = baseSp + mods.spellPowerBonus
 
     if spellData.spellType == "utility" then
@@ -290,7 +318,8 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         result.coefficient = effectiveCoeff
         result.spellPowerBonus = spBonus
         result.healthCost = baseResult.healthCost
-        result.manaGain = (baseResult.rankData.manaGain or 0) + spBonus
+        local baseMana = (baseResult.rankData.manaGain or 0) + spBonus
+        result.manaGain = baseMana * (1 + mods.talentDamageBonus) * mods.damageMultiplier
         result.critBonus = mods.critBonus
         result.hitBonus = mods.spellHitBonus
         return result
@@ -311,16 +340,19 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         local baseMax = baseResult.maxBaseDamage + mods.flatDamageBonus
         local avgBase = (baseMin + baseMax) / 2
 
+        -- Include weapon bonus for ranged weapon-based spells (Steady Shot, etc.)
+        local weaponBonus = baseResult.weaponBonus or 0
+
         result.minBaseDamage = baseMin
         result.maxBaseDamage = baseMax
         result.avgBaseDamage = avgBase
-        result.damageBeforeMods = avgBase + spBonus
+        result.damageBeforeMods = avgBase + spBonus + weaponBonus
 
-        local totalAvg = (avgBase + spBonus)
+        local totalAvg = (avgBase + spBonus + weaponBonus)
             * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
-        local totalMin = (baseMin + spBonus)
+        local totalMin = (baseMin + spBonus + weaponBonus)
             * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
-        local totalMax = (baseMax + spBonus)
+        local totalMax = (baseMax + spBonus + weaponBonus)
             * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
 
         result.totalDamage = totalAvg
@@ -353,7 +385,7 @@ end
 -- BuildHybridResult(baseResult, spellData, effectiveSp, mods)
 -- Handles hybrid spells (Immolate) with separate direct + DoT portions.
 -------------------------------------------------------------------------------
-function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods)
+function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mods)
     if not baseResult.dotBaseDamage then
         return nil
     end

@@ -19,9 +19,81 @@ local GetTalentInfo = GetTalentInfo
 local GetNumTalentTabs = GetNumTalentTabs
 local GetNumTalents = GetNumTalents
 local GetManaRegen = GetManaRegen
+local UnitRangedAttackPower = UnitRangedAttackPower
+local GetRangedCritChance = GetRangedCritChance
+local UnitCreatureType = UnitCreatureType
+local UnitExists = UnitExists
+local UnitHealth = UnitHealth
+local UnitHealthMax = UnitHealthMax
+local UnitCanAttack = UnitCanAttack
+local UnitRangedDamage = UnitRangedDamage
 
 local StateCollector = {}
 ns.StateCollector = StateCollector
+
+-------------------------------------------------------------------------------
+-- Armor Debuff SpellIDs and their per-application reduction values
+-------------------------------------------------------------------------------
+local ARMOR_DEBUFFS = {
+    [7386]  = { reduction = 520,  stacks = true,  maxStacks = 5 },   -- Sunder Armor
+    [770]   = { reduction = 610,  stacks = false },                   -- Faerie Fire
+    [704]   = { reduction = 800,  stacks = false },                   -- Curse of Recklessness
+    [26866] = { reduction = 2050, stacks = false },                   -- Expose Armor (Rank 5)
+    [11198] = { reduction = 2550, stacks = false },                   -- Expose Armor (Rank 4)
+}
+
+-- Base armor by mob level (TBC estimates for normal mobs)
+local BASE_MOB_ARMOR = {
+    [70] = 7684,
+    [71] = 7684,
+    [72] = 7684,
+    [73] = 7684,  -- Boss
+}
+local DEFAULT_MOB_ARMOR = 7684
+
+-------------------------------------------------------------------------------
+-- EstimateTargetArmor(state)
+-- Estimates target armor based on level and tracked armor debuffs.
+-------------------------------------------------------------------------------
+local function EstimateTargetArmor(state)
+    if not UnitExists("target") or not UnitCanAttack("player", "target") then
+        return 0
+    end
+
+    local targetLevel = UnitLevel("target") or -1
+    if targetLevel == -1 then
+        targetLevel = state.level + 3  -- Boss: assume player level + 3
+    end
+
+    local baseArmor = BASE_MOB_ARMOR[targetLevel] or DEFAULT_MOB_ARMOR
+
+    if not C_UnitAuras or not C_UnitAuras.GetAuraDataByIndex then return baseArmor end
+
+    -- Scan for armor reduction debuffs on target
+    local totalReduction = 0
+    for i = 1, 40 do
+        local ok, auraData = pcall(C_UnitAuras.GetAuraDataByIndex, "target", i, "HARMFUL")
+        if not ok or not auraData then break end
+
+        local debuffInfo = ARMOR_DEBUFFS[auraData.spellId]
+        if debuffInfo then
+            if debuffInfo.stacks then
+                local stacks = auraData.applications or 1
+                if stacks > debuffInfo.maxStacks then
+                    stacks = debuffInfo.maxStacks
+                end
+                totalReduction = totalReduction + (debuffInfo.reduction * stacks)
+            else
+                totalReduction = totalReduction + debuffInfo.reduction
+            end
+        end
+    end
+
+    local effectiveArmor = baseArmor - totalReduction
+    if effectiveArmor < 0 then effectiveArmor = 0 end
+
+    return effectiveArmor
+end
 
 -- Affliction spell IDs for Soul Siphon counting
 -- Includes: Curses, Corruption, SoC, Siphon Life, UA, Drain Life, Fear, Immolate
@@ -84,6 +156,14 @@ function StateCollector.CollectPlayerState()
             spellCrit = {},
             spellHit = 0,
             spellHaste = 0,
+
+            -- Ranged stats (for Hunter)
+            rangedAttackPower = 0,
+            rangedCrit = 0,
+            rangedHit = 0,
+            rangedHaste = 0,
+            weaponDamage = nil,
+            rangedSpeed = 0,
         },
         talents = {},
         auras = {
@@ -139,11 +219,61 @@ function StateCollector.CollectPlayerState()
         end
     end
 
+    ---------------------------------------------------------------------------
+    -- Ranged combat stats (Hunter, etc.)
+    ---------------------------------------------------------------------------
+    if state.class == "HUNTER" then
+        local ok, base, pos, neg = pcall(UnitRangedAttackPower, "player")
+        if ok then
+            state.stats.rangedAttackPower = base + pos + neg
+        end
+
+        local val
+        ok, val = pcall(GetRangedCritChance)
+        if ok and val then
+            state.stats.rangedCrit = val / 100
+        end
+
+        ok, val = pcall(GetCombatRatingBonus, ns.CR_HIT_RANGED)
+        if ok and val then
+            state.stats.rangedHit = val / 100
+        end
+
+        ok, val = pcall(GetCombatRatingBonus, ns.CR_HASTE_RANGED)
+        if ok and val then
+            state.stats.rangedHaste = val / 100
+        end
+
+        -- Ranged weapon damage
+        local ok2, speed, minDmg, maxDmg = pcall(UnitRangedDamage, "player")
+        if ok2 and speed and speed > 0 then
+            state.stats.weaponDamage = { min = minDmg or 0, max = maxDmg or 0 }
+            state.stats.rangedSpeed = speed
+        end
+    end
+
     -- Talents
     StateCollector.CollectTalents(state)
 
     -- Auras
     StateCollector.CollectAuras(state)
+
+    -- Target armor estimation (for physical damage calculations)
+    state.targetArmor = EstimateTargetArmor(state)
+
+    -- Target creature type (for Monster/Humanoid Slaying talents)
+    if UnitExists("target") then
+        state.targetCreatureType = UnitCreatureType("target")
+    end
+
+    -- Target health percentage (for Molten Fury etc.)
+    if UnitExists("target") then
+        local hp = UnitHealth("target")
+        local hpMax = UnitHealthMax("target")
+        state.targetHealthPercent = (hpMax > 0) and (hp / hpMax * 100) or 100
+    else
+        state.targetHealthPercent = 100
+    end
 
     return state
 end

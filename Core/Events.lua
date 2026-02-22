@@ -27,6 +27,7 @@ local STATE_EVENTS = {
     "PLAYER_TALENT_UPDATE",
     "ACTIVE_TALENT_GROUP_CHANGED",
     "PLAYER_EQUIPMENT_CHANGED",
+    "PLAYER_TARGET_CHANGED",
 }
 
 -- Resolve the Addon object lazily to handle load order gracefully
@@ -66,7 +67,7 @@ local function FlushStateChange()
     end
 end
 
-function Events.OnStateEvent(event, arg1, ...)
+function Events.OnStateEvent(event, arg1)
     -- UNIT_AURA and UNIT_STATS fire for all units; care about player and target
     if (event == "UNIT_AURA" or event == "UNIT_STATS") and arg1 ~= "player" and arg1 ~= "target" then
         return

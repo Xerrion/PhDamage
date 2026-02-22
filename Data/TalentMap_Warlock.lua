@@ -24,7 +24,15 @@ TalentMap["1:1"] = {
     maxRank = 5,
     effects = {
         { type = MOD.SPELL_HIT_BONUS, value = 0.01, perRank = true,
-          filter = { school = SCHOOL_SHADOW } },
+          filter = { spellNames = {
+              "Corruption", "Curse of Agony", "Curse of Doom",
+              "Unstable Affliction", "Siphon Life", "Drain Life",
+              "Drain Soul", "Death Coil", "Seed of Corruption",
+              "Fear", "Howl of Terror", "Curse of Tongues",
+              "Curse of Weakness", "Curse of Recklessness",
+              "Curse of the Elements", "Curse of Shadow",
+              "Drain Mana"
+          } } },
     },
 }
 
@@ -35,6 +43,16 @@ TalentMap["1:2"] = {
     effects = {
         { type = MOD.CAST_TIME_REDUCTION, value = 0.4, perRank = true,
           filter = { spellNames = {"Corruption"} } },
+    },
+}
+
+-- Improved Life Tap: +10/20% mana from Life Tap (Affliction 1:3, 2 ranks)
+TalentMap["1:3"] = {
+    name = "Improved Life Tap",
+    maxRank = 2,
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.10, perRank = true, stacking = "additive",
+          filter = { spellNames = {"Life Tap"} } },
     },
 }
 
@@ -58,7 +76,7 @@ TalentMap["1:6"] = {
     name = "Improved Curse of Agony",
     maxRank = 2,
     effects = {
-        { type = MOD.DAMAGE_MULTIPLIER, value = 0.05, perRank = true,
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.05, perRank = true, stacking = "additive",
           filter = { spellNames = {"Curse of Agony"} } },
     },
 }
@@ -109,6 +127,16 @@ TalentMap["1:19"] = {
 -------------------------------------------------------------------------------
 -- Tab 2: Demonology
 -------------------------------------------------------------------------------
+
+-- Improved Health Funnel: +10/20% healing (Demonology 2:4, 2 ranks)
+TalentMap["2:4"] = {
+    name = "Improved Health Funnel",
+    maxRank = 2,
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.10, perRank = true, stacking = "additive",
+          filter = { spellNames = {"Health Funnel"} } },
+    },
+}
 
 -- Master Demonologist: pet-dependent damage buff. Actual values come from AuraMap entries
 -- (spellIDs 23761/35702) which use talentAmplify to scale by this talent's rank.
@@ -233,5 +261,5 @@ TalentMap["3:18"] = {
 }
 
 for key, data in pairs(TalentMap) do
-    ns.TalentMap[key] = data
+    ns.TalentMap["WARLOCK:" .. key] = data
 end

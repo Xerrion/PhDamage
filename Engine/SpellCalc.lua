@@ -60,8 +60,13 @@ end
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeDirect(spellData, rankData, playerState)
     local avgBase = (rankData.minDmg + rankData.maxDmg) / 2
+
+    if spellData.scalingType == "ranged" then
+        return SpellCalc.ComputeRangedDirect(spellData, rankData, playerState, avgBase)
+    end
+
     local sp = playerState.stats.spellPower[spellData.school] or 0
-    local spBonus = sp * spellData.coefficient
+    local spBonus = sp * (spellData.coefficient or 0)
 
     return {
         spellData = spellData,
@@ -79,11 +84,55 @@ function SpellCalc.ComputeDirect(spellData, rankData, playerState)
 end
 
 -------------------------------------------------------------------------------
+-- ComputeRangedDirect — ranged direct damage (Arcane Shot, Steady Shot, etc.)
+-- Handles both simple RAP scaling and weapon-based formulas.
+-------------------------------------------------------------------------------
+function SpellCalc.ComputeRangedDirect(spellData, rankData, playerState, avgBase)
+    local rap = playerState.stats.rangedAttackPower or 0
+    local coefficient = spellData.coefficient or 0
+    local rapBonus = rap * coefficient
+
+    -- Weapon damage integration for spells like Steady Shot / Aimed Shot
+    local weaponBonus = 0
+    if spellData.weaponDamage then
+        local weaponData = playerState.stats.weaponDamage
+        if weaponData then
+            local weaponAvg = (weaponData.min + weaponData.max) / 2
+            weaponBonus = weaponAvg * (spellData.weaponMultiplier or 1)
+        end
+    end
+
+    local totalDamage = avgBase + rapBonus + weaponBonus
+    local totalMin = rankData.minDmg + rapBonus + weaponBonus
+    local totalMax = rankData.maxDmg + rapBonus + weaponBonus
+
+    return {
+        spellData = spellData,
+        rankData = rankData,
+        avgBaseDamage = avgBase,
+        minBaseDamage = rankData.minDmg,
+        maxBaseDamage = rankData.maxDmg,
+        coefficient = coefficient,
+        spellPowerBonus = rapBonus,   -- re-use field name for display compatibility
+        weaponBonus = weaponBonus,
+        totalDamage = totalDamage,
+        totalMin = totalMin,
+        totalMax = totalMax,
+        castTime = spellData.castTime,
+    }
+end
+
+-------------------------------------------------------------------------------
 -- ComputeDot — periodic damage spells (Corruption, Curse of Agony, etc.)
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeDot(spellData, rankData, playerState)
-    local sp = playerState.stats.spellPower[spellData.school] or 0
-    local spBonus = sp * spellData.coefficient
+    local scalingPower
+    if spellData.scalingType == "ranged" then
+        scalingPower = playerState.stats.rangedAttackPower or 0
+    else
+        scalingPower = playerState.stats.spellPower[spellData.school] or 0
+    end
+    local spBonus = scalingPower * (spellData.coefficient or 0)
     local totalDmg = rankData.totalDmg + spBonus
     local numTicks = spellData.numTicks
     if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -107,15 +156,20 @@ end
 -- ComputeHybrid — spells with both direct + DoT portions (Immolate)
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeHybrid(spellData, rankData, playerState)
-    local sp = playerState.stats.spellPower[spellData.school] or 0
+    local scalingPower
+    if spellData.scalingType == "ranged" then
+        scalingPower = playerState.stats.rangedAttackPower or 0
+    else
+        scalingPower = playerState.stats.spellPower[spellData.school] or 0
+    end
 
     -- Direct portion
     local directAvg = (rankData.minDmg + rankData.maxDmg) / 2
-    local directSpBonus = sp * spellData.directCoefficient
+    local directSpBonus = scalingPower * (spellData.directCoefficient or 0)
     local directDamage = directAvg + directSpBonus
 
     -- DoT portion
-    local dotSpBonus = sp * spellData.dotCoefficient
+    local dotSpBonus = scalingPower * (spellData.dotCoefficient or 0)
     local dotDamage = rankData.dotDmg + dotSpBonus
     local numTicks = spellData.numTicks
     if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -142,7 +196,7 @@ function SpellCalc.ComputeHybrid(spellData, rankData, playerState)
         numTicks = numTicks,
         duration = spellData.duration,
         -- Combined
-        coefficient = spellData.directCoefficient + spellData.dotCoefficient,
+        coefficient = (spellData.directCoefficient or 0) + (spellData.dotCoefficient or 0),
         spellPowerBonus = directSpBonus + dotSpBonus,
         totalDamage = directDamage + dotDamage,
         castTime = spellData.castTime,
@@ -153,8 +207,13 @@ end
 -- ComputeChannel — channeled damage spells (Drain Life, Drain Soul, etc.)
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeChannel(spellData, rankData, playerState)
-    local sp = playerState.stats.spellPower[spellData.school] or 0
-    local spBonus = sp * spellData.coefficient
+    local scalingPower
+    if spellData.scalingType == "ranged" then
+        scalingPower = playerState.stats.rangedAttackPower or 0
+    else
+        scalingPower = playerState.stats.spellPower[spellData.school] or 0
+    end
+    local spBonus = scalingPower * (spellData.coefficient or 0)
     local totalDmg = rankData.totalDmg + spBonus
     local numTicks = spellData.numTicks
     if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -178,8 +237,13 @@ end
 -- ComputeUtility — resource conversion spells (Life Tap)
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeUtility(spellData, rankData, playerState)
-    local sp = playerState.stats.spellPower[spellData.school] or 0
-    local spBonus = sp * spellData.coefficient
+    local scalingPower
+    if spellData.scalingType == "ranged" then
+        scalingPower = playerState.stats.rangedAttackPower or 0
+    else
+        scalingPower = playerState.stats.spellPower[spellData.school] or 0
+    end
+    local spBonus = scalingPower * (spellData.coefficient or 0)
     local manaGain = rankData.manaGain + spBonus
 
     return {

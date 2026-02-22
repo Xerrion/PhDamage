@@ -14,7 +14,6 @@ ns.Tooltip = Tooltip
 local GameTooltip = GameTooltip
 local CreateFrame = CreateFrame
 local pairs = pairs
-local ipairs = ipairs
 local format = string.format
 local floor = math.floor
 
@@ -101,6 +100,11 @@ end
 
 --- Adds formatted PhDamage lines to the tooltip based on spell type.
 local function AddTooltipLines(r)
+    local armorSuffix = ""
+    if r.armorReduction and r.armorReduction > 0 then
+        armorSuffix = format(" (AR: -%.1f%%)", r.armorReduction * 100)
+    end
+
     if r.spellType == "utility" then
         if r.healthCost then
             -- Life Tap style: health cost → mana gain (+SP bonus)
@@ -123,10 +127,11 @@ local function AddTooltipLines(r)
     elseif r.spellType == "hybrid" then
         -- Immolate style: direct + DoT
         GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s direct + %s DoT (|cff00ff00%s DPS|r)",
+            format("|cffffd100PhDamage:|r %s direct + %s DoT (|cff00ff00%s DPS|r)%s",
                 FormatNumber(r.directDamage),
                 FormatNumber(r.dotDamage),
-                FormatDPS(r.dps)),
+                FormatDPS(r.dps),
+                armorSuffix),
             1, 1, 1
         )
         AddDetailLine(r)
@@ -145,10 +150,11 @@ local function AddTooltipLines(r)
         end
         rateStr = format("|cff00ff00%s %s|r", FormatDPS(r.dps), rateLabel)
         GameTooltip:AddLine(
-            format("|cffffd100PhDamage:|r %s %s (%s)",
+            format("|cffffd100PhDamage:|r %s %s (%s)%s",
                 FormatNumber(r.expectedDamageWithMiss),
                 valueLabel,
-                rateStr),
+                rateStr,
+                armorSuffix),
             1, 1, 1
         )
         AddDetailLine(r)
@@ -162,7 +168,7 @@ end
 -------------------------------------------------------------------------------
 
 local function OnTooltipSetSpell(tooltip)
-    local spellName, a, b = tooltip:GetSpell()
+    local _, a, b = tooltip:GetSpell()
     local spellID = (type(b) == "number" and b) or (type(a) == "number" and a)
     if not spellID then return end
 

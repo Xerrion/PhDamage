@@ -13,7 +13,6 @@ local makePlayerState = bootstrap.makePlayerState
 describe("Death Coil", function()
     local playerState
     local Pipeline = ns.Engine.Pipeline
-    local SpellCalc = ns.Engine.SpellCalc
 
     before_each(function()
         playerState = makePlayerState()
@@ -85,7 +84,6 @@ end)
 describe("Shadowfury", function()
     local playerState
     local Pipeline = ns.Engine.Pipeline
-    local SpellCalc = ns.Engine.SpellCalc
 
     before_each(function()
         playerState = makePlayerState()
@@ -171,7 +169,6 @@ end)
 describe("Curse of Doom", function()
     local playerState
     local Pipeline = ns.Engine.Pipeline
-    local SpellCalc = ns.Engine.SpellCalc
 
     before_each(function()
         playerState = makePlayerState()

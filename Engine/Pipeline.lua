@@ -49,6 +49,9 @@ function Pipeline.Calculate(spellID, playerState, rankIndex)
     local modifiedResult, modifiers = ModifierCalc.ApplyModifiers(
         baseResult, spellData, playerState, ns.TalentMap, ns.AuraMap
     )
+    if not modifiedResult then
+        return nil
+    end
 
     -- Step 4: Apply crit/hit expected values
     local finalResult = CritCalc.ApplyExpectedCrit(modifiedResult, spellData, playerState, modifiers)
@@ -65,11 +68,8 @@ end
 -- Runs the full pipeline for every spell in ns.SpellData.
 -- Returns an array of SpellResult tables, sorted by spell name.
 -------------------------------------------------------------------------------
-local allResults = {}
-
 function Pipeline.CalculateAll(playerState)
-    -- Wipe and reuse module-level table to reduce GC pressure
-    for k in pairs(allResults) do allResults[k] = nil end
+    local allResults = {}
     local n = 0
 
     for spellID, _ in pairs(ns.SpellData) do
