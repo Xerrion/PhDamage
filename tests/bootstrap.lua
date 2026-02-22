@@ -46,6 +46,9 @@ LoadFile("Data/AuraMap_Mage.lua")
 LoadFile("Data/SpellData_Priest.lua")
 LoadFile("Data/TalentMap_Priest.lua")
 LoadFile("Data/AuraMap_Priest.lua")
+LoadFile("Data/SpellData_Warrior.lua")
+LoadFile("Data/TalentMap_Warrior.lua")
+LoadFile("Data/AuraMap_Warrior.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -203,6 +206,49 @@ local function MakePriestState()
 end
 
 -------------------------------------------------------------------------------
+-- Default Warrior player state for testing
+-------------------------------------------------------------------------------
+local DEFAULT_WARRIOR_STATE = {
+    level = 70,
+    targetLevel = 73,
+    class = "WARRIOR",
+    stats = {
+        spellPower = {},
+        healingPower = 0,
+        spellCrit = {},
+        spellHit = 0,
+        spellHaste = 0,
+        attackPower = 2000,
+        meleeCrit = 0.25,
+        meleeHit = 0.00,
+        meleeHaste = 0.00,
+        expertise = 0,
+        mainHandWeaponDmgMin = 200,
+        mainHandWeaponDmgMax = 350,
+        mainHandWeaponSpeed = 3.6,
+        mainHandWeaponType = "TWO_HAND",
+    },
+    talents = {},
+    auras = { player = {}, target = {} },
+    gear = { setBonuses = {} },
+    attackingFromBehind = true,
+    targetArmor = 0,
+}
+
+-------------------------------------------------------------------------------
+-- Factory function: returns a fresh deep copy of the default Warrior state
+-------------------------------------------------------------------------------
+local function makeWarriorState(overrides)
+    local state = DeepCopy(DEFAULT_WARRIOR_STATE)
+    if overrides then
+        for k, v in pairs(overrides) do
+            state[k] = v
+        end
+    end
+    return state
+end
+
+-------------------------------------------------------------------------------
 -- Self-test when run directly
 -------------------------------------------------------------------------------
 local isMain = (arg and arg[0] and arg[0]:find("bootstrap"))
@@ -261,4 +307,5 @@ return {
     makeHunterState = MakeHunterState,
     makeMageState = MakeMageState,
     makePriestState = MakePriestState,
+    makeWarriorState = makeWarriorState,
 }

@@ -49,6 +49,15 @@ read_globals = {
     "GetRangedCritChance",
     "UnitRangedDamage",
 
+    -- WoW API - Melee Combat
+    "UnitAttackPower",
+    "GetCritChance",
+    "GetExpertise",
+    "UnitDamage",
+    "UnitAttackSpeed",
+    "GetInventoryItemLink",
+    "GetItemInfo",
+
     -- WoW API - Unit Info
     "UnitCreatureType",
     "UnitExists",

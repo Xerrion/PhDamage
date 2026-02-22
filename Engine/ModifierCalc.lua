@@ -306,6 +306,8 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
     local baseSp
     if spellData.scalingType == "ranged" then
         baseSp = playerState.stats.rangedAttackPower or 0
+    elseif spellData.scalingType == "melee" then
+        baseSp = playerState.stats.attackPower or 0
     else
         baseSp = playerState.stats.spellPower[spellData.school] or 0
     end

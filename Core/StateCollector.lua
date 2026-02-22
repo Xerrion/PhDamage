@@ -27,6 +27,13 @@ local UnitHealth = UnitHealth
 local UnitHealthMax = UnitHealthMax
 local UnitCanAttack = UnitCanAttack
 local UnitRangedDamage = UnitRangedDamage
+local UnitAttackPower = UnitAttackPower
+local GetCritChance = GetCritChance
+local GetExpertise = GetExpertise
+local UnitDamage = UnitDamage
+local UnitAttackSpeed = UnitAttackSpeed
+local GetInventoryItemLink = GetInventoryItemLink
+local GetItemInfo = GetItemInfo
 
 local StateCollector = {}
 ns.StateCollector = StateCollector
@@ -250,6 +257,54 @@ function StateCollector.CollectPlayerState()
             state.stats.weaponDamage = { min = minDmg or 0, max = maxDmg or 0 }
             state.stats.rangedSpeed = speed
         end
+    end
+
+    ---------------------------------------------------------------------------
+    -- Melee combat stats
+    ---------------------------------------------------------------------------
+    if state.class == "WARRIOR" or state.class == "ROGUE" or state.class == "PALADIN"
+        or state.class == "DEATHKNIGHT" or state.class == "DRUID" then
+        local base, posBuff, negBuff = UnitAttackPower("player")
+        state.stats.attackPower = base + posBuff + negBuff
+
+        state.stats.meleeCrit = GetCritChance() / 100
+
+        local hitRating = GetCombatRatingBonus(ns.CR_HIT_MELEE)
+        state.stats.meleeHit = hitRating / 100
+
+        local hasteRating = GetCombatRatingBonus(ns.CR_HASTE_MELEE)
+        state.stats.meleeHaste = hasteRating / 100
+
+        state.stats.expertise = GetExpertise()
+
+        -- Main hand weapon damage
+        local minDmg, maxDmg, _, _, _, _, _ = UnitDamage("player")
+        state.stats.mainHandWeaponDmgMin = minDmg
+        state.stats.mainHandWeaponDmgMax = maxDmg
+
+        local mainSpeed, _ = UnitAttackSpeed("player")
+        state.stats.mainHandWeaponSpeed = mainSpeed
+
+        -- Determine weapon type for normalization
+        local weaponLink = GetInventoryItemLink("player", 16)  -- INVSLOT_MAINHAND
+        if weaponLink then
+            local _, _, _, _, _, _, itemSubType = GetItemInfo(weaponLink)
+            if itemSubType then
+                if itemSubType == "Two-Handed Swords" or itemSubType == "Two-Handed Maces"
+                    or itemSubType == "Two-Handed Axes" or itemSubType == "Polearms"
+                    or itemSubType == "Staves" or itemSubType == "Fishing Poles" then
+                    state.stats.mainHandWeaponType = "TWO_HAND"
+                elseif itemSubType == "Daggers" then
+                    state.stats.mainHandWeaponType = "DAGGER"
+                elseif itemSubType == "Fist Weapons" then
+                    state.stats.mainHandWeaponType = "FIST"
+                else
+                    state.stats.mainHandWeaponType = "ONE_HAND"
+                end
+            end
+        end
+
+        state.stats.attackingFromBehind = true  -- Default assumption for PvE
     end
 
     -- Talents
