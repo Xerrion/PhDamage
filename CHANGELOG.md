@@ -1,6 +1,55 @@
-## [unreleased]
+## [1.0.0] - 2026-02-23
 
-### 💼 Other
+### 🚀 Features
 
-- Fix missing hit multiplier on hybrid and periodic components
-- Fix CritCalc.lua syntax error from corrupted edit
+- Initial commit for PhDamage Phase 1 implementation
+- Phase 2 tooltip hooks and ActionBar text overlay
+- Add Phase 3 test infrastructure, spells, and talents
+- Add Phase 4 spell haste, new spells, and demonic tactics
+- Add mage class support with 15 spells, 21 talents, and 4 auras
+- Add priest class support with 7 spells, 8 talents, and 3 auras
+- Add melee engine support and Warrior class
+- Add Rogue class support
+- Redesign tooltip for better readability
+- Add label prefixes to tooltip sub-lines
+- *(tooltip)* Add Scaling line showing coefficient, cast time, talent bonus
+- *(tooltip)* Render PhDamage info in separate companion frame
+- Add druid class support (21 spells, 19 talents, 4 auras)
+- *(tooltip)* Add colored labels and split scaling into separate lines
+- Add Shaman class support
+- Add Paladin class support
+
+### 🐛 Bug Fixes
+
+- Malediction talent, redundant aura scan, and dead code
+- Address code review feedback for C_UnitAuras and DoT DPS
+- Add missing PrintSpellDot function and create PrintSpellDirect
+- Logic and data bugs from Phase 1 review
+- *(tooltip)* Rank selection and ActionBar ElvUI compatibility
+- Phase 1 critical bugs
+- Phase 2 high severity bugs
+- *(engine)* Missing hit multiplier on hybrid and periodic components
+- *(engine)* Fix CritCalc.lua syntax error from corrupted edit
+- Phase 5 hunter class + code review (16 bug fixes)
+- Resolve critical engine bugs and improve code quality
+- *(tooltip)* Anchor companion frame below GameTooltip instead of beside
+- *(tooltip)* Fix ElvUI SetTemplate call — use mixin method with pcall guard
+
+### 🚜 Refactor
+
+- Phase 4 code cleanup and design fixes
+
+### 📚 Documentation
+
+- Add README with badges and MIT license
+- Polish README with flat-square badges and structured tables
+
+### ⚡ Performance
+
+- Phase 3 performance optimizations
+
+### ⚙️ Miscellaneous Tasks
+
+- Add Ace3 submodule for local LSP resolution
+- Clean up luacheckrc configuration
+- Fix release workflow
