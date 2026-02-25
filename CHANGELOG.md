@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/Xerrion/PhDamage/compare/1.1.2...1.1.3) (2026-02-25)
+
+
+### Bug Fixes
+
+* add contents:write permission to release workflow ([1ef3cc5](https://github.com/Xerrion/PhDamage/commit/1ef3cc535a08b8a59a402f0069b0e393a80a9dbb))
+
 ## [1.1.2](https://github.com/Xerrion/PhDamage/compare/1.1.1...1.1.2) (2026-02-25)
 
 
