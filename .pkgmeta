@@ -1,5 +1,4 @@
 package-as: PhDamage
-enable-toc-creation: yes
 manual-changelog: .release/CHANGELOG.md
 
 externals:
