@@ -1,4 +1,4 @@
-# PhDamage — Agent Guidelines
+# PhDamage - Agent Guidelines
 
 Project-specific rules for the PhDamage addon. See the parent `AGENTS.md` for general WoW addon development rules.
 
@@ -11,8 +11,8 @@ PhDamage uses a strict 4-layer architecture:
 | Layer | Directory | Rule |
 |-------|-----------|------|
 | Shell | `Core/` | Only layer that calls WoW APIs |
-| Engine | `Engine/` | **Pure Lua only** — zero WoW API calls, zero WoW globals |
-| Data | `Data/` | Declarative tables only — no functions, no WoW API calls |
+| Engine | `Engine/` | **Pure Lua only** - zero WoW API calls, zero WoW globals |
+| Data | `Data/` | Declarative tables only - no functions, no WoW API calls |
 | Presentation | `Presentation/` | May call WoW APIs for display (chat output, tooltips) |
 
 ### Engine Purity Rule
@@ -30,19 +30,19 @@ Files in `Data/` contain only declarative table definitions. No computation logi
 All files share the addon namespace via `local ADDON_NAME, ns = ...`
 
 Sub-namespaces:
-- `ns.Addon` — The AceAddon object
-- `ns.SpellData` — Spell definitions (populated by Data/SpellData_*.lua)
-- `ns.TalentMap` — Talent modifiers (populated by Data/TalentMap_*.lua)
-- `ns.AuraMap` — Aura modifiers (populated by Data/AuraMap_*.lua)
-- `ns.Engine.Pipeline` — Main computation pipeline
-- `ns.Engine.SpellCalc` — Base damage computation
-- `ns.Engine.ModifierCalc` — Modifier application
-- `ns.Engine.CritCalc` — Crit/hit expected value
-- `ns.StateCollector` — WoW API → PlayerState bridge
-- `ns.Events` — Event registration
-- `ns.Diagnostics` — Slash command output
-- `ns.Tooltip` — Tooltip hook and spell display
-- `ns.ActionBar` — Action bar overlay management
+- `ns.Addon` - The AceAddon object
+- `ns.SpellData` - Spell definitions (populated by Data/SpellData_*.lua)
+- `ns.TalentMap` - Talent modifiers (populated by Data/TalentMap_*.lua)
+- `ns.AuraMap` - Aura modifiers (populated by Data/AuraMap_*.lua)
+- `ns.Engine.Pipeline` - Main computation pipeline
+- `ns.Engine.SpellCalc` - Base damage computation
+- `ns.Engine.ModifierCalc` - Modifier application
+- `ns.Engine.CritCalc` - Crit/hit expected value
+- `ns.StateCollector` - WoW API → PlayerState bridge
+- `ns.Events` - Event registration
+- `ns.Diagnostics` - Slash command output
+- `ns.Tooltip` - Tooltip hook and spell display
+- `ns.ActionBar` - Action bar overlay management
 
 ---
 
@@ -56,11 +56,11 @@ Sub-namespaces:
 
 ## Adding a New Class
 
-1. Create `Data/SpellData_<Class>.lua` — spell definitions keyed by base spellID
-2. Create `Data/TalentMap_<Class>.lua` — talent modifiers keyed by "tab:index"
-3. Create `Data/AuraMap_<Class>.lua` — buff/debuff modifiers keyed by spellID
+1. Create `Data/SpellData_<Class>.lua` - spell definitions keyed by base spellID
+2. Create `Data/TalentMap_<Class>.lua` - talent modifiers keyed by "tab:index"
+3. Create `Data/AuraMap_<Class>.lua` - buff/debuff modifiers keyed by spellID
 4. Add all three files to `PhDamage.toc` in the Data section
-5. The engine (Pipeline, SpellCalc, ModifierCalc, CritCalc) requires no changes — it's class-agnostic
+5. The engine (Pipeline, SpellCalc, ModifierCalc, CritCalc) requires no changes - it's class-agnostic
 
 ---
 
@@ -134,13 +134,28 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 
 ## Current Scope
 
-- **Phase 1-5**: Complete — TBC Anniversary, Warlock + Hunter + Mage, diagnostics + tooltip + action bar
+- **Phase 1-5**: Complete - TBC Anniversary, Warlock + Hunter + Mage, diagnostics + tooltip + action bar
 - **Phase 6** (active): Mage class support
 - **Future**: Additional classes (Priest, Shaman, Druid, Paladin), multi-version support, options panel
 
 ---
 
-## CI/CD
+## CI / CD
+
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| `lint.yml` | `pull_request_target` to `master` | Runs Luacheck and busted tests |
+| `release-pr.yml` | Push to `master` | Creates / updates a release PR via release-please |
+| `release.yml` | Tag push or `workflow_dispatch` | Builds and publishes via BigWigsMods packager |
+
+### Branch Protection
+
+- PRs required to merge into `master`
+- Luacheck status check must pass
+- Branches must be up to date before merging
+- No force pushes to `master`
+- Squash merge only
+- Auto-delete head branches after merge
 
 ### Release Flow (release-please)
 - **release-please** creates/updates a Release PR on every push to master
@@ -148,3 +163,38 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 - Tag push triggers BigWigsMods/packager for CurseForge + Wago uploads
 - Config: `release-please-config.json`, manifest: `.release-please-manifest.json`
 - DO NOT manually create tags - release-please handles versioning
+
+---
+
+## GitHub Project Board
+
+PhDamage uses the **DragonAddons** org-level GitHub project board (#2) for issue tracking and sprint planning.
+
+### Board Columns
+
+| Column | Purpose |
+|--------|---------|
+| To triage | New issues awaiting review |
+| Backlog | Accepted but not yet scheduled |
+| Ready | Prioritised and ready to pick up |
+| In progress | Actively being worked on |
+| In review | PR submitted, awaiting review |
+| Done | Merged / released |
+
+### Custom Fields
+
+| Field | Values / Type |
+|-------|---------------|
+| Priority | P0 (critical), P1 (important), P2 (nice-to-have) |
+| Size | XS, S, M, L, XL |
+| Estimate | Story points (number) |
+| Start date | Date |
+| Target date | Date |
+
+### Workflow
+
+1. **Triage** - New issues land in *To triage*. Assign Priority and Size.
+2. **Plan** - Move to *Backlog* or *Ready* depending on urgency.
+3. **Start** - Move to *In progress*, create a feature branch, add a comment.
+4. **Review** - Open PR, move to *In review*, link the issue.
+5. **Ship** - Squash-merge, auto-move to *Done* on close.
