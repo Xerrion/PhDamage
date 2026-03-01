@@ -90,7 +90,7 @@ describe("Priest Auras", function()
         it("should stack Shadowform with Darkness talent", function()
             local state = makePriestState()
             state.auras.player[15473] = true  -- Shadowform +15% (multiplicative)
-            state.talents["3:15"] = 5         -- Darkness +10% (additive)
+            state.talents["3:2"] = 5          -- Darkness +10% (additive)
             local r = Pipeline.Calculate(8092, state)  -- Mind Blast R11
             -- Talent additive: 1.10, Shadowform multiplicative: *1.15
             -- Total: 1136.6 * 1.10 * 1.15

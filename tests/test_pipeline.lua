@@ -106,7 +106,7 @@ describe("Pipeline", function()
 
         it("should reflect talent bonuses in final DPS", function()
             local r1 = Pipeline.Calculate(686, playerState)
-            playerState.talents["1:15"] = 5  -- Shadow Mastery +10%
+            playerState.talents["1:11"] = 5  -- Shadow Mastery +10%
             local r2 = Pipeline.Calculate(686, playerState)
             assert.is_true(r2.dps > r1.dps)
         end)

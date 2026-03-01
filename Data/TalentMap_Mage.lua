@@ -1,10 +1,14 @@
+local ADDON_NAME, ns = ...
+
 -------------------------------------------------------------------------------
--- TalentMap_Mage
--- Mage talent modifier definitions for PhDamage
+-- TalentMap_Mage.lua
+-- Mage talent effects mapped to modifier descriptors for TBC Anniversary
+-- Talent positions (tab:index) verified in-game on TBC Anniversary
+-- (ordered by internal talentID)
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
-local ADDON_NAME, ns = ...
+
 ns.TalentMap = ns.TalentMap or {}
 
 local SCHOOL_FIRE = ns.SCHOOL_FIRE
@@ -15,7 +19,19 @@ local MOD = ns.MOD
 local TalentMap = {}
 
 -------------------------------------------------------------------------------
--- Arcane
+-- Arcane (Tab 1)
+-- 1:1  Arcane Subtlety (2)               1:2  Arcane Concentration (5)
+-- 1:3  Arcane Focus (5)                   1:4  Arcane Mind (5)
+-- 1:5  Wand Specialization (2)            1:6  Improved Arcane Missiles (5)
+-- 1:7  Arcane Impact (3)                  1:8  Magic Attunement (2)
+-- 1:9  Improved Mana Shield (2)           1:10 Arcane Fortitude (1)
+-- 1:11 Presence of Mind (1)               1:12 Arcane Power (1)
+-- 1:13 Improved Counterspell (2)          1:14 Arcane Instability (3)
+-- 1:15 Arcane Meditation (3)              1:16 Magic Absorption (5)
+-- 1:17 Improved Blink (2)                 1:18 Arcane Potency (3)
+-- 1:19 Prismatic Cloak (2)               1:20 Empowered Arcane Missiles (3)
+-- 1:21 Mind Mastery (5)                   1:22 Slow (1)
+-- 1:23 Spell Power (2)
 -------------------------------------------------------------------------------
 
 -- Arcane Focus: +2% Arcane hit per rank
@@ -47,7 +63,7 @@ TalentMap["1:14"] = {
     },
 }
 
--- Empowered Arcane Missiles: +0.75 total SP coefficient per rank (+0.15 per wave × 5 waves)
+-- Empowered Arcane Missiles: +0.75 total SP coefficient per rank (+0.15 per wave x 5 waves)
 TalentMap["1:20"] = {
     name = "Empowered Arcane Missiles",
     maxRank = 3,
@@ -67,7 +83,18 @@ TalentMap["1:23"] = {
 }
 
 -------------------------------------------------------------------------------
--- Fire
+-- Fire (Tab 2)
+-- 2:1  Burning Soul (2)                   2:2  Molten Shields (2)
+-- 2:3  Improved Scorch (3)                2:4  Improved Fireball (5)
+-- 2:5  Improved Fire Blast (3)            2:6  Flame Throwing (2)
+-- 2:7  Pyroblast (1)                      2:8  Impact (5)
+-- 2:9  Improved Flamestrike (3)           2:10 Blast Wave (1)
+-- 2:11 Critical Mass (3)                  2:12 Ignite (5)
+-- 2:13 Fire Power (5)                     2:14 Combustion (1)
+-- 2:15 Incineration (2)                   2:16 Master of Elements (3)
+-- 2:17 Playing with Fire (3)              2:18 Blazing Speed (2)
+-- 2:19 Molten Fury (2)                    2:20 Pyromaniac (3)
+-- 2:21 Empowered Fireball (5)             2:22 Dragon's Breath (1)
 -------------------------------------------------------------------------------
 
 -- Improved Fireball: -0.1s cast time per rank
@@ -158,7 +185,18 @@ TalentMap["2:21"] = {
 }
 
 -------------------------------------------------------------------------------
--- Frost
+-- Frost (Tab 3)
+-- 3:1  Improved Frostbolt (5)             3:2  Frostbite (3)
+-- 3:3  Piercing Ice (3)                   3:4  Improved Frost Nova (2)
+-- 3:5  Improved Blizzard (3)              3:6  Improved Cone of Cold (3)
+-- 3:7  Permafrost (3)                     3:8  Frost Channeling (3)
+-- 3:9  Shatter (5)                        3:10 Winter's Chill (5)
+-- 3:11 Icy Veins (1)                      3:12 Frost Warding (2)
+-- 3:13 Ice Barrier (1)                    3:14 Cold Snap (1)
+-- 3:15 Ice Shards (5)                     3:16 Arctic Reach (2)
+-- 3:17 Elemental Precision (3)            3:18 Frozen Core (3)
+-- 3:19 Ice Floes (2)                      3:20 Arctic Winds (5)
+-- 3:21 Empowered Frostbolt (5)            3:22 Summon Water Elemental (1)
 -------------------------------------------------------------------------------
 
 -- Improved Frostbolt: -0.1s cast time per rank
@@ -181,7 +219,7 @@ TalentMap["3:3"] = {
     },
 }
 
--- Improved Cone of Cold: 15/25/35% damage bonus (non-linear — use table value)
+-- Improved Cone of Cold: 15/25/35% damage bonus (non-linear - use table value)
 TalentMap["3:6"] = {
     name = "Improved Cone of Cold",
     maxRank = 3,

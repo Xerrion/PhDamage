@@ -107,8 +107,8 @@ describe("CritCalc", function()
         it("should clamp crit chance to maximum of 1.0", function()
             playerState.stats.spellCrit[32] = 0.95
             -- Add more crit via Devastation 5/5 + Backlash 3/3 = 0.08
-            playerState.talents["3:7"] = 5
-            playerState.talents["3:15"] = 3
+            playerState.talents["3:11"] = 5
+            playerState.talents["3:21"] = 3
             local result = runFullChain(686, playerState)
 
             -- Total: 0.95 + 0.05 + 0.03 = 1.03, clamped to 1.0

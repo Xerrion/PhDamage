@@ -116,14 +116,14 @@ describe("Shadowfury", function()
     end)
 
     it("Devastation 5/5 should add +5% crit to Shadowfury", function()
-        playerState.talents["3:7"] = 5
+        playerState.talents["3:11"] = 5
         local result = Pipeline.Calculate(30283, playerState)
         -- Base crit = 0.10, Devastation +0.05 = 0.15
         assert.is_near(0.15, result.critChance, 0.001)
     end)
 
     it("Ruin 1/1 should add +0.5 crit multiplier", function()
-        playerState.talents["3:13"] = 1
+        playerState.talents["3:9"] = 1
         local result = Pipeline.Calculate(30283, playerState)
         -- Base crit multiplier = 1.5, Ruin +0.5 = 2.0
         assert.is_near(2.0, result.critMultiplier, 0.001)
@@ -154,8 +154,8 @@ describe("Shadowfury", function()
         -- Without talents
         local r1 = Pipeline.Calculate(30283, playerState)
         -- With talents
-        playerState.talents["3:7"] = 5   -- Devastation: +5% crit
-        playerState.talents["3:13"] = 1  -- Ruin: +0.5 crit mult
+        playerState.talents["3:11"] = 5   -- Devastation: +5% crit
+        playerState.talents["3:9"] = 1  -- Ruin: +0.5 crit mult
         local r2 = Pipeline.Calculate(30283, playerState)
         assert.is_true(r2.expectedDamage > r1.expectedDamage)
         assert.is_near(0.15, r2.critChance, 0.001)
@@ -212,7 +212,7 @@ describe("Curse of Doom", function()
 
     it("Shadow Mastery 5/5 should boost damage by +10%", function()
         playerState.stats.spellPower[32] = 0  -- isolate talent effect
-        playerState.talents["1:15"] = 5
+        playerState.talents["1:11"] = 5
         local result = Pipeline.Calculate(603, playerState)
         -- baseDmg = 4200, +10% = 4620
         assert.is_near(4620, result.damageAfterMods, 0.1)

@@ -127,7 +127,7 @@ AuraMap[23761] = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0 },
     },
     talentAmplify = {
-        talentKey = "2:16",
+        talentKey = "2:11",
         perRank = 0.02,
         effectType = MOD.DAMAGE_MULTIPLIER,
     },
@@ -142,7 +142,7 @@ AuraMap[35702] = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0 },
     },
     talentAmplify = {
-        talentKey = "2:16",
+        talentKey = "2:11",
         perRank = 0.01,
         effectType = MOD.DAMAGE_MULTIPLIER,
     },

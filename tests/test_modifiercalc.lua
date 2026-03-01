@@ -163,7 +163,7 @@ describe("ModifierCalc", function()
     ---------------------------------------------------------------------------
     describe("ApplyModifiers with talents", function()
         it("should apply Shadow Mastery 5/5 as +0.10 talentDamageBonus on Shadow Bolt", function()
-            playerState.talents["1:15"] = 5
+            playerState.talents["1:11"] = 5
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -175,7 +175,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should scale Shadow Mastery linearly with rank", function()
-            playerState.talents["1:15"] = 3
+            playerState.talents["1:11"] = 3
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -187,7 +187,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Contagion 5/5 as +0.05 talentDamageBonus on Corruption", function()
-            playerState.talents["1:16"] = 5
+            playerState.talents["1:18"] = 5
             local spellData = ns.SpellData[172]
             local rankData = spellData.ranks[8]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -199,8 +199,8 @@ describe("ModifierCalc", function()
         end)
 
         it("should stack SM 5/5 + Contagion 5/5 additively on Corruption", function()
-            playerState.talents["1:15"] = 5  -- +10% Shadow
-            playerState.talents["1:16"] = 5  -- +5% Corruption
+            playerState.talents["1:11"] = 5  -- +10% Shadow
+            playerState.talents["1:18"] = 5  -- +5% Corruption
             local spellData = ns.SpellData[172]
             local rankData = spellData.ranks[8]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -212,7 +212,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should not apply Contagion to Shadow Bolt (name mismatch)", function()
-            playerState.talents["1:16"] = 5
+            playerState.talents["1:18"] = 5
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -224,7 +224,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Emberstorm 5/5 as +0.10 talentDamageBonus on Searing Pain", function()
-            playerState.talents["3:14"] = 5
+            playerState.talents["3:8"] = 5
             local spellData = ns.SpellData[5676]
             local rankData = spellData.ranks[8]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -236,7 +236,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should not apply Emberstorm to Shadow spells", function()
-            playerState.talents["3:14"] = 5
+            playerState.talents["3:8"] = 5
             local spellData = ns.SpellData[686]  -- Shadow Bolt (Shadow)
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -248,7 +248,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Devastation 5/5 as +0.05 critBonus on Shadow Bolt", function()
-            playerState.talents["3:7"] = 5
+            playerState.talents["3:11"] = 5
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -260,7 +260,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Bane 5/5 as -0.5 castTimeReduction on Shadow Bolt", function()
-            playerState.talents["3:3"] = 5
+            playerState.talents["3:2"] = 5
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -273,7 +273,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Improved Searing Pain rank 3 as +0.10 critBonus", function()
-            playerState.talents["3:11"] = 3
+            playerState.talents["3:7"] = 3
             local spellData = ns.SpellData[5676]
             local rankData = spellData.ranks[8]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -285,7 +285,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Ruin as +0.5 critMultBonus on Shadow Bolt", function()
-            playerState.talents["3:13"] = 1
+            playerState.talents["3:9"] = 1
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -297,7 +297,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply totalDamage multiplier from Shadow Mastery to modified result", function()
-            playerState.talents["1:15"] = 5  -- +10% Shadow damage
+            playerState.talents["1:11"] = 5  -- +10% Shadow damage
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)

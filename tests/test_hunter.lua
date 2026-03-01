@@ -86,13 +86,13 @@ describe("Hunter", function()
         end)
     end)
 
-    describe("Talent: Lethal Shots (2:2)", function()
+    describe("Talent: Lethal Shots (2:4)", function()
 
         it("should increase crit by 5% at rank 5", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:2"] = 5
+            state.talents["2:4"] = 5
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.critChance + 0.05, buffed.critChance, 0.001)
@@ -102,33 +102,33 @@ describe("Hunter", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:2"] = 1
+            state.talents["2:4"] = 1
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.critChance + 0.01, buffed.critChance, 0.001)
         end)
     end)
 
-    describe("Talent: Mortal Shots (2:10)", function()
+    describe("Talent: Mortal Shots (2:9)", function()
 
         it("should increase crit multiplier by 30% at rank 5", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:10"] = 5
+            state.talents["2:9"] = 5
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.critMultiplier + 0.30, buffed.critMultiplier, 0.001)
         end)
     end)
 
-    describe("Talent: Barrage (2:13)", function()
+    describe("Talent: Barrage (2:7)", function()
 
         it("should increase Multi-Shot damage by 12% at rank 3", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(2643, state)
 
-            state.talents["2:13"] = 3
+            state.talents["2:7"] = 3
             local buffed = Pipeline.Calculate(2643, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.12, buffed.expectedDamageWithMiss, 0.5)
@@ -138,7 +138,7 @@ describe("Hunter", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(1510, state)
 
-            state.talents["2:13"] = 3
+            state.talents["2:7"] = 3
             local buffed = Pipeline.Calculate(1510, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.12, buffed.expectedDamageWithMiss, 0.5)
@@ -148,33 +148,33 @@ describe("Hunter", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:13"] = 3
+            state.talents["2:7"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
         end)
     end)
 
-    describe("Talent: Ranged Weapon Specialization (2:15)", function()
+    describe("Talent: Ranged Weapon Specialization (2:13)", function()
 
         it("should increase all ranged damage by 5% at rank 5", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:15"] = 5
+            state.talents["2:13"] = 5
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.05, buffed.expectedDamageWithMiss, 0.5)
         end)
     end)
 
-    describe("Talent: Improved Stings (2:9)", function()
+    describe("Talent: Improved Stings (2:8)", function()
 
         it("should increase Serpent Sting damage by 18% at rank 3", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(1978, state)
 
-            state.talents["2:9"] = 3
+            state.talents["2:8"] = 3
             local buffed = Pipeline.Calculate(1978, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.18, buffed.expectedDamageWithMiss, 0.5)
@@ -184,60 +184,60 @@ describe("Hunter", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["2:9"] = 3
+            state.talents["2:8"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
         end)
     end)
 
-    describe("Talent: Surefooted (3:12)", function()
+    describe("Talent: Surefooted (3:8)", function()
 
         it("should increase hit by 3% at rank 3", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:12"] = 3
+            state.talents["3:8"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.hitChance + 0.03, buffed.hitChance, 0.001)
         end)
     end)
 
-    describe("Talent: Survival Instincts (3:14)", function()
+    describe("Talent: Survival Instincts (3:18)", function()
 
         it("should increase crit by 4% at rank 2", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:14"] = 2
+            state.talents["3:18"] = 2
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.critChance + 0.04, buffed.critChance, 0.001)
         end)
     end)
 
-    describe("Talent: Focused Fire (1:3)", function()
+    describe("Talent: Focused Fire (1:15)", function()
 
         it("should increase all damage by 2% at rank 2", function()
             local state = makeHunterState()
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["1:3"] = 2
+            state.talents["1:15"] = 2
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.02, buffed.expectedDamageWithMiss, 0.5)
         end)
     end)
 
-    describe("Talent: Monster Slaying (3:1)", function()
+    describe("Talent: Monster Slaying (3:16)", function()
 
         it("should increase damage by 3% vs Beasts at rank 3", function()
             local state = makeHunterState()
             state.targetCreatureType = "Beast"
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:1"] = 3
+            state.talents["3:16"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.03, buffed.expectedDamageWithMiss, 0.5)
@@ -248,7 +248,7 @@ describe("Hunter", function()
             state.targetCreatureType = "Humanoid"
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:1"] = 3
+            state.talents["3:16"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
@@ -259,21 +259,21 @@ describe("Hunter", function()
             state.targetCreatureType = nil
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:1"] = 3
+            state.talents["3:16"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
         end)
     end)
 
-    describe("Talent: Humanoid Slaying (3:2)", function()
+    describe("Talent: Humanoid Slaying (3:1)", function()
 
         it("should increase damage by 3% vs Humanoids at rank 3", function()
             local state = makeHunterState()
             state.targetCreatureType = "Humanoid"
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:2"] = 3
+            state.talents["3:1"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss * 1.03, buffed.expectedDamageWithMiss, 0.5)
@@ -284,7 +284,7 @@ describe("Hunter", function()
             state.targetCreatureType = "Beast"
             local base = Pipeline.Calculate(3044, state)
 
-            state.talents["3:2"] = 3
+            state.talents["3:1"] = 3
             local buffed = Pipeline.Calculate(3044, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
@@ -305,8 +305,8 @@ describe("Hunter", function()
 
         it("should stack multiple additive damage talents", function()
             local state = makeHunterState()
-            state.talents["2:15"] = 5  -- +5% ranged weapon spec
-            state.talents["1:3"] = 2   -- +2% focused fire
+            state.talents["2:13"] = 5  -- +5% ranged weapon spec
+            state.talents["1:15"] = 2  -- +2% focused fire
             -- Both additive: total +7%
             local result = Pipeline.Calculate(3044, state)
 

@@ -12,7 +12,7 @@ local Pipeline = ns.Engine.Pipeline
 -------------------------------------------------------------------------------
 -- Default Paladin state reference (from bootstrap):
 --   spellPower: Holy(2)=800
---   healingPower: 900 (not used by engine — SP used for heals too)
+--   healingPower: 900 (not used by engine -- SP used for heals too)
 --   spellCrit: Holy(2)=0.15
 --   spellHit = 0.05, intellect = 350, attackPower = 200
 --
@@ -28,7 +28,7 @@ local Pipeline = ns.Engine.Pipeline
 --   SP bonus: 800 * 0.286 = 228.8
 --   min = 637 + 228.8 = 865.8, max = 748 + 228.8 = 976.8
 --
--- Base spell hit: spellHit=0.05 → hitChance stored raw, hitProbability = 1 - 0.16 + 0.05 = 0.89
+-- Base spell hit: spellHit=0.05 -> hitChance stored raw, hitProbability = 1 - 0.16 + 0.05 = 0.89
 -- Base crit mult (spell): 1.5
 -------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ describe("Paladin Talents", function()
     ---------------------------------------------------------------------------
 
     ---------------------------------------------------------------------------
-    -- 1. Healing Light (1:7) — +4%/rank healing to HL & FoL (additive)
+    -- 1. Healing Light (1:5) -- +4%/rank healing to HL & FoL (additive)
     ---------------------------------------------------------------------------
     describe("Healing Light", function()
 
@@ -47,7 +47,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:7"] = 3
+            state.talents["1:5"] = 3
             local result = Pipeline.Calculate(635, state)
 
             -- HL base: min=2767.2, max=3017.2
@@ -60,7 +60,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(19750, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:7"] = 3
+            state.talents["1:5"] = 3
             local result = Pipeline.Calculate(19750, state)
 
             assert.is_near(baseResult.minDmg * 1.12, result.minDmg, 1)
@@ -71,7 +71,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:7"] = 3
+            state.talents["1:5"] = 3
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.minDmg, result.minDmg, 0.01)
@@ -80,7 +80,7 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 2. Sanctified Light (1:14) — +2%/rank crit to HL & FoL
+    -- 2. Sanctified Light (1:11) -- +2%/rank crit to HL & FoL
     ---------------------------------------------------------------------------
     describe("Sanctified Light", function()
 
@@ -88,7 +88,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:14"] = 3
+            state.talents["1:11"] = 3
             local result = Pipeline.Calculate(635, state)
 
             assert.is_near(baseResult.critChance + 0.06, result.critChance, 0.001)
@@ -98,7 +98,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(19750, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:14"] = 3
+            state.talents["1:11"] = 3
             local result = Pipeline.Calculate(19750, state)
 
             assert.is_near(baseResult.critChance + 0.06, result.critChance, 0.001)
@@ -108,7 +108,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:14"] = 3
+            state.talents["1:11"] = 3
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.critChance, result.critChance, 0.001)
@@ -116,7 +116,7 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 3. Purifying Power (1:16) — +10%/rank crit to Exorcism & Holy Wrath
+    -- 3. Purifying Power (1:16) -- +10%/rank crit to Exorcism & Holy Wrath
     ---------------------------------------------------------------------------
     describe("Purifying Power", function()
 
@@ -152,7 +152,7 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 4. Holy Power (1:19) — +1%/rank Holy spell crit
+    -- 4. Holy Power (1:13) -- +1%/rank Holy spell crit
     ---------------------------------------------------------------------------
     describe("Holy Power", function()
 
@@ -160,7 +160,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:19"] = 5
+            state.talents["1:13"] = 5
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
@@ -170,7 +170,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["1:19"] = 5
+            state.talents["1:13"] = 5
             local result = Pipeline.Calculate(635, state)
 
             assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
@@ -178,13 +178,13 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 5. Holy Guidance (1:25) — +5%/rank INT as spell power
+    -- 5. Holy Guidance (1:19) -- +5%/rank INT as spell power
     ---------------------------------------------------------------------------
     describe("Holy Guidance", function()
 
         it("should add 25% of intellect as spell power at 5/5 on Exorcism", function()
             local state = makePaladinState()
-            state.talents["1:25"] = 5
+            state.talents["1:19"] = 5
             local r = Pipeline.Calculate(879, state)
             -- INT = 350, bonus SP = 350 * 0.25 = 87.5
             -- Effective SP = 800 + 87.5 = 887.5
@@ -196,7 +196,7 @@ describe("Paladin Talents", function()
 
         it("should add 10% of intellect as spell power at 2/5 on Exorcism", function()
             local state = makePaladinState()
-            state.talents["1:25"] = 2
+            state.talents["1:19"] = 2
             local r = Pipeline.Calculate(879, state)
             -- INT = 350, bonus SP = 350 * 0.10 = 35
             -- SP bonus increase = 35 * 0.429 = 15.015
@@ -207,7 +207,7 @@ describe("Paladin Talents", function()
 
         it("should also affect Holy Light (heal)", function()
             local state = makePaladinState()
-            state.talents["1:25"] = 5
+            state.talents["1:19"] = 5
             local r = Pipeline.Calculate(635, state)
             -- INT = 350, bonus SP = 350 * 0.25 = 87.5
             -- SP bonus = (800 + 87.5) * 0.714 = 887.5 * 0.714 = 633.675
@@ -218,7 +218,7 @@ describe("Paladin Talents", function()
 
         it("should scale with higher intellect values", function()
             local state = makePaladinState()
-            state.talents["1:25"] = 5
+            state.talents["1:19"] = 5
             state.stats.intellect = 500
             local r = Pipeline.Calculate(879, state)
             -- INT = 500, bonus SP = 500 * 0.25 = 125
@@ -233,7 +233,7 @@ describe("Paladin Talents", function()
     ---------------------------------------------------------------------------
 
     ---------------------------------------------------------------------------
-    -- 6. Precision (2:4) — +1%/rank spell hit
+    -- 6. Precision (2:15) -- +1%/rank spell hit
     ---------------------------------------------------------------------------
     describe("Precision", function()
 
@@ -241,7 +241,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["2:4"] = 3
+            state.talents["2:15"] = 3
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.hitChance + 0.03, result.hitChance, 0.001)
@@ -251,7 +251,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["2:4"] = 1
+            state.talents["2:15"] = 1
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.hitChance + 0.01, result.hitChance, 0.001)
@@ -259,7 +259,7 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 7. Combat Expertise (2:23) — +1%/rank crit (all spells)
+    -- 7. Combat Expertise (2:20) -- +1%/rank crit (all spells)
     ---------------------------------------------------------------------------
     describe("Combat Expertise", function()
 
@@ -267,7 +267,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["2:23"] = 5
+            state.talents["2:20"] = 5
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
@@ -277,7 +277,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["2:23"] = 5
+            state.talents["2:20"] = 5
             local result = Pipeline.Calculate(635, state)
 
             assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
@@ -289,13 +289,13 @@ describe("Paladin Talents", function()
     ---------------------------------------------------------------------------
 
     ---------------------------------------------------------------------------
-    -- 8. Crusade (3:10) — +1%/rank all damage (additive)
+    -- 8. Crusade (3:16) -- +1%/rank all damage (additive)
     ---------------------------------------------------------------------------
     describe("Crusade", function()
 
         it("should increase Exorcism damage by 3% at 3/3", function()
             local state = makePaladinState()
-            state.talents["3:10"] = 3
+            state.talents["3:16"] = 3
             local r = Pipeline.Calculate(879, state)
             -- Base: min=969.2, max=1041.2
             -- With 3/3: * (1 + 0.03) = 1.03
@@ -305,7 +305,7 @@ describe("Paladin Talents", function()
 
         it("should increase Holy Wrath damage by 3% at 3/3", function()
             local state = makePaladinState()
-            state.talents["3:10"] = 3
+            state.talents["3:16"] = 3
             local r = Pipeline.Calculate(2812, state)
             -- Base: min=865.8, max=976.8
             assert.is_near(865.8 * 1.03, r.minDmg, 0.1)
@@ -316,7 +316,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["3:10"] = 3
+            state.talents["3:16"] = 3
             local result = Pipeline.Calculate(635, state)
 
             -- Crusade has no isHeal filter, but also no filter at all,
@@ -327,7 +327,7 @@ describe("Paladin Talents", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 9. Sanctified Seals (3:20) — +1%/rank crit (all spells)
+    -- 9. Sanctified Seals (3:21) -- +1%/rank crit (all spells)
     ---------------------------------------------------------------------------
     describe("Sanctified Seals", function()
 
@@ -335,7 +335,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(879, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["3:20"] = 3
+            state.talents["3:21"] = 3
             local result = Pipeline.Calculate(879, state)
 
             assert.is_near(baseResult.critChance + 0.03, result.critChance, 0.001)
@@ -345,7 +345,7 @@ describe("Paladin Talents", function()
             local baseResult = Pipeline.Calculate(635, makePaladinState())
 
             local state = makePaladinState()
-            state.talents["3:20"] = 3
+            state.talents["3:21"] = 3
             local result = Pipeline.Calculate(635, state)
 
             assert.is_near(baseResult.critChance + 0.03, result.critChance, 0.001)
@@ -358,15 +358,15 @@ describe("Paladin Talents", function()
     describe("Metadata", function()
 
         local expectedKeys = {
-            "PALADIN:1:7",   -- Healing Light
-            "PALADIN:1:14",  -- Sanctified Light
+            "PALADIN:1:5",   -- Healing Light
+            "PALADIN:1:11",  -- Sanctified Light
+            "PALADIN:1:13",  -- Holy Power
             "PALADIN:1:16",  -- Purifying Power
-            "PALADIN:1:19",  -- Holy Power
-            "PALADIN:1:25",  -- Holy Guidance
-            "PALADIN:2:4",   -- Precision
-            "PALADIN:2:23",  -- Combat Expertise
-            "PALADIN:3:10",  -- Crusade
-            "PALADIN:3:20",  -- Sanctified Seals
+            "PALADIN:1:19",  -- Holy Guidance
+            "PALADIN:2:15",  -- Precision
+            "PALADIN:2:20",  -- Combat Expertise
+            "PALADIN:3:16",  -- Crusade
+            "PALADIN:3:21",  -- Sanctified Seals
         }
 
         for _, key in ipairs(expectedKeys) do
@@ -392,8 +392,8 @@ describe("Paladin Talents", function()
 
         it("Holy Power + Sanctified Light should stack crit on Holy Light", function()
             local state = makePaladinState()
-            state.talents["1:19"] = 5  -- Holy Power +5% crit
-            state.talents["1:14"] = 3  -- Sanctified Light +6% crit
+            state.talents["1:13"] = 5  -- Holy Power +5% crit
+            state.talents["1:11"] = 3  -- Sanctified Light +6% crit
             local r = Pipeline.Calculate(635, state)
             -- critChance = 0.15 + 0.05 + 0.06 = 0.26
             assert.is_near(0.26, r.critChance, 0.001)
@@ -401,8 +401,8 @@ describe("Paladin Talents", function()
 
         it("Combat Expertise + Sanctified Seals should stack crit on Exorcism", function()
             local state = makePaladinState()
-            state.talents["2:23"] = 5  -- Combat Expertise +5% crit
-            state.talents["3:20"] = 3  -- Sanctified Seals +3% crit
+            state.talents["2:20"] = 5  -- Combat Expertise +5% crit
+            state.talents["3:21"] = 3  -- Sanctified Seals +3% crit
             local r = Pipeline.Calculate(879, state)
             -- critChance = 0.15 + 0.05 + 0.03 = 0.23
             assert.is_near(0.23, r.critChance, 0.001)
@@ -410,8 +410,8 @@ describe("Paladin Talents", function()
 
         it("Crusade + Holy Guidance should both affect Exorcism", function()
             local state = makePaladinState()
-            state.talents["3:10"] = 3  -- Crusade +3% dmg (additive)
-            state.talents["1:25"] = 5  -- Holy Guidance: +87.5 SP
+            state.talents["3:16"] = 3  -- Crusade +3% dmg (additive)
+            state.talents["1:19"] = 5  -- Holy Guidance: +87.5 SP
             local r = Pipeline.Calculate(879, state)
             -- SP = 800 + 87.5 = 887.5
             -- SP bonus = 887.5 * 0.429 = 380.7375
@@ -425,8 +425,8 @@ describe("Paladin Talents", function()
 
         it("Healing Light + Sanctified Light should not cross-affect Exorcism", function()
             local state = makePaladinState()
-            state.talents["1:7"] = 3   -- Healing Light: +12% HL/FoL healing
-            state.talents["1:14"] = 3  -- Sanctified Light: +6% HL/FoL crit
+            state.talents["1:5"] = 3   -- Healing Light: +12% HL/FoL healing
+            state.talents["1:11"] = 3  -- Sanctified Light: +6% HL/FoL crit
 
             local rExo = Pipeline.Calculate(879, state)
             local rExoBase = Pipeline.Calculate(879, makePaladinState())
