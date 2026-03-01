@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/Xerrion/PhDamage/compare/1.2.0...1.2.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* correct TalentMap indices for all classes ([#21](https://github.com/Xerrion/PhDamage/issues/21)) ([#22](https://github.com/Xerrion/PhDamage/issues/22)) ([911e925](https://github.com/Xerrion/PhDamage/commit/911e925dea976d03c31a79144faa2c613223aa98))
+* name-based talent matching for TBC Anniversary index reordering ([#12](https://github.com/Xerrion/PhDamage/issues/12)) ([#19](https://github.com/Xerrion/PhDamage/issues/19)) ([34ecc84](https://github.com/Xerrion/PhDamage/commit/34ecc84e94df266390bbf71cf5f7073b1029a877))
+
 ## [1.2.0](https://github.com/Xerrion/PhDamage/compare/1.1.3...1.2.0) (2026-03-01)
 
 
