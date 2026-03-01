@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Xerrion/PhDamage/compare/1.1.3...1.2.0) (2026-03-01)
+
+
+### Features
+
+* align repo setup with DragonToast ([#14](https://github.com/Xerrion/PhDamage/issues/14), [#15](https://github.com/Xerrion/PhDamage/issues/15), [#16](https://github.com/Xerrion/PhDamage/issues/16), [#17](https://github.com/Xerrion/PhDamage/issues/17)) ([#18](https://github.com/Xerrion/PhDamage/issues/18)) ([4f6b54b](https://github.com/Xerrion/PhDamage/commit/4f6b54b483d83566205cf94fcbb4cd7edf14e73a))
+
 ## [1.1.3](https://github.com/Xerrion/PhDamage/compare/1.1.2...1.1.3) (2026-02-25)
 
 
