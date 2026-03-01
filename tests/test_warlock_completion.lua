@@ -11,13 +11,13 @@ local Pipeline = ns.Engine.Pipeline
 
 describe("Warlock Completion", function()
 
-    describe("Improved Life Tap (1:3)", function()
+    describe("Improved Life Tap (1:7)", function()
 
         it("should increase Life Tap mana by 10% at rank 1", function()
             local state = makePlayerState()
             local base = Pipeline.Calculate(1454, state)
 
-            state.talents["1:3"] = 1
+            state.talents["1:7"] = 1
             local buffed = Pipeline.Calculate(1454, state)
 
             assert.is_near(base.manaGain * 1.10, buffed.manaGain, 0.01)
@@ -27,7 +27,7 @@ describe("Warlock Completion", function()
             local state = makePlayerState()
             local base = Pipeline.Calculate(1454, state)
 
-            state.talents["1:3"] = 2
+            state.talents["1:7"] = 2
             local buffed = Pipeline.Calculate(1454, state)
 
             assert.is_near(base.manaGain * 1.20, buffed.manaGain, 0.01)
@@ -37,7 +37,7 @@ describe("Warlock Completion", function()
             local state = makePlayerState()
             local base = Pipeline.Calculate(686, state)
 
-            state.talents["1:3"] = 2
+            state.talents["1:7"] = 2
             local buffed = Pipeline.Calculate(686, state)
 
             assert.is_near(base.expectedDamageWithMiss, buffed.expectedDamageWithMiss, 0.01)
@@ -85,7 +85,7 @@ describe("Warlock Completion", function()
             local base = Pipeline.Calculate(686, state)
             -- Add Shadow Mastery + Soul Link
             state.auras.player[25228] = true
-            state.talents["1:15"] = 5  -- Shadow Mastery +10%
+            state.talents["1:11"] = 5  -- Shadow Mastery +10%
             local result = Pipeline.Calculate(686, state)
             local expected = base.expectedDamageWithMiss * 1.10 * 1.05
             assert.is_near(expected, result.expectedDamageWithMiss, 0.5)

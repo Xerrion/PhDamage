@@ -113,7 +113,7 @@ describe("Master Demonologist", function()
 
     describe("Succubus (23761)", function()
         it("aura + talent 5/5 should give +10% damageMultiplier", function()
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             playerState.auras.player[23761] = true
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
@@ -127,7 +127,7 @@ describe("Master Demonologist", function()
         end)
 
         it("aura + talent 3/5 should give +6% damageMultiplier", function()
-            playerState.talents["2:16"] = 3
+            playerState.talents["2:11"] = 3
             playerState.auras.player[23761] = true
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
@@ -154,7 +154,7 @@ describe("Master Demonologist", function()
         end)
 
         it("talent set but no aura should give no bonus", function()
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             -- No aura active
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
@@ -167,7 +167,7 @@ describe("Master Demonologist", function()
         end)
 
         it("should apply to all schools (Fire spell too)", function()
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             playerState.auras.player[23761] = true
             local spellData = ns.SpellData[5676]  -- Searing Pain (Fire)
             local rankData = spellData.ranks[8]
@@ -182,7 +182,7 @@ describe("Master Demonologist", function()
 
     describe("Felguard (35702)", function()
         it("aura + talent 5/5 should give +5% damageMultiplier", function()
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             playerState.auras.player[35702] = true
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
@@ -196,7 +196,7 @@ describe("Master Demonologist", function()
         end)
 
         it("should differ from Succubus value (0.01 vs 0.02 per rank)", function()
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             -- Calculate with Felguard aura
             playerState.auras.player[35702] = true
             local spellData = ns.SpellData[686]
@@ -208,7 +208,7 @@ describe("Master Demonologist", function()
 
             -- Calculate with Succubus aura (separate state)
             local ps2 = makePlayerState()
-            ps2.talents["2:16"] = 5
+            ps2.talents["2:11"] = 5
             ps2.auras.player[23761] = true
             local baseResult2 = SpellCalc.ComputeBase(spellData, rankData, ps2)
             local _, modsSu = ModifierCalc.ApplyModifiers(
@@ -226,7 +226,7 @@ describe("Master Demonologist", function()
         it("Succubus 5/5 should boost Shadow Bolt total damage by 10%", function()
             local r0 = Pipeline.Calculate(686, playerState)
 
-            playerState.talents["2:16"] = 5
+            playerState.talents["2:11"] = 5
             playerState.auras.player[23761] = true
             local r5 = Pipeline.Calculate(686, playerState)
 
@@ -236,9 +236,9 @@ describe("Master Demonologist", function()
 end)
 
 -------------------------------------------------------------------------------
--- Soul Siphon (talent 1:5) — count-based multiplier for Drain Life/Drain Soul
+-- Soul Siphon (talent 1:4) — count-based multiplier for Drain Life/Drain Soul
 -------------------------------------------------------------------------------
-describe("Soul Siphon (1:5)", function()
+describe("Soul Siphon (1:4)", function()
     local playerState
     local SpellCalc = ns.Engine.SpellCalc
     local ModifierCalc = ns.Engine.ModifierCalc
@@ -250,7 +250,7 @@ describe("Soul Siphon (1:5)", function()
 
     describe("modifier accumulator (Drain Life)", function()
         local function getMods(talentRank, afflictionCount)
-            playerState.talents["1:5"] = talentRank
+            playerState.talents["1:4"] = talentRank
             playerState.afflictionCountOnTarget = afflictionCount
             local spellData = ns.SpellData[689]  -- Drain Life
             local rankData = spellData.ranks[8]
@@ -312,7 +312,7 @@ describe("Soul Siphon (1:5)", function()
 
     describe("spell filtering", function()
         it("should NOT affect Shadow Bolt (filter is Drain Life/Drain Soul only)", function()
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 5
             local spellData = ns.SpellData[686]  -- Shadow Bolt
             local rankData = spellData.ranks[11]
@@ -325,7 +325,7 @@ describe("Soul Siphon (1:5)", function()
         end)
 
         it("should affect Drain Soul", function()
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 3
             local spellData = ns.SpellData[1120]  -- Drain Soul
             local rankData = spellData.ranks[5]
@@ -339,7 +339,7 @@ describe("Soul Siphon (1:5)", function()
         end)
 
         it("should NOT affect Corruption", function()
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 5
             local spellData = ns.SpellData[172]  -- Corruption
             local rankData = spellData.ranks[8]
@@ -356,7 +356,7 @@ describe("Soul Siphon (1:5)", function()
         it("rank 2 + 3 afflictions should increase Drain Life damage by 12%", function()
             local r0 = Pipeline.Calculate(689, playerState)
 
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 3
             local r1 = Pipeline.Calculate(689, playerState)
 
@@ -366,7 +366,7 @@ describe("Soul Siphon (1:5)", function()
         it("rank 2 + 15 afflictions should cap Drain Life at +60%", function()
             local r0 = Pipeline.Calculate(689, playerState)
 
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 15
             local r1 = Pipeline.Calculate(689, playerState)
 
@@ -376,7 +376,7 @@ describe("Soul Siphon (1:5)", function()
         it("rank 1 + 12 afflictions should cap Drain Life at +24%", function()
             local r0 = Pipeline.Calculate(689, playerState)
 
-            playerState.talents["1:5"] = 1
+            playerState.talents["1:4"] = 1
             playerState.afflictionCountOnTarget = 12
             local r1 = Pipeline.Calculate(689, playerState)
 
@@ -387,7 +387,7 @@ describe("Soul Siphon (1:5)", function()
         it("Drain Soul pipeline with rank 2 + 3 afflictions", function()
             local r0 = Pipeline.Calculate(1120, playerState)
 
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 3
             local r1 = Pipeline.Calculate(1120, playerState)
 
@@ -395,7 +395,7 @@ describe("Soul Siphon (1:5)", function()
         end)
 
         it("Shadow Bolt pipeline should be unaffected by Soul Siphon", function()
-            playerState.talents["1:5"] = 2
+            playerState.talents["1:4"] = 2
             playerState.afflictionCountOnTarget = 10
             local r0 = Pipeline.Calculate(686, makePlayerState())
             local r1 = Pipeline.Calculate(686, playerState)
@@ -406,7 +406,7 @@ describe("Soul Siphon (1:5)", function()
 end)
 
 -------------------------------------------------------------------------------
--- Demonic Tactics (talent 2:19) — +1% crit per rank, 5 ranks max
+-- Demonic Tactics (talent 2:20) — +1% crit per rank, 5 ranks max
 -------------------------------------------------------------------------------
 describe("Demonic Tactics", function()
     local playerState
@@ -420,7 +420,7 @@ describe("Demonic Tactics", function()
 
     describe("modifier accumulation", function()
         it("should add 1% crit at rank 1", function()
-            playerState.talents["2:19"] = 1
+            playerState.talents["2:20"] = 1
             -- Test with Shadow Bolt (686)
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[1]
@@ -432,7 +432,7 @@ describe("Demonic Tactics", function()
         end)
 
         it("should add 3% crit at rank 3", function()
-            playerState.talents["2:19"] = 3
+            playerState.talents["2:20"] = 3
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[1]
             local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -443,7 +443,7 @@ describe("Demonic Tactics", function()
         end)
 
         it("should add 5% crit at rank 5", function()
-            playerState.talents["2:19"] = 5
+            playerState.talents["2:20"] = 5
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[1]
             local base = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -454,7 +454,7 @@ describe("Demonic Tactics", function()
         end)
 
         it("should apply to fire spells too (no filter)", function()
-            playerState.talents["2:19"] = 5
+            playerState.talents["2:20"] = 5
             -- Test with Searing Pain (5676) - fire spell
             local spellData = ns.SpellData[5676]
             local rankData = spellData.ranks[1]
@@ -471,38 +471,38 @@ describe("Demonic Tactics", function()
             -- Without talent
             local resultBase = Pipeline.Calculate(686, playerState)
             -- With talent rank 5
-            playerState.talents["2:19"] = 5
+            playerState.talents["2:20"] = 5
             local resultTalent = Pipeline.Calculate(686, playerState)
             assert.is_true(resultTalent.expectedDamage > resultBase.expectedDamage)
             assert.is_near(resultBase.critChance + 0.05, resultTalent.critChance, 0.001)
         end)
 
         it("should stack with Devastation crit bonus", function()
-            -- Devastation (3:7) gives +5% crit to shadow/fire
-            playerState.talents["3:7"] = 5
+            -- Devastation (3:11) gives +5% crit to shadow/fire
+            playerState.talents["3:11"] = 5
             local resultDev = Pipeline.Calculate(686, playerState)
             -- Add Demonic Tactics rank 5
-            playerState.talents["2:19"] = 5
+            playerState.talents["2:20"] = 5
             local resultBoth = Pipeline.Calculate(686, playerState)
             -- Should have +10% total crit bonus
             assert.is_near(resultDev.critChance + 0.05, resultBoth.critChance, 0.001)
         end)
 
         it("should affect Shadow Bolt expected damage correctly", function()
-            playerState.talents["2:19"] = 3  -- +3% crit
+            playerState.talents["2:20"] = 3  -- +3% crit
             local result = Pipeline.Calculate(686, playerState)
             -- Base crit is 0.10 (from playerState), +0.03 from talent = 0.13
             assert.is_near(0.13, result.critChance, 0.001)
         end)
 
         it("should affect Immolate (hybrid) crit", function()
-            playerState.talents["2:19"] = 2  -- +2% crit
+            playerState.talents["2:20"] = 2  -- +2% crit
             local result = Pipeline.Calculate(348, playerState)
             assert.is_near(0.12, result.critChance, 0.001)
         end)
 
         it("should not affect canCrit=false spells (Corruption)", function()
-            playerState.talents["2:19"] = 5
+            playerState.talents["2:20"] = 5
             local result = Pipeline.Calculate(172, playerState)
             -- Corruption has canCrit=false, so critChance should be 0
             assert.are.equal(0, result.critChance)

@@ -344,14 +344,37 @@ function StateCollector.CollectPlayerState()
 end
 
 function StateCollector.CollectTalents(state)
+    -- Build reverse lookup from talent name -> TalentMap key for this class.
+    -- This makes talent collection immune to index reordering across client
+    -- versions (e.g. TBC Anniversary orders by internal talentID, not grid position).
+    local nameToKey = {}
+    local classPrefix = (state.class or "UNKNOWN") .. ":"
+    for mapKey, entry in pairs(ns.TalentMap) do
+        if mapKey:sub(1, #classPrefix) == classPrefix then
+            local talentKey = mapKey:sub(#classPrefix + 1)
+            nameToKey[entry.name] = talentKey
+        end
+    end
+
     local numTabs = GetNumTalentTabs and GetNumTalentTabs() or 0
     for tab = 1, numTabs do
         local numTalents = GetNumTalents and GetNumTalents(tab) or 0
         for index = 1, numTalents do
             local ok, name, _, _, _, rank = pcall(GetTalentInfo, tab, index)
             if ok and name and rank and rank > 0 then
-                local key = tab .. ":" .. index
-                state.talents[key] = rank
+                local mappedKey = nameToKey[name]
+                if mappedKey then
+                    -- Clamp rank to maxRank as defense-in-depth
+                    local entry = ns.TalentMap[classPrefix .. mappedKey]
+                    if entry and entry.maxRank and rank > entry.maxRank then
+                        rank = entry.maxRank
+                    end
+                    state.talents[mappedKey] = rank
+                else
+                    -- Untracked talent: store with raw key for diagnostics visibility
+                    local rawKey = tab .. ":" .. index
+                    state.talents[rawKey] = rank
+                end
             end
         end
     end
