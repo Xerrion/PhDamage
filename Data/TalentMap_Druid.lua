@@ -1,10 +1,14 @@
+local ADDON_NAME, ns = ...
+
 -------------------------------------------------------------------------------
--- TalentMap_Druid
--- Druid talent modifier definitions for PhDamage
+-- TalentMap_Druid.lua
+-- Druid talent effects mapped to modifier descriptors for TBC Anniversary
+-- Talent positions (tab:index) verified in-game on TBC Anniversary
+-- (ordered by internal talentID)
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
-local ADDON_NAME, ns = ...
+
 ns.TalentMap = ns.TalentMap or {}
 
 local MOD = ns.MOD
@@ -14,6 +18,17 @@ local TalentMap = {}
 
 -------------------------------------------------------------------------------
 -- Balance (Tab 1)
+-- 1:1  Nature's Grasp (1)                 1:2  Starlight Wrath (5)
+-- 1:3  Improved Moonfire (2)              1:4  Nature's Reach (2)
+-- 1:5  Brambles (3)                       1:6  Moonglow (3)
+-- 1:7  Celestial Focus (3)                1:8  Control of Nature (3)
+-- 1:9  Insect Swarm (1)                   1:10 Nature's Grace (1)
+-- 1:11 Moonfury (5)                       1:12 Vengeance (5)
+-- 1:13 Moonkin Form (1)                   1:14 Improved Nature's Grasp (4)
+-- 1:15 Lunar Guidance (3)                 1:16 Balance of Power (2)
+-- 1:17 Dreamstate (3)                     1:18 Improved Faerie Fire (3)
+-- 1:19 Wrath of Cenarius (5)              1:20 Force of Nature (1)
+-- 1:21 Focused Starlight (2)
 -------------------------------------------------------------------------------
 
 -- Starlight Wrath: -0.1s cast time on Wrath and Starfire per rank
@@ -108,7 +123,18 @@ TalentMap["1:21"] = {
 }
 
 -------------------------------------------------------------------------------
--- Feral (Tab 2)
+-- Feral Combat (Tab 2)
+-- 2:1  Thick Hide (3)                     2:2  Feral Aggression (5)
+-- 2:3  Ferocity (5)                       2:4  Brutal Impact (2)
+-- 2:5  Sharpened Claws (3)                2:6  Feral Instinct (3)
+-- 2:7  Primal Fury (2)                    2:8  Shredding Attacks (2)
+-- 2:9  Predatory Strikes (3)              2:10 Feral Charge (1)
+-- 2:11 Savage Fury (2)                    2:12 Feral Swiftness (2)
+-- 2:13 Heart of the Wild (5)              2:14 Leader of the Pack (1)
+-- 2:15 Faerie Fire (Feral) (1)            2:16 Nurturing Instinct (2)
+-- 2:17 Primal Tenacity (3)                2:18 Survival of the Fittest (3)
+-- 2:19 Predatory Instincts (5)            2:20 Mangle (1)
+-- 2:21 Improved Leader of the Pack (2)
 -------------------------------------------------------------------------------
 
 -- Sharpened Claws: +2% melee crit per rank (feral abilities)
@@ -144,6 +170,16 @@ TalentMap["2:19"] = {
 
 -------------------------------------------------------------------------------
 -- Restoration (Tab 3)
+-- 3:1  Improved Mark of the Wild (5)      3:2  Furor (5)
+-- 3:3  Nature's Focus (5)                 3:4  Naturalist (5)
+-- 3:5  Improved Regrowth (5)              3:6  Natural Shapeshifter (3)
+-- 3:7  Omen of Clarity (1)                3:8  Gift of Nature (5)
+-- 3:9  Intensity (3)                      3:10 Improved Rejuvenation (3)
+-- 3:11 Nature's Swiftness (1)             3:12 Subtlety (5)
+-- 3:13 Improved Tranquility (2)           3:14 Tranquil Spirit (5)
+-- 3:15 Swiftmend (1)                      3:16 Empowered Touch (2)
+-- 3:17 Empowered Rejuvenation (5)         3:18 Natural Perfection (3)
+-- 3:19 Tree of Life (1)                   3:20 Living Spirit (3)
 -------------------------------------------------------------------------------
 
 -- Naturalist: -0.1s Healing Touch cast time and +2% physical damage per rank

@@ -529,7 +529,7 @@ describe("Rogue Auras", function()
             it("Shadowstep + Aggression 3/3 on Sinister Strike", function()
                 local state = makeRogueState()
                 state.auras.player[36563] = true           -- Shadowstep +20%
-                state.talents["2:19"] = 3                   -- Aggression 3/3 (+6%)
+                state.talents["2:17"] = 3                   -- Aggression 3/3 (+6%)
                 local result = Pipeline.Calculate(1752, state)
                 -- Aggression: additive +6% on base → 1.06
                 -- Shadowstep: multiplicative +20% → 1.20
@@ -561,7 +561,7 @@ describe("Rogue Auras", function()
             it("Remorseless R2 + Puncturing Wounds 3/3 on Backstab", function()
                 local state = makeDaggerRogueState()
                 state.auras.player[14149] = true       -- Remorseless R2 +40%
-                state.talents["1:6"] = 3                    -- Puncturing Wounds 3/3 (+30% BS)
+                state.talents["1:8"] = 3                    -- Puncturing Wounds 3/3 (+30% BS)
                 local result = Pipeline.Calculate(53, state)
                 -- 0.25 + 0.40 + 0.30 = 0.95
                 assert.is_near(0.95, result.critChance, 0.01)
@@ -570,7 +570,7 @@ describe("Rogue Auras", function()
             it("Remorseless R2 + Puncturing Wounds 3/3 on Mutilate", function()
                 local state = makeDaggerRogueState()
                 state.auras.player[14149] = true       -- Remorseless R2 +40%
-                state.talents["1:6"] = 3                    -- Puncturing Wounds 3/3 (+15% Mut)
+                state.talents["1:8"] = 3                    -- Puncturing Wounds 3/3 (+15% Mut)
                 local result = Pipeline.Calculate(1329, state)
                 -- 0.25 + 0.40 + 0.15 = 0.80
                 assert.is_near(0.80, result.critChance, 0.01)
