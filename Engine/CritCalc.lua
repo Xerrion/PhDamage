@@ -335,6 +335,8 @@ function CritCalc.BuildHybridResult(
         spellType = spellData.spellType,
         avgBaseDamage = modResult.avgBaseDamage,
         coefficient = modResult.coefficient,
+        directCoefficient = modResult.directCoefficient,
+        dotCoefficient = modResult.dotCoefficient,
         spellPowerBonus = modResult.spellPowerBonus,
         damageBeforeMods = modResult.damageBeforeMods,
         damageAfterMods = directDmg + dotDmg,

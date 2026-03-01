@@ -17,8 +17,6 @@ local HasAction = HasAction
 local GetActionInfo = GetActionInfo
 local GetMacroSpell = GetMacroSpell
 local wipe = wipe
-local format = string.format
-local floor = math.floor
 
 -------------------------------------------------------------------------------
 -- Module state
@@ -49,18 +47,9 @@ local function BuildSpellIDMap()
 end
 
 -------------------------------------------------------------------------------
--- FormatNumber(n)
--- Compact display: 10000 → "10.0k", 1500 → "1.5k", 581 → "581"
+-- FormatNumber - delegated to shared formatting module
 -------------------------------------------------------------------------------
-local function FormatNumber(n)
-    if n >= 10000 then
-        return format("%.0fk", n / 1000)
-    elseif n >= 1000 then
-        return format("%.1fk", n / 1000)
-    else
-        return tostring(floor(n + 0.5))
-    end
-end
+local FormatNumber = function(n) return ns.Format.FormatNumber(n) end
 
 -------------------------------------------------------------------------------
 -- ResolveSpellID(button)

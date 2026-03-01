@@ -87,7 +87,7 @@ function Diagnostics.PrintAll()
     -- Header
     local className = state.class or "Unknown"
     local level = state.level or "?"
-    Diagnostics.Print(COLOR_HEADER .. "PhDamage \226\128\148 "
+Diagnostics.Print(COLOR_HEADER .. "PhDamage - "
         .. className .. " (Level " .. level .. ")" .. COLOR_RESET)
     Diagnostics.Print(COLOR_HEADER .. LINE_DOUBLE .. COLOR_RESET)
 
@@ -110,7 +110,7 @@ function Diagnostics.PrintSpellSummary(r)
         -- Utility: health/pet mana → player mana
         local sourceStr
         if r.healthCost then
-            sourceStr = COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET .. " HP \226\134\146 "
+            sourceStr = COLOR_VALUE .. FN(r.healthCost) .. COLOR_RESET .. " HP -> "
         else
             sourceStr = ""
         end
@@ -144,7 +144,7 @@ function Diagnostics.PrintSpellSummary(r)
             .. LabelValue("Direct", directBase .. " base + "
                 .. FN(r.directSpBonus or r.spellPowerBonus) .. " SP")
             .. " | " .. LabelValue("Crit", (r.critChance or 0) > 0
-                and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
+and (FP(r.critChance) .. " (x" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
                 or "n/a")
         if r.armorReduction and r.armorReduction > 0 then
             hybridDetailLine = hybridDetailLine .. " | " .. LabelValue("Armor",
@@ -188,7 +188,7 @@ function Diagnostics.PrintSpellSummary(r)
         )
         local chanDetailLine = "  " .. LabelValue("Base", FN(r.avgBaseDamage))
             .. " | " .. LabelValue("+SP", FN(r.spellPowerBonus))
-            .. " | " .. LabelValue("Ticks", (r.numTicks or "?") .. "\195\151" .. FN(r.tickDamage))
+            .. " | " .. LabelValue("Ticks", (r.numTicks or "?") .. "x" .. FN(r.tickDamage))
         if r.armorReduction and r.armorReduction > 0 then
             chanDetailLine = chanDetailLine .. " | " .. LabelValue("Armor",
                 "-" .. string.format("%.1f%%", r.armorReduction * 100))
@@ -211,7 +211,7 @@ function Diagnostics.PrintSpellSummary(r)
         .. COLOR_GOOD .. FN(r.dps) .. " " .. rateLabel .. COLOR_RESET
     )
     local critStr = (r.critChance or 0) > 0
-        and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
+        and (FP(r.critChance) .. " (x" .. string.format("%.2f", r.critMultiplier or 0) .. ")")
         or "n/a"
     local detailLine = "  " .. LabelValue("Base", FN(r.avgBaseDamage))
         .. " | " .. LabelValue("+SP", FN(r.spellPowerBonus))
@@ -255,7 +255,7 @@ function Diagnostics.PrintSpell(spellName)
     Diagnostics.Print(
         COLOR_SPELL .. r.spellName .. COLOR_RESET
         .. (rankStr ~= "" and (" (" .. rankStr .. ")") or "")
-        .. " \226\128\148 " .. schoolColor .. schoolName .. COLOR_RESET
+        .. " - " .. schoolColor .. schoolName .. COLOR_RESET
     )
     Diagnostics.Print(COLOR_LABEL .. LINE_SINGLE .. COLOR_RESET)
 
@@ -349,7 +349,7 @@ function Diagnostics.PrintSpellDirect(r, FN, FP, schoolColor, schoolName, state)
     Diagnostics.Print("  " .. LabelValue(Noun .. " after mods", FN(r.damageAfterMods)))
     Diagnostics.Print("  " .. LabelValue("Crit chance",
         (r.critChance or 0) > 0
-            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0) .. " multiplier)")
+and (FP(r.critChance) .. " (x" .. string.format("%.2f", r.critMultiplier or 0) .. " multiplier)")
             or "n/a"))
     Diagnostics.Print("  " .. LabelValue("Expected " .. noun, COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
     Diagnostics.Print("  " .. LabelValue("Hit chance", FP(r.hitChance)))
@@ -440,7 +440,7 @@ function Diagnostics.PrintSpellHybrid(r, FN, FP, schoolColor, _schoolName, state
     end
     Diagnostics.Print("    " .. LabelValue("Crit chance",
         (r.critChance or 0) > 0
-            and (FP(r.critChance) .. " (\195\151" .. string.format("%.2f", r.critMultiplier or 0)
+and (FP(r.critChance) .. " (x" .. string.format("%.2f", r.critMultiplier or 0)
                 .. " multiplier, direct only)")
             or "n/a"))
     Diagnostics.Print("    " .. LabelValue("Expected total", COLOR_VALUE .. FN(r.expectedDamage) .. COLOR_RESET))
@@ -488,7 +488,7 @@ function Diagnostics.PrintState()
     local FP = Diagnostics.FormatPercent
 
     -- Header
-    Diagnostics.Print(COLOR_HEADER .. "PhDamage \226\128\148 Player State" .. COLOR_RESET)
+    Diagnostics.Print(COLOR_HEADER .. "PhDamage - Player State" .. COLOR_RESET)
     Diagnostics.Print(COLOR_HEADER .. LINE_DOUBLE .. COLOR_RESET)
 
     -- Class and level

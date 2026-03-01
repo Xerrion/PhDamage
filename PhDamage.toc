@@ -29,6 +29,7 @@ Engine\CritCalc.lua
 Engine\Pipeline.lua
 
 # Presentation
+Presentation\Format.lua
 Presentation\Diagnostics.lua
 Presentation\Tooltip.lua
 Presentation\ActionBar.lua
