@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/DragonAddons/PhDamage/compare/1.2.1...1.3.0) (2026-03-03)
+
+
+### Features
+
+* support spell links in /phd spell command ([#23](https://github.com/DragonAddons/PhDamage/issues/23)) ([#24](https://github.com/DragonAddons/PhDamage/issues/24)) ([7abd5d0](https://github.com/DragonAddons/PhDamage/commit/7abd5d06ddcd511331488e1b10134d55e01e83e1))
+
 ## [1.2.1](https://github.com/Xerrion/PhDamage/compare/1.2.0...1.2.1) (2026-03-01)
 
 
