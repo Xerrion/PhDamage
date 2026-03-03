@@ -81,8 +81,9 @@ function PhDamage:OnSlashCommand(input)
     if cmd == "state" then
         ns.Diagnostics.PrintState()
     elseif cmd == "spell" then
-        local spellName = table.concat(args, " ", 2)
-        ns.Diagnostics.PrintSpell(spellName)
+        local spellInput = table.concat(args, " ", 2)
+        local linkName = spellInput:match("|Hspell:%d+.-|h%[(.-)%]|h")
+        ns.Diagnostics.PrintSpell(linkName or spellInput)
     elseif cmd == "help" then
         self:Print("Usage:")
         self:Print("  /phd — Show all spell computations")
