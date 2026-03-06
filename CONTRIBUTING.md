@@ -21,7 +21,7 @@ Thank you for your interest in contributing to **PhDamage** - a floating combat 
 ## Prerequisites
 
 - World of Warcraft client (Retail, TBC Anniversary, MoP Classic, Cata, or Classic)
-- [Lua 5.1](https://www.lua.org/) (for linting and testing)
+- [Lua 5.1](https://www.lua.org/) or [Lua 5.4](https://www.lua.org/) (for linting and testing)
 - [Luacheck](https://github.com/mpeterv/luacheck) (for static analysis)
 - [Busted](https://olivinelabs.com/busted/) (for unit tests)
 - [Git](https://git-scm.com/)
@@ -116,10 +116,17 @@ luacheck path/to/File.lua    # single file for fast feedback
 ### Automated Tests
 PhDamage uses [busted](https://olivinelabs.com/busted/) for unit testing. Tests live in the `tests/` directory.
 
+CI still runs tests with Lua 5.1. Local runs may use Lua 5.1 or Lua 5.4.
+
+Use the repo-local launcher instead of calling `busted` directly. Invoke it with whichever interpreter you want to verify, such as `lua`, `lua5.1`, or `lua5.4`. The launcher asks LuaRocks where `busted.runner` is installed and prepends that rock tree to `package.path` and `package.cpath` for the active interpreter.
+
 ```bash
-busted --verbose              # run all tests
-busted tests/some_spec.lua    # run a single test file
+lua tests/RunBusted.lua --verbose            # run all tests
+lua tests/RunBusted.lua tests/some_spec.lua  # run a single test file
+lua5.4 tests/RunBusted.lua --verbose         # explicitly test under Lua 5.4
 ```
+
+If `busted --verbose` fails with `module 'busted.runner' not found`, your `busted` wrapper and your active interpreter are using different module paths. The launcher above avoids that mismatch without hard-coded machine-specific paths.
 
 ### Manual Testing
 1. Load the addon in the target game version
