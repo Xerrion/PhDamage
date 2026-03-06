@@ -450,7 +450,8 @@ SpellData[1949] = {
 -------------------------------------------------------------------------------
 
 -- Life Tap — instant, Shadow (converts health to mana)
--- Coefficient: ~0.8 (gains spell power scaling)
+-- Current addon model uses a 0.8 coefficient for the spell line, including Rank 6 at level 70.
+-- Revisit only if stronger in-game evidence shows this model is wrong.
 SpellData[1454] = {
     name = "Life Tap",
     school = SCHOOL_SHADOW,

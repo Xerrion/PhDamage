@@ -293,6 +293,19 @@ describe("SpellCalc", function()
 
                 assert.is_near(0.8, result.coefficient, 0.0001)
             end)
+
+            it("should preserve the current modeled 0.8 scaling for Rank 6", function()
+                local spellData = ns.SpellData[1454]
+                local rankData = spellData.ranks[6]
+                local result = SpellCalc.ComputeBase(spellData, rankData, playerState)
+
+                local expectedSpBonus = 0.8 * 1000  -- 800
+                local expectedManaGain = 420 + expectedSpBonus  -- 1220
+
+                assert.is_near(expectedSpBonus, result.spellPowerBonus, 0.01)
+                assert.is_near(expectedManaGain, result.manaGain, 0.01)
+                assert.is_near(0.8, result.coefficient, 0.0001)
+            end)
         end)
 
         it("should return nil for an unknown spell type", function()
