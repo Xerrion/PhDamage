@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/DragonAddons/PhDamage/compare/1.3.1...1.3.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* standardize Ace3 embedded packaging paths ([#28](https://github.com/DragonAddons/PhDamage/issues/28)) ([ad3fff8](https://github.com/DragonAddons/PhDamage/commit/ad3fff83b739d062a70ff4ebfce3412bcb965917))
+
 ## [1.3.1](https://github.com/DragonAddons/PhDamage/compare/1.3.0...1.3.1) (2026-03-06)
 
 
