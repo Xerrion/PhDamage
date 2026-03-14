@@ -32,11 +32,18 @@ jobs:
           fi
           echo "TAG_NAME=$TAG" >> "$GITHUB_ENV"
 
+      - name: Checkout helper script source
+        uses: actions/checkout@v5
+        with:
+          ref: refs/heads/master
+          fetch-depth: 1
+          path: .workflow-source
+
       - name: Snapshot vendored changelog script
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/phdamage-release-scripts"
-          cp scripts/generate_changelog.sh "$RUNNER_TEMP/phdamage-release-scripts/generate_changelog.sh"
+          cp .workflow-source/scripts/generate_changelog.sh "$RUNNER_TEMP/phdamage-release-scripts/generate_changelog.sh"
           chmod +x "$RUNNER_TEMP/phdamage-release-scripts/generate_changelog.sh"
 
       - name: Checkout tag
