@@ -20,7 +20,7 @@ jobs:
     env:
       CF_API_KEY: ${{ secrets.CF_API_KEY }}
       WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
-      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_OAUTH: ${{ github.token }}
     steps:
       - name: Resolve tag
         id: resolve_tag
@@ -34,7 +34,7 @@ jobs:
           echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Checkout helper script source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: refs/heads/master
           fetch-depth: 1
@@ -48,7 +48,7 @@ jobs:
           chmod +x "$RUNNER_TEMP/phdamage-release-scripts/generate_changelog.sh"
 
       - name: Checkout tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: refs/tags/${{ steps.resolve_tag.outputs.tag_name }}
           fetch-depth: 0
