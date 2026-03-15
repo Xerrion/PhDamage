@@ -143,7 +143,7 @@ If `busted --verbose` fails with `module 'busted.runner' not found`, your `buste
 
 2. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/):
    ```bash
-   git commit --no-gpg-sign -m "feat: add critical hit animation (#42)"
+   git commit -m "feat: add critical hit animation (#42)"
    ```
 
 3. **Push** your branch and open a PR against `master`
