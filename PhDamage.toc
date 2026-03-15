@@ -1,4 +1,4 @@
-## Interface: 20505
+## Interface-TBC: 20505
 ## Title: PhDamage
 ## Notes: Spell damage/healing computation engine
 ## Author: Torchlight
