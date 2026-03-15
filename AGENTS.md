@@ -145,8 +145,8 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
 | `lint.yml` | `pull_request_target` to `master` | Runs Luacheck and busted tests |
-| `release-pr.yml` | Push to `master` | Creates / updates a release PR via release-please |
-| `release.yml` | Tag push or `workflow_dispatch` | Builds and publishes via BigWigsMods packager |
+| `release.yml` | Push to `master` | release-please creates/updates a Release PR; dispatches `packager.yml` on release |
+| `packager.yml` | `workflow_dispatch` (from release.yml) | Builds and publishes via BigWigsMods packager |
 
 ### Branch Protection
 
@@ -160,7 +160,8 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 ### Release Flow (release-please)
 - **release-please** creates/updates a Release PR on every push to master
 - Merging the Release PR creates a git tag + GitHub Release
-- Tag push triggers BigWigsMods/packager for CurseForge + Wago uploads
+- release.yml dispatches packager.yml with the tag name via `gh workflow run`
+- packager.yml runs BigWigsMods/packager for CurseForge + Wago uploads
 - Config: `release-please-config.json`, manifest: `.release-please-manifest.json`
 - DO NOT manually create tags - release-please handles versioning
 
