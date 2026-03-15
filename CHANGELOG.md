@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/DragonAddons/PhDamage/compare/1.3.4...1.3.5) (2026-03-15)
+
+
+### Bug Fixes
+
+* correct interface again ([b1d967c](https://github.com/DragonAddons/PhDamage/commit/b1d967cf4fae74917cd662cea562ae294bbd09d9))
+
 ## [1.3.4](https://github.com/DragonAddons/PhDamage/compare/1.3.3...1.3.4) (2026-03-15)
 
 
