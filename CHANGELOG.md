@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/DragonAddons/PhDamage/compare/1.3.2...1.3.3) (2026-03-15)
+
+
+### Bug Fixes
+
+* inline shared release automation ([#30](https://github.com/DragonAddons/PhDamage/issues/30)) ([4347e93](https://github.com/DragonAddons/PhDamage/commit/4347e93fb050fc788d6bd54167a8a72000be8046))
+
 ## [1.3.2](https://github.com/DragonAddons/PhDamage/compare/1.3.1...1.3.2) (2026-03-14)
 
 
