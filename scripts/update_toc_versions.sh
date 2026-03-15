@@ -68,7 +68,7 @@ fetch_version() {
     fi
 
     local versions_name=""
-    versions_name=$(echo "$response" | awk -F'|' '$1 == "us" { print $6 }')
+    versions_name=$(echo "$response" | awk -F'|' '$1 == "us" { print $6; exit }')
 
     if [[ -z "$versions_name" ]]; then
         echo "ERROR: Could not parse US region version for ${product}" >&2
