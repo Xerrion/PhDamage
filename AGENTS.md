@@ -97,13 +97,6 @@ Sub-namespaces:
 
 Use the `wowhead-researcher` agent (defined in the project-level `opencode.json`) for all Wowhead data lookups. This agent has its own persistent Playwright browser with cookies stored between sessions.
 
-### When to Use
-
-- Verifying spell damage values and ranks for a new class
-- Checking talent tooltip text for exact per-rank percentages  
-- Confirming aura/buff effects and their spell IDs
-- Validating that a class spell list is complete
-
 ### Invocation
 
 ```
@@ -132,14 +125,6 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 
 ---
 
-## Current Scope
-
-- **Phase 1-5**: Complete - TBC Anniversary, Warlock + Hunter + Mage, diagnostics + tooltip + action bar
-- **Phase 6** (active): Mage class support
-- **Future**: Additional classes (Priest, Shaman, Druid, Paladin), multi-version support, options panel
-
----
-
 ## CI / CD
 
 | Workflow | Trigger | What it does |
@@ -147,100 +132,6 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 | `lint.yml` | `pull_request_target` to `master` | Runs Luacheck and busted tests |
 | `release.yml` | Push to `master` | release-please creates/updates a Release PR; dispatches `packager.yml` on release |
 | `packager.yml` | `workflow_dispatch` (from release.yml) | Builds and publishes via BigWigsMods packager |
-
-### Branch Protection
-
-- PRs required to merge into `master`
-- Luacheck status check must pass
-- Branches must be up to date before merging
-- No force pushes to `master`
-- Squash merge only
-- Auto-delete head branches after merge
-
-### Release Flow (release-please)
-- **release-please** creates/updates a Release PR on every push to master
-- Merging the Release PR creates a git tag + GitHub Release
-- release.yml dispatches packager.yml with the tag name via `gh workflow run`
-- packager.yml runs BigWigsMods/packager for CurseForge + Wago uploads
-- Config: `release-please-config.json`, manifest: `.release-please-manifest.json`
-- DO NOT manually create tags - release-please handles versioning
-
----
-
-## Code Style
-
-### Formatting
-- Indent with **4 spaces**, no tabs
-- Max line length **120** unless the addon `.luacheckrc` disables it
-- Spaces around operators: `local x = 1 + 2`
-- No trailing whitespace
-- Use plain hyphens (`-`), **never** em or en dashes
-
-### File Header
-Every Lua file starts with:
-
-```lua
--------------------------------------------------------------------------------
--- FileName.lua
--- Brief description
---
--- Supported versions: Retail, MoP Classic, TBC Anniversary, Cata, Classic
--------------------------------------------------------------------------------
-```
-
-### Imports and Scoping
-- Use the shared namespace: `local ADDON_NAME, ns = ...`
-- Cache WoW API and Lua globals used more than once as locals at the top of the file
-- Keep addon logic in locals; only SavedVariables and `SLASH_*` are global
-- Use `LibStub` for Ace3 or other embedded libs; never global `require`
-
-```lua
-local ADDON_NAME, ns = ...
-local CreateFrame = CreateFrame
-local GetTime = GetTime
-local LSM = LibStub("LibSharedMedia-3.0")
-```
-
-### Naming
-
-| Element | Convention | Example |
-|---------|------------|---------|
-| Files | PascalCase | `MyAddon_Core.lua` |
-| SavedVariables | PascalCase | `MyAddonDB` |
-| Local variables | camelCase | `local currentState` |
-| Functions (public or local) | PascalCase | `local function UpdateState()` |
-| Constants | UPPER_SNAKE | `local MAX_RETRIES = 5` |
-| Slash commands | UPPER_SNAKE | `SLASH_MYADDON1` |
-| Color codes | UPPER_SNAKE | `local COLOR_RED = "\|cffff0000"` |
-| Unused args | underscore prefix | `local _unused` |
-
-### Types
-- Default to plain Lua 5.1 with no annotations
-- Only add LuaLS annotations when the file already uses them or for public library APIs
-- Keep annotations minimal and accurate; do not introduce new tooling
-
-### Functions and Structure
-- Keep functions under 50 lines; extract helpers when longer
-- Prefer early returns over deep nesting
-- Prefer composition over inheritance
-- Keep logic separated by layer when possible: Core (WoW API), Engine (pure Lua),
-  Data (tables), Presentation (UI)
-
-### Error Handling
-- Use defensive nil checks for optional APIs
-- For version differences, prefer `or` fallbacks over runtime version checks
-- Use `pcall` for user callbacks or APIs that may be missing in some versions
-- Use `error(msg, 2)` for public library input validation (reports at caller site)
-
----
-
-## Versioning and File Loading
-- Do not gate features with runtime version checks
-- Split version-specific code into separate files
-- Load with TOC `## Interface` / `## Interface-*` directives or packager comment
-  directives (`#@retail@`, `#@non-retail@`)
-
-Packager directives are comments locally, so later files can override earlier ones.
 
 ---
 
@@ -250,54 +141,3 @@ Packager directives are comments locally, so later files can override earlier on
   always provide `or` fallbacks)
 - Race conditions on `PLAYER_ENTERING_WORLD` -- use a short `C_Timer.After` delay
 - Timer leaks -- cancel `C_Timer` or `AceTimer` handles before reusing
-- `GetItemInfo` or item data can be nil on first call -- retry with a timer
-
----
-
-## GitHub Workflow
-
-### Issues
-- Title format: `[Bug]: description` / `[Feature]: description`
-- Use plain `bug` / `enhancement` labels (PhDamage uses GitHub default labels)
-- PhDamage has no dedicated GitHub Project board
-
-### Branching and PRs
-- Branch from `master`: `feat/<number>-short-desc`, `fix/<number>-short-desc`, `refactor/<number>-short-desc`
-- One PR per issue; reference `Closes #N` in the PR body
-- CI must pass (`gh pr checks <N> --repo Xerrion/PhDamage`) before merging
-- Wait for CodeRabbit AI review to complete and address any findings before merging
-- When replying to CodeRabbit review comments, always use `@coderabbitai` and always reply to the **specific comment thread** (not as a top-level PR comment)
-- Squash merge only: `gh pr merge <N> --squash --delete-branch`
-- **Never merge release-please PRs** (`chore(master): release X.Y.Z`) - the repo owner merges these manually
-
-### Commits
-- Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
-- Reference issue numbers in commit messages
-
----
-
-## Working Agreement for Agents
-- Addon-level AGENTS.md overrides root rules when present
-- Do not add new dependencies without discussing trade-offs
-- Run luacheck before and after changes
-- If only manual tests exist, document what you verified in-game
-- Verify changes in the game client when possible
-- Keep changes small and focused; prefer composition over inheritance
-- Use the `wow-addon` agent to verify WoW API signatures before implementation - never guess
-- See the root `AGENTS.md` Skill Routing table for the full skill-loading matrix for `coder` delegations
-
----
-
-## Communication Style
-
-When responding to or commenting on issues, always write in **first-person singular** ("I")
-as the repo owner -- never use "we" or "our team". Speak as if you are the developer personally.
-
-**Writing style:**
-- Direct, structured, solution-driven. Get to the point fast. Text is a tool, not decoration.
-- Think in systems. Break things into flows, roles, rules, and frameworks.
-- Bias toward precision. Concrete output, copy-paste-ready solutions, clear constraints. Low
-  tolerance for fluff.
-- Tone is calm and rational with small flashes of humor and self-awareness.
-- When confident in a topic, become more informal and creative.
-- When something matters, become sharp and focused.
