@@ -3,7 +3,8 @@ description: Suggest a new feature or improvement for PhDamage
 title: "[Feature]: "
 labels:
   - enhancement
-assignees: []
+assignees:
+  - Xerrion
 body:
   - type: textarea
     id: problem-motivation
