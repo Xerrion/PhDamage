@@ -3,8 +3,6 @@ description: Report a bug with PhDamage
 title: "[Bug]: "
 labels:
   - bug
-assignees:
-  - Xerrion
 body:
   - type: textarea
     id: description
