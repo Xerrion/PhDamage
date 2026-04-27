@@ -47,9 +47,15 @@ local function BuildSpellIDMap()
 end
 
 -------------------------------------------------------------------------------
--- FormatNumber - delegated to shared formatting module
+-- FormatNumber - delegated to shared formatting module, honours abbreviation setting
 -------------------------------------------------------------------------------
-local FormatNumber = function(n) return ns.Format.FormatNumber(n) end
+local FormatNumber = function(n)
+    local cfg = ns.Addon and ns.Addon.db and ns.Addon.db.profile and ns.Addon.db.profile.overlay
+    if cfg and cfg.abbreviateNumbers == false then
+        return ns.Format.FormatNumberFull(n)
+    end
+    return ns.Format.FormatNumber(n)
+end
 
 -------------------------------------------------------------------------------
 -- ResolveSpellID(button)
@@ -97,6 +103,23 @@ local function ResolveSpellID(button)
 end
 
 -------------------------------------------------------------------------------
+-- ApplyOverlayAppearance(fontString, button)
+-- Applies font size and anchor point from the current DB profile to an overlay.
+-- Falls back to sensible defaults when the DB is not yet available.
+-------------------------------------------------------------------------------
+local function ApplyOverlayAppearance(fontString, button)
+    local cfg = ns.Addon and ns.Addon.db and ns.Addon.db.profile and ns.Addon.db.profile.overlay or {}
+    local anchor  = cfg.anchor  or "BOTTOM"
+    local offsetX = cfg.offsetX or 0
+    local offsetY = cfg.offsetY or 2
+    local fontSize = cfg.fontSize or 10
+
+    fontString:ClearAllPoints()
+    fontString:SetPoint(anchor, button, anchor, offsetX, offsetY)
+    fontString:SetFont("Fonts\\ARIALN.TTF", fontSize, "OUTLINE")
+end
+
+-------------------------------------------------------------------------------
 -- GetOrCreateOverlay(button)
 -- Lazily creates and returns the FontString overlay for a button.
 -------------------------------------------------------------------------------
@@ -105,10 +128,27 @@ local function GetOrCreateOverlay(button)
         return button.phDamageText
     end
 
-    local fontString = button:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    fontString:SetPoint("BOTTOM", button, "BOTTOM", 0, 2)
+    local fontString = button:CreateFontString(nil, "OVERLAY")
+    ApplyOverlayAppearance(fontString, button)
     button.phDamageText = fontString
     return fontString
+end
+
+-------------------------------------------------------------------------------
+-- ActionBar.ApplySettings()
+-- Re-applies font/position settings to all existing overlays and forces a
+-- full refresh so the displayed values are re-rendered immediately.
+-------------------------------------------------------------------------------
+function ActionBar.ApplySettings()
+    for _, button in ipairs(allButtons) do
+        if button.phDamageText then
+            ApplyOverlayAppearance(button.phDamageText, button)
+        end
+    end
+    wipe(resultCache)
+    for _, button in ipairs(allButtons) do
+        ActionBar.UpdateButton(button)
+    end
 end
 
 -------------------------------------------------------------------------------
