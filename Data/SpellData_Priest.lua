@@ -51,18 +51,18 @@ SpellData[589] = {
     numTicks = 6,
     ranks = {
         -- Wowhead spell=589 (per-tick SP mod 0.0732 x 6 ticks; sub-cap penalty rank)
-        [1]  = { spellID = 589,   totalDmg = 30,   level = 4,  coefficient = 0.4392 },
+        [1]  = { spellID = 589,   totalDmg = 30,   level = 4, maxLevel = 9, coefficient = 0.4392 },
         -- Wowhead spell=594 (per-tick SP mod 0.114 x 6 ticks; sub-cap penalty rank)
-        [2]  = { spellID = 594,   totalDmg = 66,   level = 10, coefficient = 0.684  },
+        [2]  = { spellID = 594,   totalDmg = 66,   level = 10, maxLevel = 17, coefficient = 0.684  },
         -- Wowhead spell=970 (per-tick SP mod 0.169 x 6 ticks; sub-cap penalty rank)
-        [3]  = { spellID = 970,   totalDmg = 132,  level = 18, coefficient = 1.014  },
-        [4]  = { spellID = 992,   totalDmg = 234,  level = 26 },
-        [5]  = { spellID = 2767,  totalDmg = 366,  level = 34 },
-        [6]  = { spellID = 10892, totalDmg = 510,  level = 42 },
-        [7]  = { spellID = 10893, totalDmg = 672,  level = 50 },
-        [8]  = { spellID = 10894, totalDmg = 852,  level = 58 },
-        [9]  = { spellID = 25367, totalDmg = 1002, level = 65 },
-        [10] = { spellID = 25368, totalDmg = 1236, level = 70 },
+        [3]  = { spellID = 970,   totalDmg = 132,  level = 18, maxLevel = 25, coefficient = 1.014  },
+        [4]  = { spellID = 992,   totalDmg = 234,  level = 26, maxLevel = 33 },
+        [5]  = { spellID = 2767,  totalDmg = 366,  level = 34, maxLevel = 41 },
+        [6]  = { spellID = 10892, totalDmg = 510,  level = 42, maxLevel = 49 },
+        [7]  = { spellID = 10893, totalDmg = 672,  level = 50, maxLevel = 57 },
+        [8]  = { spellID = 10894, totalDmg = 852,  level = 58, maxLevel = 64 },
+        [9]  = { spellID = 25367, totalDmg = 1002, level = 65, maxLevel = 69 },
+        [10] = { spellID = 25368, totalDmg = 1236, level = 70, maxLevel = 70 },
     },
 }
 
@@ -78,18 +78,18 @@ SpellData[8092] = {
     canCrit = true,
     ranks = {
         -- Wowhead spell=8092 (sub-cap penalty rank, SP mod 0.268)
-        [1]  = { spellID = 8092,  minDmg = 39,  maxDmg = 43,  level = 10, coefficient = 0.268 },
+        [1]  = { spellID = 8092,  minDmg = 39,  maxDmg = 43,  level = 10, maxLevel = 15, coefficient = 0.268 },
         -- Wowhead spell=8102 (sub-cap penalty rank, SP mod 0.364)
-        [2]  = { spellID = 8102,  minDmg = 72,  maxDmg = 78,  level = 16, coefficient = 0.364 },
-        [3]  = { spellID = 8103,  minDmg = 112, maxDmg = 120, level = 22 },
-        [4]  = { spellID = 8104,  minDmg = 167, maxDmg = 177, level = 28 },
-        [5]  = { spellID = 8105,  minDmg = 217, maxDmg = 231, level = 34 },
-        [6]  = { spellID = 8106,  minDmg = 279, maxDmg = 297, level = 40 },
-        [7]  = { spellID = 10945, minDmg = 346, maxDmg = 366, level = 46 },
-        [8]  = { spellID = 10946, minDmg = 425, maxDmg = 449, level = 52 },
-        [9]  = { spellID = 10947, minDmg = 503, maxDmg = 531, level = 58 },
-        [10] = { spellID = 25372, minDmg = 557, maxDmg = 587, level = 63 },
-        [11] = { spellID = 25375, minDmg = 708, maxDmg = 748, level = 69 },
+        [2]  = { spellID = 8102,  minDmg = 72,  maxDmg = 78,  level = 16, maxLevel = 21, coefficient = 0.364 },
+        [3]  = { spellID = 8103,  minDmg = 112, maxDmg = 120, level = 22, maxLevel = 27 },
+        [4]  = { spellID = 8104,  minDmg = 167, maxDmg = 177, level = 28, maxLevel = 33 },
+        [5]  = { spellID = 8105,  minDmg = 217, maxDmg = 231, level = 34, maxLevel = 39 },
+        [6]  = { spellID = 8106,  minDmg = 279, maxDmg = 297, level = 40, maxLevel = 45 },
+        [7]  = { spellID = 10945, minDmg = 346, maxDmg = 366, level = 46, maxLevel = 51 },
+        [8]  = { spellID = 10946, minDmg = 425, maxDmg = 449, level = 52, maxLevel = 57 },
+        [9]  = { spellID = 10947, minDmg = 503, maxDmg = 531, level = 58, maxLevel = 62 },
+        [10] = { spellID = 25372, minDmg = 557, maxDmg = 587, level = 63, maxLevel = 68 },
+        [11] = { spellID = 25375, minDmg = 708, maxDmg = 748, level = 69, maxLevel = 69 },
     },
 }
 
@@ -104,13 +104,13 @@ SpellData[15407] = {
     duration = 3,
     numTicks = 3,
     ranks = {
-        [1] = { spellID = 15407, totalDmg = 75,  level = 20 },
-        [2] = { spellID = 17311, totalDmg = 126, level = 28 },
-        [3] = { spellID = 17312, totalDmg = 186, level = 36 },
-        [4] = { spellID = 17313, totalDmg = 261, level = 44 },
-        [5] = { spellID = 17314, totalDmg = 330, level = 52 },
-        [6] = { spellID = 18807, totalDmg = 426, level = 60 },
-        [7] = { spellID = 25387, totalDmg = 528, level = 68 },
+        [1] = { spellID = 15407, totalDmg = 75,  level = 20, maxLevel = 27 },
+        [2] = { spellID = 17311, totalDmg = 126, level = 28, maxLevel = 35 },
+        [3] = { spellID = 17312, totalDmg = 186, level = 36, maxLevel = 43 },
+        [4] = { spellID = 17313, totalDmg = 261, level = 44, maxLevel = 51 },
+        [5] = { spellID = 17314, totalDmg = 330, level = 52, maxLevel = 59 },
+        [6] = { spellID = 18807, totalDmg = 426, level = 60, maxLevel = 67 },
+        [7] = { spellID = 25387, totalDmg = 528, level = 68, maxLevel = 68 },
     },
 }
 
@@ -125,8 +125,8 @@ SpellData[32379] = {
     castTime = 0,
     canCrit = true,
     ranks = {
-        [1] = { spellID = 32379, minDmg = 450, maxDmg = 522, level = 62 },
-        [2] = { spellID = 32996, minDmg = 572, maxDmg = 664, level = 70 },
+        [1] = { spellID = 32379, minDmg = 450, maxDmg = 522, level = 62, maxLevel = 69 },
+        [2] = { spellID = 32996, minDmg = 572, maxDmg = 664, level = 70, maxLevel = 70 },
     },
 }
 
@@ -146,18 +146,18 @@ SpellData[585] = {
     canCrit = true,
     ranks = {
         -- Wowhead spell=585 (sub-cap penalty rank, SP mod 0.123)
-        [1]  = { spellID = 585,   minDmg = 13,  maxDmg = 17,  level = 1,  coefficient = 0.123 },
+        [1]  = { spellID = 585,   minDmg = 13,  maxDmg = 17,  level = 1, maxLevel = 5, coefficient = 0.123 },
         -- Wowhead spell=591 (sub-cap penalty rank, SP mod 0.271)
-        [2]  = { spellID = 591,   minDmg = 25,  maxDmg = 31,  level = 6,  coefficient = 0.271 },
+        [2]  = { spellID = 591,   minDmg = 25,  maxDmg = 31,  level = 6, maxLevel = 13, coefficient = 0.271 },
         -- Wowhead spell=598 (sub-cap penalty rank, SP mod 0.554)
-        [3]  = { spellID = 598,   minDmg = 54,  maxDmg = 62,  level = 14, coefficient = 0.554 },
-        [4]  = { spellID = 984,   minDmg = 91,  maxDmg = 105, level = 22 },
-        [5]  = { spellID = 1004,  minDmg = 150, maxDmg = 170, level = 30 },
-        [6]  = { spellID = 6060,  minDmg = 212, maxDmg = 240, level = 38 },
-        [7]  = { spellID = 10933, minDmg = 287, maxDmg = 323, level = 46 },
-        [8]  = { spellID = 10934, minDmg = 371, maxDmg = 415, level = 54 },
-        [9]  = { spellID = 25363, minDmg = 405, maxDmg = 453, level = 61 },
-        [10] = { spellID = 25364, minDmg = 545, maxDmg = 611, level = 69 },
+        [3]  = { spellID = 598,   minDmg = 54,  maxDmg = 62,  level = 14, maxLevel = 21, coefficient = 0.554 },
+        [4]  = { spellID = 984,   minDmg = 91,  maxDmg = 105, level = 22, maxLevel = 29 },
+        [5]  = { spellID = 1004,  minDmg = 150, maxDmg = 170, level = 30, maxLevel = 37 },
+        [6]  = { spellID = 6060,  minDmg = 212, maxDmg = 240, level = 38, maxLevel = 45 },
+        [7]  = { spellID = 10933, minDmg = 287, maxDmg = 323, level = 46, maxLevel = 53 },
+        [8]  = { spellID = 10934, minDmg = 371, maxDmg = 415, level = 54, maxLevel = 60 },
+        [9]  = { spellID = 25363, minDmg = 405, maxDmg = 453, level = 61, maxLevel = 68 },
+        [10] = { spellID = 25364, minDmg = 545, maxDmg = 611, level = 69, maxLevel = 69 },
     },
 }
 
@@ -176,15 +176,15 @@ SpellData[14914] = {
     castTime = 3.5,
     canCrit = true,
     ranks = {
-        [1] = { spellID = 14914, minDmg = 78,  maxDmg = 98,  dotDmg = 30,  level = 20 },
-        [2] = { spellID = 15262, minDmg = 96,  maxDmg = 120, dotDmg = 40,  level = 24 },
-        [3] = { spellID = 15263, minDmg = 132, maxDmg = 166, dotDmg = 55,  level = 30 },
-        [4] = { spellID = 15264, minDmg = 165, maxDmg = 209, dotDmg = 65,  level = 36 },
-        [5] = { spellID = 15265, minDmg = 204, maxDmg = 258, dotDmg = 85,  level = 42 },
-        [6] = { spellID = 15266, minDmg = 254, maxDmg = 322, dotDmg = 100, level = 48 },
-        [7] = { spellID = 15267, minDmg = 304, maxDmg = 386, dotDmg = 125, level = 54 },
-        [8] = { spellID = 15261, minDmg = 355, maxDmg = 449, dotDmg = 145, level = 60 },
-        [9] = { spellID = 25384, minDmg = 412, maxDmg = 522, dotDmg = 165, level = 66 },
+        [1] = { spellID = 14914, minDmg = 78,  maxDmg = 98,  dotDmg = 30,  level = 20, maxLevel = 23 },
+        [2] = { spellID = 15262, minDmg = 96,  maxDmg = 120, dotDmg = 40,  level = 24, maxLevel = 29 },
+        [3] = { spellID = 15263, minDmg = 132, maxDmg = 166, dotDmg = 55,  level = 30, maxLevel = 35 },
+        [4] = { spellID = 15264, minDmg = 165, maxDmg = 209, dotDmg = 65,  level = 36, maxLevel = 41 },
+        [5] = { spellID = 15265, minDmg = 204, maxDmg = 258, dotDmg = 85,  level = 42, maxLevel = 47 },
+        [6] = { spellID = 15266, minDmg = 254, maxDmg = 322, dotDmg = 100, level = 48, maxLevel = 53 },
+        [7] = { spellID = 15267, minDmg = 304, maxDmg = 386, dotDmg = 125, level = 54, maxLevel = 59 },
+        [8] = { spellID = 15261, minDmg = 355, maxDmg = 449, dotDmg = 145, level = 60, maxLevel = 65 },
+        [9] = { spellID = 25384, minDmg = 412, maxDmg = 522, dotDmg = 165, level = 66, maxLevel = 66 },
     },
 }
 
@@ -205,13 +205,13 @@ SpellData[15237] = {
     canCrit = true,
     isAoe = true,
     ranks = {
-        [1] = { spellID = 15237, minDmg = 28,  maxDmg = 32,  level = 20 },
-        [2] = { spellID = 15430, minDmg = 50,  maxDmg = 58,  level = 28 },
-        [3] = { spellID = 15431, minDmg = 76,  maxDmg = 88,  level = 36 },
-        [4] = { spellID = 27799, minDmg = 106, maxDmg = 122, level = 44 },
-        [5] = { spellID = 27800, minDmg = 140, maxDmg = 162, level = 52 },
-        [6] = { spellID = 27801, minDmg = 181, maxDmg = 209, level = 60 },
-        [7] = { spellID = 25331, minDmg = 242, maxDmg = 280, level = 68 },
+        [1] = { spellID = 15237, minDmg = 28,  maxDmg = 32,  level = 20, maxLevel = 27 },
+        [2] = { spellID = 15430, minDmg = 50,  maxDmg = 58,  level = 28, maxLevel = 35 },
+        [3] = { spellID = 15431, minDmg = 76,  maxDmg = 88,  level = 36, maxLevel = 43 },
+        [4] = { spellID = 27799, minDmg = 106, maxDmg = 122, level = 44, maxLevel = 51 },
+        [5] = { spellID = 27800, minDmg = 140, maxDmg = 162, level = 52, maxLevel = 59 },
+        [6] = { spellID = 27801, minDmg = 181, maxDmg = 209, level = 60, maxLevel = 67 },
+        [7] = { spellID = 25331, minDmg = 242, maxDmg = 280, level = 68, maxLevel = 68 },
     },
 }
 

@@ -28,9 +28,15 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(133, state, 1)
             assert.is_not_nil(r)
-            -- R1: 16-25 direct + 1000*0.123 (per-rank sub-cap penalty) = 139-148
-            assert.is_near(139, r.directMin, 1)
-            assert.is_near(148, r.directMax, 1)
+            -- R1: level=1, maxLevel=5, per-rank coefficient 0.123.
+            -- cMaNGOS-TBC penalty (1, 5, 70):
+            --   LvlPenalty = (20-1)*3.75 = 71.25
+            --   LvlFactor  = (5+6)/70    = 0.15714
+            --   penalty    = (100-71.25)*0.15714/100 = 0.045179
+            -- min = 16 + 1000*0.123*0.045179 = 21.557
+            -- max = 25 + 1000*0.123*0.045179 = 30.557
+            assert.is_near(21.557, r.directMin, 1)
+            assert.is_near(30.557, r.directMax, 1)
         end)
     end)
 

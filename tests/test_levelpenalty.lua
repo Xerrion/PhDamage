@@ -110,6 +110,18 @@ describe("LevelPenalty engine integration (Phase 2)", function()
         if not ok then error(err, 0) end
     end
 
+    -- After Phase 4, real SpellData ranks all carry a populated maxLevel,
+    -- so a vanilla Pipeline.Calculate already includes the penalty. To assert
+    -- the penalty math against an unpenalized reference, this helper computes
+    -- a baseline with rankData.maxLevel temporarily cleared, then restores it.
+    local function unpenalizedBaseline(rankData, fn)
+        local original = rankData.maxLevel
+        rankData.maxLevel = nil
+        local ok, err = pcall(fn)
+        rankData.maxLevel = original
+        if not ok then error(err, 0) end
+    end
+
     describe("standard path (BuildModifiedResult)", function()
         -- Frostbolt R3: level=14. Forcing maxLevel=19 (next rank starts at 20)
         -- yields cMaNGOS-TBC penalty (14, 19, 70):
@@ -120,8 +132,10 @@ describe("LevelPenalty engine integration (Phase 2)", function()
             local rankData = ns.SpellData[116].ranks[3]
             local state = bootstrap.makeMageState()
 
-            local baseline = Pipeline.Calculate(116, state, 3)
-            local baselineSpBonus = baseline.spellPowerBonus
+            local baselineSpBonus
+            unpenalizedBaseline(rankData, function()
+                baselineSpBonus = Pipeline.Calculate(116, state, 3).spellPowerBonus
+            end)
             assert.is_true(baselineSpBonus > 0, "baseline SP bonus must be positive")
 
             withMaxLevel(rankData, 19, function()
@@ -132,17 +146,19 @@ describe("LevelPenalty engine integration (Phase 2)", function()
             end)
         end)
 
-        -- Phase 1-3 compatibility: rankData without maxLevel must be untouched.
+        -- Phase 4 backfill safety: when a rank's maxLevel is cleared, the
+        -- engine must apply no penalty (penalty=1.0).
         it("leaves spellPowerBonus untouched when maxLevel is nil (data backfill safety)", function()
             local rankData = ns.SpellData[116].ranks[3]
-            assert.is_nil(rankData.maxLevel, "Frostbolt R3 should not have maxLevel pre-Phase-4")
             local state = bootstrap.makeMageState()
 
-            local result = Pipeline.Calculate(116, state, 3)
-            -- Without maxLevel, penalty=1.0; spellPowerBonus must equal effectiveSp * effectiveCoeff.
-            local sp = state.stats.spellPower[ns.SpellData[116].school]
-            local expectedCoeff = rankData.coefficient or ns.SpellData[116].coefficient
-            assert.is_near(sp * expectedCoeff, result.spellPowerBonus, 0.001)
+            unpenalizedBaseline(rankData, function()
+                local result = Pipeline.Calculate(116, state, 3)
+                -- Without maxLevel, penalty=1.0; spellPowerBonus must equal effectiveSp * effectiveCoeff.
+                local sp = state.stats.spellPower[ns.SpellData[116].school]
+                local expectedCoeff = rankData.coefficient or ns.SpellData[116].coefficient
+                assert.is_near(sp * expectedCoeff, result.spellPowerBonus, 0.001)
+            end)
         end)
 
         -- Top-rank exemption: maxLevel == spellLevel triggers cMaNGOS short-circuit.
@@ -150,10 +166,13 @@ describe("LevelPenalty engine integration (Phase 2)", function()
             local rankData = ns.SpellData[116].ranks[14]  -- level=69 (top)
             local state = bootstrap.makeMageState()
 
-            local baseline = Pipeline.Calculate(116, state, 14)
+            local baselineSpBonus
+            unpenalizedBaseline(rankData, function()
+                baselineSpBonus = Pipeline.Calculate(116, state, 14).spellPowerBonus
+            end)
             withMaxLevel(rankData, rankData.level, function()
                 local result = Pipeline.Calculate(116, state, 14)
-                assert.is_near(baseline.spellPowerBonus, result.spellPowerBonus, 0.001)
+                assert.is_near(baselineSpBonus, result.spellPowerBonus, 0.001)
             end)
         end)
     end)
@@ -168,9 +187,12 @@ describe("LevelPenalty engine integration (Phase 2)", function()
             local rankData = ns.SpellData[348].ranks[1]
             local state = bootstrap.makePlayerState()  -- Warlock, 1000 Fire SP
 
-            local baseline = Pipeline.Calculate(348, state, 1)
-            local baselineDirect = baseline.directSpBonus
-            local baselineDot = baseline.dotSpBonus
+            local baselineDirect, baselineDot
+            unpenalizedBaseline(rankData, function()
+                local baseline = Pipeline.Calculate(348, state, 1)
+                baselineDirect = baseline.directSpBonus
+                baselineDot = baseline.dotSpBonus
+            end)
             assert.is_true(baselineDirect > 0, "baseline directSpBonus must be positive")
             assert.is_true(baselineDot > 0, "baseline dotSpBonus must be positive")
 

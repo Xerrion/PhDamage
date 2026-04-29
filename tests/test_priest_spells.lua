@@ -27,10 +27,15 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(589, state, 1)
             assert.is_not_nil(r)
-            -- R1 has per-rank coefficient 0.4392 (sub-cap penalty rank).
-            -- 30 base + 1000*0.4392 = 469.2; tickDmg = 469.2/6 = 78.2
-            assert.is_near(469.2, r.totalDmg, 1)
-            assert.is_near(78.2, r.tickDmg, 1)
+            -- R1: level=4, maxLevel=9, per-rank coefficient 0.4392.
+            -- cMaNGOS-TBC penalty (4, 9, 70):
+            --   LvlPenalty = (20-4)*3.75 = 60
+            --   LvlFactor  = (9+6)/70    = 0.21429
+            --   penalty    = (100-60)*0.21429/100 = 0.085714
+            -- totalDmg = 30 + 1000*0.4392*0.085714 = 67.6457
+            -- tickDmg  = 67.6457/6 = 11.27
+            assert.is_near(67.6457, r.totalDmg, 1)
+            assert.is_near(11.27, r.tickDmg, 1)
         end)
     end)
 
@@ -48,10 +53,15 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(8092, state, 1)
             assert.is_not_nil(r)
-            -- R1 has per-rank coefficient 0.268 (sub-cap penalty rank).
-            -- 39-43 + 1000*0.268 = 307-311
-            assert.is_near(307, r.minDmg, 1)
-            assert.is_near(311, r.maxDmg, 1)
+            -- R1: level=10, maxLevel=15, per-rank coefficient 0.268.
+            -- cMaNGOS-TBC penalty (10, 15, 70):
+            --   LvlPenalty = (20-10)*3.75 = 37.5
+            --   LvlFactor  = (15+6)/70    = 0.30
+            --   penalty    = (100-37.5)*0.30/100 = 0.1875
+            -- min = 39 + 1000*0.268*0.1875 = 89.25
+            -- max = 43 + 1000*0.268*0.1875 = 93.25
+            assert.is_near(89.25, r.minDmg, 1)
+            assert.is_near(93.25, r.maxDmg, 1)
         end)
     end)
 
@@ -70,8 +80,13 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(15407, state, 1)
             assert.is_not_nil(r)
-            -- R1: 75 base + 1000*0.57 = 645
-            assert.is_near(645, r.totalDmg, 1)
+            -- R1: level=20, maxLevel=27. spellLevel=20 means LvlPenalty = 0.
+            -- cMaNGOS-TBC penalty (20, 27, 70):
+            --   LvlPenalty = 0 (only applies < 20)
+            --   LvlFactor  = (27+6)/70 = 0.47143
+            --   penalty    = (100-0)*0.47143/100 = 0.47143
+            -- totalDmg = 75 + 1000*0.57*0.47143 = 343.71
+            assert.is_near(343.71, r.totalDmg, 1)
         end)
     end)
 
@@ -112,10 +127,15 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(585, state, 1)
             assert.is_not_nil(r)
-            -- R1 has per-rank coefficient 0.123 (sub-cap penalty rank).
-            -- 13-17 + 1000*0.123 = 136-140
-            assert.is_near(136, r.minDmg, 1)
-            assert.is_near(140, r.maxDmg, 1)
+            -- R1: level=1, maxLevel=5, per-rank coefficient 0.123.
+            -- cMaNGOS-TBC penalty (1, 5, 70):
+            --   LvlPenalty = (20-1)*3.75 = 71.25
+            --   LvlFactor  = (5+6)/70    = 0.15714
+            --   penalty    = (100-71.25)*0.15714/100 = 0.045179
+            -- min = 13 + 1000*0.123*0.045179 = 18.557
+            -- max = 17 + 1000*0.123*0.045179 = 22.557
+            assert.is_near(18.557, r.minDmg, 1)
+            assert.is_near(22.557, r.maxDmg, 1)
         end)
     end)
 
@@ -135,11 +155,16 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(14914, state, 1)
             assert.is_not_nil(r)
-            -- R1: 78-98 direct + 1000*0.857 = 935-955
-            assert.is_near(935, r.directMin, 1)
-            assert.is_near(955, r.directMax, 1)
-            -- DoT: 30 base + 1000*0.165 = 195
-            assert.is_near(195, r.dotTotalDmg, 1)
+            -- R1: level=20, maxLevel=23. spellLevel=20 means LvlPenalty = 0.
+            -- cMaNGOS-TBC penalty (20, 23, 70):
+            --   LvlPenalty = 0
+            --   LvlFactor  = (23+6)/70 = 0.41429
+            --   penalty    = 0.41429
+            -- direct: 78-98 + 1000*0.857*0.41429 = 433.04 - 453.04
+            -- DoT: 30 + 1000*0.165*0.41429 = 98.36
+            assert.is_near(433.04, r.directMin, 1)
+            assert.is_near(453.04, r.directMax, 1)
+            assert.is_near(98.36, r.dotTotalDmg, 1)
         end)
     end)
 

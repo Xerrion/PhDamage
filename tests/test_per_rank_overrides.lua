@@ -30,10 +30,17 @@ describe("Per-rank coefficient overrides", function()
             local state = bootstrap.makeMageState()
             local r = Pipeline.Calculate(116, state, 4)
             assert.is_not_nil(r)
-            -- 78-87 + 1000*0.706 = 784-793
-            assert.is_near(784, r.minDmg, 1)
-            assert.is_near(793, r.maxDmg, 1)
-            -- Ensure the engine reports the override coefficient, not the spell-level one
+            -- R4: level=20, maxLevel=25. spellLevel=20 means LvlPenalty = 0.
+            -- cMaNGOS-TBC penalty (20, 25, 70):
+            --   LvlPenalty = 0 (only applies when spellLevel < 20)
+            --   LvlFactor  = (25+6)/70 = 0.44286
+            --   penalty    = 0.44286
+            -- min = 78 + 1000*0.706*0.44286 = 390.66
+            -- max = 87 + 1000*0.706*0.44286 = 399.66
+            assert.is_near(390.66, r.minDmg, 1)
+            assert.is_near(399.66, r.maxDmg, 1)
+            -- The reported coefficient is the raw rank override; penalty is applied
+            -- by the engine downstream, so r.coefficient must remain 0.706.
             assert.is_near(0.706, r.coefficient, 0.001)
         end)
     end)
@@ -49,9 +56,14 @@ describe("Per-rank coefficient overrides", function()
             local state = bootstrap.makePriestState()
             local r = Pipeline.Calculate(589, state, 1)
             assert.is_not_nil(r)
-            -- 30 base + 1000*0.4392 = 469.2; tickDmg = 469.2/6 = 78.2
-            assert.is_near(469.2, r.totalDmg, 0.01)
-            assert.is_near(78.2, r.tickDmg, 0.01)
+            -- R1: level=4, maxLevel=9. cMaNGOS-TBC penalty (4, 9, 70):
+            --   LvlPenalty = (20-4)*3.75 = 60
+            --   LvlFactor  = (9+6)/70    = 0.21429
+            --   penalty    = (100-60)*0.21429/100 = 0.085714
+            -- totalDmg = 30 + 1000*0.4392*0.085714 = 67.6457
+            -- tickDmg  = 67.6457/6 = 11.27
+            assert.is_near(67.6457, r.totalDmg, 0.01)
+            assert.is_near(11.27, r.tickDmg, 0.01)
             assert.is_near(0.4392, r.coefficient, 0.001)
         end)
     end)
@@ -67,9 +79,14 @@ describe("Per-rank coefficient overrides", function()
             local state = bootstrap.makePlayerState()  -- Warlock with Shadow SP=1000
             local r = Pipeline.Calculate(1120, state, 1)
             assert.is_not_nil(r)
-            -- 55 base + 1000*1.34 = 1395; tickDmg = 1395/5 = 279
-            assert.is_near(1395, r.totalDmg, 1)
-            assert.is_near(279, r.tickDmg, 1)
+            -- R1: level=10, maxLevel=23. cMaNGOS-TBC penalty (10, 23, 70):
+            --   LvlPenalty = (20-10)*3.75 = 37.5
+            --   LvlFactor  = (23+6)/70    = 0.41429
+            --   penalty    = (100-37.5)*0.41429/100 = 0.258929
+            -- totalDmg = 55 + 1000*1.34*0.258929 = 401.96
+            -- tickDmg  = 401.96/5 = 80.39
+            assert.is_near(401.96, r.totalDmg, 1)
+            assert.is_near(80.39, r.tickDmg, 1)
             assert.is_near(1.34, r.coefficient, 0.001)
         end)
     end)
