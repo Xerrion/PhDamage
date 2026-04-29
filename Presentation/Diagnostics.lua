@@ -637,20 +637,9 @@ end
 local GetActionInfo = GetActionInfo
 local GetMacroSpell = GetMacroSpell
 
-local function BuildSpellIDToBase()
-    local map = {}
-    for baseID, spellData in pairs(ns.SpellData) do
-        map[baseID] = baseID
-        if spellData.ranks then
-            for _, rankData in pairs(spellData.ranks) do
-                if rankData.spellID then
-                    map[rankData.spellID] = baseID
-                end
-            end
-        end
-    end
-    return map
-end
+-- Spell ID resolution is delegated to ns.SpellResolver, which caches its
+-- lookup table for the session. If a future feature mutates ns.SpellData
+-- at runtime, callers must invoke ns.SpellResolver.Rebuild() first.
 
 local function FormatID(id)
     if id == nil then
@@ -659,7 +648,7 @@ local function FormatID(id)
     return tostring(id)
 end
 
-local function DumpSlot(slot, spellIDToBase)
+local function DumpSlot(slot)
     local actionType, id, subType = GetActionInfo(slot)
 
     if actionType == nil then
@@ -696,7 +685,7 @@ local function DumpSlot(slot, spellIDToBase)
     end
 
     -- Map any-rank spellID -> base spellID used by ns.SpellData
-    local baseID = spellIDToBase[spellID]
+    local baseID = ns.SpellResolver.Resolve(spellID)
     if not baseID then
         Diagnostics.Print("  " .. LabelValue("base spellID", "no resolution")
             .. " | " .. LabelValue("SpellData", "absent"))
@@ -738,8 +727,6 @@ local function DumpSlot(slot, spellIDToBase)
 end
 
 function Diagnostics.PrintDebug(slot)
-    local spellIDToBase = BuildSpellIDToBase()
-
     if slot ~= nil then
         if type(slot) ~= "number" or slot < 1 or slot > 120 then
             Diagnostics.Print("Usage: /phd debug [slot]  (slot must be 1-120)")
@@ -747,13 +734,13 @@ function Diagnostics.PrintDebug(slot)
         end
         Diagnostics.Print(COLOR_HEADER .. "PhDamage - Debug slot " .. slot .. COLOR_RESET)
         Diagnostics.Print(COLOR_HEADER .. LINE_SINGLE .. COLOR_RESET)
-        DumpSlot(slot, spellIDToBase)
+        DumpSlot(slot)
         return
     end
 
     Diagnostics.Print(COLOR_HEADER .. "PhDamage - Debug action bar (slots 1-12)" .. COLOR_RESET)
     Diagnostics.Print(COLOR_HEADER .. LINE_DOUBLE .. COLOR_RESET)
     for i = 1, 12 do
-        DumpSlot(i, spellIDToBase)
+        DumpSlot(i)
     end
 end

@@ -23,28 +23,8 @@ local wipe = wipe
 -------------------------------------------------------------------------------
 local allButtons = {}           -- array of discovered button frames
 local registeredButtons = {}    -- set keyed by button frame, prevents duplicates
-local spellIDToBase = nil       -- reverse map: any rank spellID → base spellID
 local resultCache = {}          -- spellID → result cache, cleared on state change
 local initialized = false       -- guard to prevent duplicate initialization
-
--------------------------------------------------------------------------------
--- BuildSpellIDMap()
--- Creates a reverse lookup from every rank spellID to the base spellID key
--- used by ns.SpellData. Only rebuilt when spellIDToBase is nil.
--------------------------------------------------------------------------------
-local function BuildSpellIDMap()
-    spellIDToBase = {}
-    for baseID, spellData in pairs(ns.SpellData) do
-        spellIDToBase[baseID] = baseID
-        if spellData.ranks then
-            for _, rankData in pairs(spellData.ranks) do
-                if rankData.spellID then
-                    spellIDToBase[rankData.spellID] = baseID
-                end
-            end
-        end
-    end
-end
 
 -------------------------------------------------------------------------------
 -- FormatNumber - delegated to shared formatting module, honours abbreviation setting
@@ -95,11 +75,7 @@ local function ResolveSpellID(button)
         return nil
     end
 
-    if not spellIDToBase then
-        BuildSpellIDMap()
-    end
-
-    return spellIDToBase[spellID]
+    return ns.SpellResolver.Resolve(spellID)
 end
 
 -------------------------------------------------------------------------------
@@ -366,7 +342,6 @@ function ActionBar.Initialize()
 
     initialized = true
 
-    BuildSpellIDMap()
     DiscoverButtons()
     ActionBar.Refresh()
 

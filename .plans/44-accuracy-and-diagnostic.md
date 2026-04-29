@@ -1,259 +1,85 @@
 ---
-status: READY_FOR_REVIEW
-phase: 1
+status: in-progress
+phase: 5
 updated: 2026-04-29
-issue: Xerrion/PhDamage#44
-branch: fix/44-accuracy-and-diagnostic
 ---
 
-# PhDamage Accuracy + Diagnostic Plan
+### Goal
 
-## Goal
+Fix all four root causes of expected-damage inaccuracy in PhDamage (crit double-count, stack-aware aura modifiers, channel-spell dual-ID resolution) and ship the /phd debug diagnostic that surfaced the channel bug.
 
-Fix two engine bugs that together explain a ~5–10% systematic overestimate in PhDamage's expected-damage display, and add a diagnostic slash subcommand to investigate the Hellfire missing-overlay report without speculative engine changes. Single PR closing issue #44.
+### Context & Decisions
 
-## Context & Decisions
+| Decision | Rationale | Source |
+|----------|-----------|--------|
+| Audit 35 candidate talent/aura entries for crit double-count | Initial report suggested a widespread issue where PhDamage adds +crit and +crit-damage both to the same entry incorrectly. | ref:ses_2274fc5b8ffe4UiHDpeeY7ue1E |
+| Option A for test updates: Recompute combined-build crit math | Changing the engine to remove double-counting invalidates many test fixtures. Choice: re-calculate the expected damage totals for the new engine behavior rather than trying to preserve old totals with fake data. | ref:ses_2274fc5b8ffe4UiHDpeeY7ue1E |
+| Extract stack-scaling logic to Core/StateCollector and Engine/ModifierCalc | Enables auras to scale their damage bonus by their current stack count (e.g. Shadow Weaving, Winter's Chill, Healing Way). | ref:ses_227058e87ffeOTv2G5XvjxoCYl |
+| Implement /phd debug [slot] diagnostic | Provides raw action info, spell ID resolution, and internal state for a specific action bar slot. Essential for surfacing data bugs in the field. | ref:user m0037 |
+| Single umbrella PR for Bugs A-C + Diagnostic | The changes are conceptually linked as "Accuracy and Diagnostic" and share test bootstrap context. | ref:user m0039 |
+| Fetch Sanctified Seals behavior from Wowpedia | Agent research on TBC-era behavior for talent ID 20227 (Sanctified Seals) confirmed it is a flat crit increase, not a double-count. | ref:ses_2274201d0ffe0wZpXcCAWqLMIh |
+| Add optional effectID field to rank entries (additive schema) | Survey confirms zero existing readers of effectID field name; change is backwards-compatible. | ref:ses_227058e87ffeOTv2G5XvjxoCYl |
+| Consolidate 3 duplicated BuildSpellID* builders into a single ns.SpellResolver module | DRY. Currently the same loop is implemented in Presentation/ActionBar.lua, Presentation/Tooltip.lua, and Presentation/Diagnostics.lua with slightly different output shapes. Extract makes the effectID branch live in one place and become unit-testable. | ref:ses_227058e87ffeOTv2G5XvjxoCYl |
+| Engine and Pipeline are untouched | Survey confirmed zero combat-log listeners in PhDamage and engine looks up by base ID only. Schema change only touches Data/ + Presentation/ (resolver) + new tests. | ref:ses_227058e87ffeOTv2G5XvjxoCYl |
+| Hellfire R4 fix: change spellID = 27214 to spellID = 27213, effectID = 27214 | Restores internal consistency (R1-3 already use channel IDs); makes both IDs resolve to base 1949 via the new resolver. | ref:ses_2270ab4a7ffejSRG0ZDytJYHrf |
+| Cross-class channel audit scope: Rain of Fire R5 + Blizzard, Volley, Hurricane | All use Aura #23 Periodic Trigger Spell. Rank IDs in current data files look suspicious (RoF R5 27212 in particular). In-game verification required before assuming dual-ID; in-PR scope = update those entries that we can verify via Twinhead/Wowhead and add test fixtures. Items we cannot verify in this PR get explicit follow-up issues. | ref:ses_2270ab4a7ffejSRG0ZDytJYHrf |
+| Drain Life, Drain Soul, Mind Flay, Arcane Missiles, Tranquility, Health Funnel: NOT in scope | These use different mechanics (Periodic Drain or Trigger Missile, not Periodic Trigger Spell). Survey + agent research suggest cast and effect share an ID. Out of scope unless explicitly identified during the cross-class audit. | ref:ses_2270ab4a7ffejSRG0ZDytJYHrf |
+| Hellfire R1 level: not corrected in this PR | Twinhead says level 30, current data says level 12. Different bug, deferred to follow-up issue. Plan-creep prevention. | ref:ses_2270ab4a7ffejSRG0ZDytJYHrf |
+| Block PR #45, expand scope to include Phase 5 | User instruction (m0042). Same branch, additional commits, updated PR body. | User answer (m0042) |
 
-| Decision | Rationale | Citation |
-|---|---|---|
-| Per-entry audit + remove school-wide CRIT_BONUS duplicates | User-confirmed approach. Verified by `wow-addon` agent against TBC Wowpedia/Wowhead for all 35 entries. | ref:ses_2274fc5b8ffe4UiHDpeeY7ue1E |
-| Final verdict: 18 REMOVE, 17 KEEP, 0 INCONCLUSIVE | Ground truth from per-talent Wowpedia/Wowhead TBC citations. Initial blind audit had over-removed 7 entries (Devastation spans Shadow+Fire as a Destruction-tree subset; Tidal Mastery and Call of Thunder are per-spell lists not Nature-school-wide). User's pushback was correct. Sanctified Seals resolved post-pushback as universal +crit per verbatim TBC tooltip. | ref:ses_2274fc5b8ffe4UiHDpeeY7ue1E + ref:ses_2274201d0ffe0wZpXcCAWqLMIh |
-| Single umbrella PR for Bugs A, B, C closing #44 | User-confirmed. Three fixes are independent in code but share one accuracy story; CodeRabbit handles the surface area; one history entry for the investigation. | User answer (m0006) |
-| PhDamage models current player state only (current weapon/form) | User-confirmed. This makes weapon/form-conditional auras (Sharpened Claws, Dagger Spec, Fist Weapon Spec, Poleaxe Spec) safe to REMOVE because the API includes them when condition holds. | Earlier user answer |
-| Combat Expertise (Paladin) removed as data bug, not double-count | TBC 2.5.4 tooltip grants Expertise + Stamina; +crit was added in Wrath 3.1.0. Entry is plain wrong for TBC. | Wowpedia citation in audit table |
-| Sanctified Seals (Paladin 3:21) → REMOVE (universal +crit chance) | Verbatim TBC 2.5.x tooltip from Wowhead spell=35395/35396/35397: "Increases your chance to critically hit with all spells and melee attacks by N%..." Universal scope, reflected in `GetSpellCritChance(any school)` and `GetCritChance()`. Resolved in-plan. | ref:ses_2274201d0ffe0wZpXcCAWqLMIh |
-| Sanctified Seals comment cleanup (no code/key change) | TalentMap key is `"3:21"` (correct per current source). Comment says "Retribution 3:21" but Wowpedia places it in Holy tree Tier 7. PhDamage uses `tab:index` keying with no spellID dependency, so REMOVE alone is sufficient. Coder must verify `tab:index` mapping convention against existing Paladin tabs before deletion - if `3` is Retribution in PhDamage's convention, the comment is right and Wowpedia uses different tab numbering. | Source verification at TalentMap_Paladin.lua L121, L135-142 |
-| 0 missing per-spell crit talents to ADD | All 9 TBC class trees walked; every per-spell or per-spell-list crit-chance talent is already in TalentMap files. | ref:ses_2274fc5b8ffe4UiHDpeeY7ue1E Table 2 |
-| Linear stack scaling via `maxStacks` field on AuraMap entry | User-confirmed approach. Mirrors existing Sunder Armor pattern in `Core/StateCollector.lua:81-97` (`ARMOR_DEBUFFS[id].maxStacks` × `auraData.applications`). | ref:ses_22756df6fffesK7pohCP6Kfr0J |
-| Plumb stacks through StateCollector → ModifierCalc | Currently `state.auras.<scope>[spellID] = true` discards `auraData.applications`. Change value to `applications or 1` so consumers can read it. Producer change at 3 call sites in `Core/StateCollector.lua` (L407, L421, L437); consumer change at `ApplyAuraEntry` and `ApplyEffect` call sites in `Engine/ModifierCalc.lua`. | ref:ses_22756df6fffesK7pohCP6Kfr0J |
-| `ApplyAuraEntry` signature gains `applications` parameter | Currently doesn't know which spellID it came from. Caller (the iteration at `ModifierCalc.lua:281` and `:287`) can pass the value from `playerState.auras.<scope>[spellID]`. Cleaner than re-looking-up inside the callee. | ref:ses_22756df6fffesK7pohCP6Kfr0J |
-| Backwards compatible: entries without `maxStacks` behave as today | Existing AuraMap entries (Curse of Elements, Misery, etc.) don't have stack semantics; treating them as `maxStacks = 1` would break nothing but adds noise. Skip the multiplier when `entry.maxStacks` is nil. | Engineering judgment |
-| `/phd debug` defaults to bar-wide dump of slots 1-12 | User-confirmed approach. Empty slots skipped. `/phd debug <slot>` for single slot. Output is plain `print()`, no UI. | User answer |
-| Diagnostic command lives in `Presentation/Diagnostics.lua` | Existing module already owns `PrintState`/`PrintAll`/`PrintSpell`. New `PrintDebug(slot?)` follows the established naming pattern. Routed from `Core/Init.lua:OnSlashCommand`. | ref:ses_22756df6fffesK7pohCP6Kfr0J |
-| No speculative Hellfire fix in this PR | Static analysis ruled out data, engine, and presentation skip paths. Direct-spell-drag rules out the macro theory. Root cause requires runtime data; speculation risks shipping a non-fix. | Earlier user decision (m0055) |
-| Defer partial-resist modeling | At ~5-10% gap, crit double-count + stack scaling almost certainly account for the bulk. Adding average partial-resist could swing into UNDER-estimate after the other fixes land. File as follow-up only if data warrants. | Earlier user decision (m0055) |
+### Phases
 
-## Design
+**Phase 1: Bug A - Crit double-count [COMPLETE]**
+- [x] 1.1 Audit all 35 candidate entries with wow-addon agent
+- [x] 1.2 Resolve Sanctified Seals INCONCLUSIVE via Wowpedia fetch
+- [x] 1.3 Apply 17 full + 2 partial REMOVE deletes across 8 TalentMap files
+- [x] 1.4 Update 11 dependent test files (Option A: recompute combined-build crit math)
+- [x] 1.5 Add tests/test_crit_double_count.lua regression
+- [x] 1.6 Reviewer pass APPROVE
 
-### Bug A: Crit double-count fix
+**Phase 2: Bug B - Stack-aware aura modifiers [COMPLETE]**
+- [x] 2.1 Modify Core/StateCollector.lua, Engine/ModifierCalc.lua for stackFactor
+- [x] 2.2 Update AuraMap_Warlock/Mage/Priest/Shaman with maxStacks fields
+- [x] 2.3 Bonus fix: Healing Way bug (29203) corrected from 0.06 flat to 0.18 maxStacks=3
+- [x] 2.4 New tests/test_stack_scaling.lua (22 cases)
+- [x] 2.5 Update 4 existing test files for stack-aware contract
+- [x] 2.6 Reviewer pass APPROVE
 
-**Mechanism:** `Core/StateCollector.lua:202-207` reads `GetSpellCritChance(school)` per school into `playerState.stats.spellCrit[school]`. The WoW API value already reflects passive talents that grant school-wide spell crit, global all-spell crit, weapon-conditional melee crit (when the weapon is wielded), and form-conditional crit (when in form). `Engine/ModifierCalc.lua:194` then adds `mods.critBonus` (sourced from TalentMap `MOD.CRIT_BONUS` entries) into the same crit. Talents reflected in the API are counted twice.
+**Phase 3: Bug C - /phd debug diagnostic [COMPLETE]**
+- [x] 3.1 Implement Diagnostics.PrintDebug + helpers in Presentation/Diagnostics.lua
+- [x] 3.2 Wire slash dispatch in Core/Init.lua
+- [x] 3.3 Reviewer pass APPROVE
 
-**Fix:** REMOVE the 18 entries below per the verified audit. Single edit pass across 9 TalentMap files. No engine changes - the engine semantic is correct, the data is wrong.
+**Phase 4: Polish [COMPLETE]**
+- [x] 4.1 Tighten partial-keep test (Phase 1 NOTE 3)
+- [x] 4.2 Delete stale Fire Vulnerability TODO (Phase 2 INFO 1)
+- [x] 4.3 Reword ApplyAuraEntry doc-comment (Phase 2 INFO 2)
+- [x] 4.4 Add countField clarifying comment (Phase 2 LOW)
+- [x] 4.5 Replace Unicode arrow + refresh Diagnostics file header (Phase 3 INFO 1+2)
+- [x] 4.6 Reviewer pass APPROVE
+- [x] 4.7 Commit (3 commits) + push + open PR #45
 
-**Decision rule used in the audit:**
-- REMOVE if school-wide, global, weapon-conditional (with the weapon currently equipped per "current state only" semantic), or form-conditional. All these are reflected in `GetSpellCritChance(school)`, `GetCritChance()`, or `GetRangedCritChance()`.
-- KEEP if the talent grants crit only to a strict subset of named spells within a school (not encodable in the per-school API scalar) OR spans multiple schools as a tree-defined list (Devastation crosses Shadow+Fire as a Destruction-tree subset).
+**Phase 5: Bug D - Channel-spell dual-ID resolution [IN PROGRESS]**
+- [x] 5.1 Diagnose via /phd debug output: slot 6 returns spellID 27213, no resolution.
+- [x] 5.2 Identify 27213 = Hellfire R4 channel-cast, effect ID 27214.
+- [x] 5.3 Survey resolver/listener code paths.
+- [ ] 5.4 Design + implement ns.SpellResolver module ← CURRENT
+- [ ] 5.5 Refactor Presentation/ActionBar.lua:35-47 to use ns.SpellResolver.Resolve instead of file-local BuildSpellIDMap.
+- [ ] 5.6 Refactor Presentation/Tooltip.lua:133-141 to use ns.SpellResolver.Resolve.
+- [ ] 5.7 Refactor Presentation/Diagnostics.lua:640-653 to use ns.SpellResolver.Resolve.
+- [ ] 5.8 Fix Hellfire R4 in Data/SpellData_Warlock.lua:445: change [4] = { spellID = 27214, ... } to [4] = { spellID = 27213, effectID = 27214, ... }. Add effectID for ranks 1-3 too.
+- [ ] 5.9 Cross-class channel audit (verify against Twinhead/Wowhead via wow-addon agent): Rain of Fire, Blizzard, Volley, Hurricane.
+- [ ] 5.10 Add tests/test_spell_resolver.lua with confirmed channel fixtures.
+- [ ] 5.11 Verify with bootstrap, luacheck, and stack-scaling regression.
+- [ ] 5.12 Reviewer pass on Phase 5 changes.
+- [ ] 5.13 Update PR #45 body to document Bug D + the resolver consolidation.
+- [ ] 5.14 Commit (1-2 commits) and push to existing branch.
+- [ ] 5.15 Wait for CI; address any CodeRabbit findings before owner squash-merge.
 
-**Audit (18 REMOVE, 17 KEEP, 0 INCONCLUSIVE):**
+### Notes
 
-REMOVE rows:
-
-| File | Talent | Per-rank | Rationale |
-|---|---|---|---|
-| `Data/TalentMap_Druid.lua` | Sharpened Claws | +2% | Form aura active in Cat/Bear; in `GetCritChance()` while in form |
-| `Data/TalentMap_Druid.lua` | Natural Perfection | +1% | All spells universal; in `GetSpellCritChance()` for every school |
-| `Data/TalentMap_Hunter.lua` | Lethal Shots | +1% | Ranged-wide; in `GetRangedCritChance()` |
-| `Data/TalentMap_Hunter.lua` | Survival Instincts | +2% | Melee+ranged; in both `GetCritChance()` and `GetRangedCritChance()` |
-| `Data/TalentMap_Mage.lua` | Arcane Instability | +1% | **CRIT_BONUS effect only.** DAMAGE_MULTIPLIER effect on the same talent stays. |
-| `Data/TalentMap_Mage.lua` | Critical Mass | +2% | Whole Fire school; in `GetSpellCritChance(SCHOOL_FIRE)` |
-| `Data/TalentMap_Mage.lua` | Pyromaniac | +1% | Whole Fire school |
-| `Data/TalentMap_Paladin.lua` | Holy Power | +1% | Whole Holy school; in `GetSpellCritChance(SCHOOL_HOLY)` |
-| `Data/TalentMap_Paladin.lua` | Combat Expertise | (none) | **Data bug.** TBC tooltip grants Expertise + Stamina, NOT crit. Crit was added in Wrath 3.1.0. Delete entry entirely. |
-| `Data/TalentMap_Paladin.lua` | Sanctified Seals (3:21) | +1% | Universal +crit per TBC tooltip (Wowhead spell=35395/35396/35397). Reflected in every `GetSpellCritChance(school)` and `GetCritChance()`. **Coder must verify the comment "Retribution 3:21" against PhDamage's tab numbering convention** - Wowpedia places this talent in Holy Tier 7. The `tab:index` key stays as `"3:21"` per existing source; only the entry body is removed. |
-| `Data/TalentMap_Priest.lua` | Holy Specialization | +1% | Whole Holy school |
-| `Data/TalentMap_Priest.lua` | Force of Will | +1% | **CRIT_BONUS effect only.** DAMAGE_MULTIPLIER effect stays. |
-| `Data/TalentMap_Rogue.lua` | Malice | +1% | Melee-wide; in `GetCritChance()` |
-| `Data/TalentMap_Rogue.lua` | Dagger Specialization | +1% | Weapon aura while wielding daggers; in `GetCritChance()`. Delete the obsolete `weaponType filter` TODO comment. |
-| `Data/TalentMap_Rogue.lua` | Fist Weapon Specialization | +1% | Same as Dagger Spec. Delete obsolete TODO. |
-| `Data/TalentMap_Warlock.lua` | Demonic Tactics | +1% | All spells + melee universal |
-| `Data/TalentMap_Warlock.lua` | Backlash | +1% | All spells universal per TBC tooltip ("with all spells"). Existing "no school filter" comment confirms. |
-| `Data/TalentMap_Warrior.lua` | Poleaxe Specialization | +1% | Weapon aura while wielding axe/polearm; in `GetCritChance()`. Delete obsolete TODO. |
-| `Data/TalentMap_Warrior.lua` | Cruelty | +1% | Melee-wide; in `GetCritChance()` |
-
-KEEP rows (no changes; documented for completeness):
-
-| File | Talent | Per-rank | Reason kept |
-|---|---|---|---|
-| `Data/TalentMap_Druid.lua` | Improved Moonfire | +5% | Single spell |
-| `Data/TalentMap_Druid.lua` | Focused Starlight | +2% | Spell list (Wrath, Starfire) |
-| `Data/TalentMap_Druid.lua` | Improved Regrowth | +10% | Single spell |
-| `Data/TalentMap_Mage.lua` | Arcane Impact | +2% | Spell list (Arcane Explosion, Arcane Blast) |
-| `Data/TalentMap_Mage.lua` | Improved Flamestrike | +5% | Single spell |
-| `Data/TalentMap_Mage.lua` | Incineration | +2% | Spell list (Fire Blast, Scorch) - subset of Fire |
-| `Data/TalentMap_Mage.lua` | Empowered Frostbolt | +1% | Single spell |
-| `Data/TalentMap_Paladin.lua` | Sanctified Light | +2% | Spell list (Holy Light, Flash of Light) |
-| `Data/TalentMap_Paladin.lua` | Purifying Power | +10% | Spell list (Exorcism, Holy Wrath) |
-| `Data/TalentMap_Rogue.lua` | Puncturing Wounds | +10%/+5% | Single spells (Backstab, Mutilate) |
-| `Data/TalentMap_Rogue.lua` | Improved Ambush | +15% | Single spell |
-| `Data/TalentMap_Shaman.lua` | Call of Thunder | +1% | Spell list (Lightning Bolt, Chain Lightning) - subset of Nature |
-| `Data/TalentMap_Shaman.lua` | Tidal Mastery | +1% | Spell list (Lightning + healing) - subset of Nature |
-| `Data/TalentMap_Warlock.lua` | Improved Searing Pain | +4/+7/+10% | Single spell, non-linear ranks |
-| `Data/TalentMap_Warlock.lua` | Devastation | +1% | **Tree subset spans Shadow+Fire.** Cannot be encoded by any single `GetSpellCritChance(school)` because the talent crosses school boundaries. KEEP. |
-| `Data/TalentMap_Warrior.lua` | Improved Overpower | +25% | Single spell |
-
-**INCONCLUSIVE:** None. Sanctified Seals resolved to REMOVE in this PR per user direction; verbatim TBC tooltip from Wowhead spell=35395/35396/35397 confirms universal `+N% crit with all spells and melee attacks`.
-
-**Out of scope (correctly KEEP, not in audit):** All `MOD.CRIT_MULT_BONUS` entries (Vengeance, Mortal Shots, Lethality, Predatory Instincts, Spell Power, Ice Shards, Shadow Power, Impale, Ruin, Elemental Fury). These affect crit *damage multiplier*, not crit *chance*. Not in `GetSpellCritChance()` / `GetCritChance()`. Verified.
-
-**Risk:** With Devastation, Tidal Mastery, Call of Thunder kept (they were previously flagged for removal in the leaning audit), the spell-crit modeling for Warlock Destro and Shaman Elemental will be slightly more conservative than a "remove everything that smells school-wide" pass. This is the correct conservative direction - the API genuinely cannot encode tree-subset talents.
-
-### Bug B: Stack-aware aura modifiers
-
-**Producer changes** (`Core/StateCollector.lua`):
-
-| Line | Current | New |
-|---|---|---|
-| 407 | `state.auras.player[spellID] = true` | `state.auras.player[spellID] = auraData.applications or 1` |
-| 421 | `state.auras.player[spellId] = true` | `state.auras.player[spellId] = auraData.applications or 1` |
-| 437 | `state.auras.target[spellId] = true` | `state.auras.target[spellId] = auraData.applications or 1` |
-
-The stack count for non-stacking auras is `1` per the Blizzard API contract, so consumers that don't care about stacks (the truthy check in existing code) keep working.
-
-**Consumer changes** (`Engine/ModifierCalc.lua`):
-
-The two iteration sites at `:281` and `:287` (player and target aura loops) need to pass the new stack count into `ApplyAuraEntry`. Signature:
-
-```
--- before
-local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
--- after
-local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods, applications)
-```
-
-Inside `ApplyAuraEntry`, compute the stack factor when the entry declares `maxStacks`:
-
-```
-local stackFactor = 1
-if entry.maxStacks and entry.maxStacks > 0 then
-    local stacks = applications or 1
-    if stacks > entry.maxStacks then stacks = entry.maxStacks end
-    stackFactor = stacks / entry.maxStacks
-end
-```
-
-Pass `stackFactor` to `ApplyEffect` (signature gains a 5th arg, default 1) which multiplies the resolved `value` by it. Same treatment for the `talentAmplify` branch at `:241`.
-
-**Data changes** (`Data/AuraMap_Warlock.lua`):
-
-| Line | Aura | Change |
-|---|---|---|
-| 157-164 | Shadow Vulnerability (17800/17803) | Add `maxStacks = 5`; change `value = 0.20` → `value = 0.20` (kept; final per-stack delivered via `stackFactor` × declared total). Update the L156 comment to remove "assumes 5 stacks" note. |
-| 266-273 | Shadow Weaving (15258) | Add `maxStacks = 5`; keep `value = 0.10` (final-stack value). Update the L265 comment. |
-
-**Semantic note on the value:** The user-facing schema is "value = bonus at MAX stacks". The engine scales it down by `applications / maxStacks`. An aura at 1/5 stacks delivers `0.20 × (1/5) = 0.04` (the per-stack ISB value). At 5/5: `0.20 × (5/5) = 0.20` (unchanged from today). This means **no test that exercises an at-max-stack scenario regresses** — the only behavior change is when `applications < maxStacks`.
-
-**Backward compatibility:** Entries without `maxStacks` skip the scaling block entirely. All existing AuraMap entries across all classes continue to behave as today.
-
-**Other class AuraMap files:** Audit `Data/AuraMap_*.lua` for other stacking debuffs/buffs that should adopt `maxStacks`:
-
-- Misery (33196/33198/33199): TBC Misery is non-stacking (3% spell hit + 5% spell damage flat). Skip.
-- Improved Scorch (12873): 5-stack +15% fire damage taken. **Add `maxStacks = 5`.** Mage AuraMap.
-- Sunder Armor: handled separately in StateCollector for armor reduction; not in any AuraMap.
-- Curse of Recklessness, Curse of Elements/Shadow: non-stacking. Skip.
-
-The Improved Scorch addition is in scope. Audit any other class AuraMap files for explicit "5 stacks" or "3 stacks" comments and bring them under the same pattern. Coder is to do this audit pass and report what they found in the PR description.
-
-### Diagnostic: `/phd debug [slot]`
-
-**Routing** (`Core/Init.lua:101-106` insertion point):
-
-Add a new `elseif cmd == "debug" then` branch after the `config` branch and before `help`. Body:
-
-```
-elseif cmd == "debug" then
-    local slot = tonumber(args[2])
-    ns.Diagnostics.PrintDebug(slot)
-```
-
-When `slot` is nil, `PrintDebug` iterates 1..12. When `slot` is a number, single-slot.
-
-Add a help line in the `help` branch (between L112 and L113):
-
-```
-self:Print("  /phd debug [slot] - Diagnose action slot (default: bar 1-12)")
-```
-
-**Implementation** (`Presentation/Diagnostics.lua`, new public function):
-
-```
-function Diagnostics.PrintDebug(slot)
-    if slot then
-        DumpSlot(slot)
-        return
-    end
-    for i = 1, 12 do
-        DumpSlot(i)
-    end
-end
-```
-
-`DumpSlot(i)` prints (one slot per chat block, separated by a thin rule):
-
-1. Slot index header
-2. `GetActionInfo(i)` → `actionType, id, subType` raw return
-3. If actionType is `"spell"`: pass `id` to `ns.ActionBar.ResolveSpellID` (or its internal equivalent — read the actual function name) and print result
-4. If actionType is `"macro"`: call `GetMacroSpell(id)` and print result, then attempt resolution
-5. Spell data lookup: `ns.SpellData[resolvedID]` → present / absent (and base ID if mapped via `BuildSpellIDMap`)
-6. If present: call `ns.Engine.Pipeline.Calculate(resolvedID, ns.StateCollector.GetState())` and print whether it returned a result, the `expectedDamageWithMiss`, and any skip reason
-7. Empty slots: print `slot N: empty` and continue
-
-The exact internal API names need verification by the coder against current source; the structure above is the goal.
-
-## Phases
-
-### Phase 1: Bug A — crit double-count [PENDING]
-
-- 1.1 Touch each TalentMap_*.lua file per the REMOVE table; delete the offending entry blocks (the table-assignment to `TalentMap["tab:index"]` and the comment line above it). Where a TODO comment for weapon-type filtering accompanied an entry (Rogue Dagger/Fist Spec, Warrior Poleaxe Spec), delete the TODO too. For Sanctified Seals (`TalentMap_Paladin.lua` `["3:21"]`), additionally verify and correct the tab-name comment on L121/L135 if PhDamage's tab numbering disagrees with Wowpedia (Holy = Tier 7 per Wowpedia; comment currently says "Retribution"). KEEP entries are not modified. ← CURRENT
-- 1.2 Add busted regression test `tests/test_crit_double_count.lua`: build a player state with `spellCrit[SCHOOL_FIRE] = 0.10` (simulating "API already includes Pyromaniac"), apply a Mage talent map with `Pyromaniac` rank 3, assert `mods.critBonus == 0` (i.e., the engine no longer adds talent crit on top).
-- 1.3 Run `busted --verbose` from `F:\wow-addons\PhDamage`. All existing tests must continue to pass — the audit promises that REMOVE entries don't affect non-crit math, but verification is required.
-
-### Phase 2: Bug B — stack-aware modifiers [PENDING]
-
-- 2.1 `Core/StateCollector.lua`: change 3 aura assignments from `= true` to `= auraData.applications or 1`. Verify no other consumer relies on the boolean shape (grep for `state.auras.target[` and `state.auras.player[`).
-- 2.2 `Engine/ModifierCalc.lua`: extend `ApplyAuraEntry` signature with `applications`; compute `stackFactor` when `entry.maxStacks`; pass to `ApplyEffect`. Extend `ApplyEffect` signature with optional `stackFactor` (default 1); multiply resolved `value` by it. Update both iteration call sites to pass the per-spell stack count.
-- 2.3 `Data/AuraMap_Warlock.lua`: add `maxStacks = 5` to Shadow Vulnerability and Shadow Weaving entries; clean up the "assumes 5 stacks" comments.
-- 2.4 `Data/AuraMap_Mage.lua` (and other class files as applicable): audit for stacking auras, add `maxStacks` where appropriate (Improved Scorch is the known case). Coder reports findings in PR description.
-- 2.5 Add busted tests in `tests/test_stack_scaling.lua`: scenarios for Shadow Vulnerability at 1, 3, 5 stacks; assert resulting damage multiplier is 0.04, 0.12, 0.20 respectively. Same shape for Shadow Weaving and Improved Scorch.
-- 2.6 Run `busted --verbose`. Existing tests that exercise these auras must continue to pass — they do today because the implicit assumption is "max stacks = full bonus", which the new code preserves at max stacks.
-
-### Phase 3: `/phd debug` diagnostic [PENDING]
-
-- 3.1 `Presentation/Diagnostics.lua`: add `Diagnostics.PrintDebug(slot)` and the file-local `DumpSlot(i)` helper per the design above. Verify the actual `ResolveSpellID` and pipeline entrypoint names against current source before writing.
-- 3.2 `Core/Init.lua`: add `debug` branch to `OnSlashCommand` dispatcher; add help line.
-- 3.3 No tests for this path (it's a chat-print diagnostic; tests would just assert print formatting). Manual verification only.
-
-### Phase 4: Verification + ship [PENDING]
-
-- 4.1 `luacheck .` from repo root → 0 warnings / 0 errors.
-- 4.2 `busted --verbose` → all tests green (existing + 2 new test files).
-- 4.3 Reviewer pass (mandatory per workflow). Address BLOCKERS, fix WARNINGS, note NOTEs.
-- 4.4 Commit with conventional message referencing `Closes #44`. Push branch.
-- 4.5 Open PR, conform to repo PULL_REQUEST_TEMPLATE.md. PR body summarizes the audit table, the stack-scaling semantics change, and the new diagnostic command. Note explicit deferrals (Hellfire fix, partial resists).
-- 4.6 Wait for CI green + CodeRabbit review. Address CodeRabbit findings via `@coderabbitai` replies on the specific threads.
-- 4.7 Hand off to owner for squash-merge (not auto-merged per workspace AGENTS.md).
-
-## Verification
-
-- `luacheck .` = 0/0
-- `busted --verbose` = all green, with 2 new test files (`test_crit_double_count.lua`, `test_stack_scaling.lua`) added
-- New regression tests fail before the fix and pass after (verify by stashing the engine/data changes and running tests against the new spec files)
-- Manual in-game smoke test (post-merge, by user): `/phd debug` prints structured per-slot info on a Warlock; expected damage on Shadow Bolt with 5/5 Devastation and Ruin no longer inflates by ~5% relative to actual; Shadow Bolt overlay value scales correctly as ISB stacks build from 1 to 5
-
-## Out of Scope (explicit)
-
-- Speculative Hellfire fix (deferred until `/phd debug` produces runtime data)
-- Average partial-resist model
-- Hellfire / Rain of Fire / Drain Soul coefficient re-derivation
-- Sustained-DPS execution-efficiency multiplier (movement, clipping, latency)
-- AuraMap `talentAmplify` interaction with stack-scaling — current entries don't combine the two; flag in code with a comment but don't engineer for it speculatively
-
-## Risk Register
-
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| A KEEP talent is actually in the API → still over-reports for that class | Low | Low (per-talent ~1-3%) | Conservative KEEP rule (strict subset only); follow-up audit if user reports persist |
-| Removing a TalentMap entry breaks a non-crit test (e.g. shared talent block with damage bonus) | Low | Medium | Run full busted before commit; verify each REMOVE is a standalone entry, not a shared talent block |
-| `state.auras.<x>[id] = applications` value change breaks a code path that did `if state.auras.target[id] then` | Very Low | Medium | All known consumers use truthy checks which still work for `>= 1`. Grep for explicit `== true` comparisons before merging. |
-| `ApplyAuraEntry` signature change breaks an out-of-tree caller | Very Low | Low | Internal function only; no public API surface |
-| `/phd debug` reveals Hellfire root cause is something we should have fixed in this PR | Medium | Low | Acceptable — file follow-up issue with the captured diagnostic output, fix in a small targeted PR |
+- 2026-04-29: Phases 1-4 complete. Crit double-counting fixed, stack scaling implemented, and diagnostic command shipped in PR #45.
+- 2026-04-29: User ran /phd debug 6, surfaced spellID 27213 with no resolution. Architectural bug. ref:user observation m0039
+- 2026-04-29: wow-addon agent confirmed 27213 = Hellfire R4 channel-cast; effect ID is 27214. Pattern is class-wide for Aura #23 spells. ref:ses_2270ab4a7ffejSRG0ZDytJYHrf
+- 2026-04-29: Survey confirmed PhDamage has zero combat-log listeners; Engine untouched; only 3 reverse-map builders need fixing. Decision: consolidate into ns.SpellResolver. ref:ses_227058e87ffeOTv2G5XvjxoCYl
+- 2026-04-29: User chose "Block #45, do full architectural fix now" (m0042). PR will be expanded with additional commits on the same branch.

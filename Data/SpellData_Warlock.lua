@@ -438,10 +438,10 @@ SpellData[1949] = {
     numTicks = 15,
     damagesSelf = true,
     ranks = {
-        [1] = { spellID = 1949,  totalDmg = 255, level = 12 },
-        [2] = { spellID = 11683, totalDmg = 510, level = 28 },
-        [3] = { spellID = 11684, totalDmg = 825, level = 44 },
-        [4] = { spellID = 27214, totalDmg = 1395, level = 68 },
+        [1] = { spellID = 1949,  effectID = 5857,  totalDmg = 255, level = 12 },
+        [2] = { spellID = 11683, effectID = 11681, totalDmg = 510, level = 28 },
+        [3] = { spellID = 11684, effectID = 11682, totalDmg = 825, level = 44 },
+        [4] = { spellID = 27213, effectID = 27214, totalDmg = 1395, level = 68 },
     },
 }
 
