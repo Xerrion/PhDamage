@@ -87,6 +87,8 @@ read_globals = {
     "GameTooltipText",
     "UIParent",
     "C_Timer",
+    "Settings",
+    "InterfaceOptionsFrame_OpenToCategory",
 
     -- Third-party addons (optional at runtime)
     "ElvUI",

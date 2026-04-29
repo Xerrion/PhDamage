@@ -16,6 +16,7 @@ Libs\embeds.xml
 # Core
 Core\Constants.lua
 Core\Init.lua
+Core\Options.lua
 Core\Events.lua
 Core\StateCollector.lua
 
