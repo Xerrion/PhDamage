@@ -174,6 +174,54 @@ describe("Pipeline", function()
     end)
 
     ---------------------------------------------------------------------------
+    -- CalculateAllRanks
+    ---------------------------------------------------------------------------
+    describe("CalculateAllRanks", function()
+        it("should return an N-rank spell as N keyed entries", function()
+            local mageState = bootstrap.makeMageState()
+            local results = Pipeline.CalculateAllRanks(mageState)
+            -- Frostbolt (116) has 14 ranks in SpellData_Mage
+            local frostboltCount = 0
+            for key in pairs(results) do
+                if key:match("^116:%d+$") then
+                    frostboltCount = frostboltCount + 1
+                end
+            end
+            assert.are.equal(14, frostboltCount)
+        end)
+
+        it("should produce a result whose rank matches the rank index in the key", function()
+            local mageState = bootstrap.makeMageState()
+            local results = Pipeline.CalculateAllRanks(mageState)
+            for rankIdx = 1, 14 do
+                local result = results["116:" .. rankIdx]
+                assert.is_not_nil(result, "missing Frostbolt rank " .. rankIdx)
+                assert.are.equal(rankIdx, result.rank)
+            end
+        end)
+
+        it("should produce one entry per rank for the Life Tap spell line", function()
+            -- Life Tap (1454) is utility but still has 7 ranks in SpellData_Warlock
+            local results = Pipeline.CalculateAllRanks(playerState)
+            local lifeTapCount = 0
+            for key in pairs(results) do
+                if key:match("^1454:%d+$") then
+                    lifeTapCount = lifeTapCount + 1
+                end
+            end
+            assert.are.equal(7, lifeTapCount)
+        end)
+
+        it("should return an empty table when playerState is nil", function()
+            local results = Pipeline.CalculateAllRanks(nil)
+            assert.is_not_nil(results)
+            local count = 0
+            for _ in pairs(results) do count = count + 1 end
+            assert.are.equal(0, count)
+        end)
+    end)
+
+    ---------------------------------------------------------------------------
     -- CalculateByName
     ---------------------------------------------------------------------------
     describe("CalculateByName", function()

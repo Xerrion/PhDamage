@@ -66,7 +66,9 @@ end
 -------------------------------------------------------------------------------
 -- CalculateAll(playerState)
 -- Runs the full pipeline for every spell in ns.SpellData.
--- Returns an array of SpellResult tables, sorted by spell name.
+-- Returns an array of SpellResult tables, sorted by DPS descending.
+-- Emits one result per spell (highest known rank). For per-rank iteration
+-- across every rank of every spell, use Pipeline.CalculateAllRanks instead.
 -------------------------------------------------------------------------------
 function Pipeline.CalculateAll(playerState)
     local allResults = {}
@@ -90,6 +92,42 @@ function Pipeline.CalculateAll(playerState)
     end)
 
     return allResults
+end
+
+-------------------------------------------------------------------------------
+-- CalculateAllRanks(playerState)
+-- Runs the full pipeline for every rank of every spell in ns.SpellData.
+-- Returns a dictionary keyed by "<spellID>:<rankIndex>" -> SpellResult.
+-- Spells without a `ranks` table still produce one entry keyed "<spellID>:1"
+-- so callers can iterate the result without per-spell shape checks.
+-- Unlike CalculateAll, this function allocates a fresh table on every call -
+-- callers that retain references across calls remain safe.
+-------------------------------------------------------------------------------
+function Pipeline.CalculateAllRanks(playerState)
+    if not playerState then
+        return {}
+    end
+
+    local resultsByRank = {}
+
+    for spellID, spellData in pairs(ns.SpellData) do
+        local ranks = spellData.ranks
+        if type(ranks) == "table" and next(ranks) ~= nil then
+            for rankIdx in pairs(ranks) do
+                local result = Pipeline.Calculate(spellID, playerState, rankIdx)
+                if result then
+                    resultsByRank[tostring(spellID) .. ":" .. tostring(rankIdx)] = result
+                end
+            end
+        else
+            local result = Pipeline.Calculate(spellID, playerState)
+            if result then
+                resultsByRank[tostring(spellID) .. ":1"] = result
+            end
+        end
+    end
+
+    return resultsByRank
 end
 
 -------------------------------------------------------------------------------
