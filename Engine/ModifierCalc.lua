@@ -124,13 +124,16 @@ local function CreateModAccumulator()
 end
 
 -------------------------------------------------------------------------------
--- ApplyEffect(mods, effect, rank, playerState)
+-- ApplyEffect(mods, effect, rank, playerState, stackFactor)
 -- Applies a single modifier effect to the accumulator.
 -- rank = talent rank (for perRank effects) or 1 (for auras).
 -- playerState = optional, needed for count-based modifiers (e.g., Soul Siphon).
+-- stackFactor = optional fractional scalar (0..1] applied to the resolved value
+--   for stack-aware aura entries. Defaults to 1 (no scaling) when nil.
 -------------------------------------------------------------------------------
-local function ApplyEffect(mods, effect, rank, playerState)
+local function ApplyEffect(mods, effect, rank, playerState, stackFactor)
     local effectType = effect.type
+    local factor = stackFactor or 1
 
     -- Count-based modifier (e.g., Soul Siphon: +X% per affliction effect on target)
     if effect.countField then
@@ -141,7 +144,7 @@ local function ApplyEffect(mods, effect, rank, playerState)
         else
             perCount = effect.value
         end
-        local bonus = perCount * count
+        local bonus = perCount * count * factor
         -- Apply cap if maxBonus exists
         if effect.maxBonus then
             local cap = type(effect.maxBonus) == "table"
@@ -174,6 +177,11 @@ local function ApplyEffect(mods, effect, rank, playerState)
     if effect.statField then
         value = value * (playerState and playerState.stats and playerState.stats[effect.statField] or 0)
     end
+
+    -- Stack scaling (auras with maxStacks): the declared value is the at-max-stacks value;
+    -- partial stacks deliver a proportional fraction. Default factor 1 = no change.
+    -- (The countField path applied factor at L147 and returned early; this line is for non-countField effects only.)
+    value = value * factor
 
     if effectType == MOD.DAMAGE_MULTIPLIER then
         if effect.stacking == "additive" then
@@ -215,14 +223,30 @@ local function ApplyEffect(mods, effect, rank, playerState)
 end
 
 -------------------------------------------------------------------------------
--- ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+-- ApplyAuraEntry(entry, spellData, rankData, playerState, mods, applications)
 -- Applies effects and talentAmplify from a single active aura entry.
+--
+-- applications carries the stack count produced by StateCollector.
+-- Backwards compatibility: legacy callers may pass a boolean `true` (the old
+-- shape before stacks were tracked) or nil. Both nil and true coerce to 1
+-- stack. Entries without `maxStacks` behave exactly as before (factor stays
+-- 1.0). Stack-aware entries treat boolean true as 1 stack (1/maxStacks of the
+-- at-max value), which is the documented contract.
 -------------------------------------------------------------------------------
-local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods, applications)
+    local stacks = (type(applications) == "number") and applications or 1
+    local stackFactor = 1
+    if entry.maxStacks and entry.maxStacks > 0 then
+        if stacks > entry.maxStacks then
+            stacks = entry.maxStacks
+        end
+        stackFactor = stacks / entry.maxStacks
+    end
+
     if entry.effects then
         for _, effect in ipairs(entry.effects) do
             if ModifierCalc.MatchesFilter(effect.filter, spellData, rankData, playerState) then
-                ApplyEffect(mods, effect, 1, playerState)
+                ApplyEffect(mods, effect, 1, playerState, stackFactor)
             end
         end
     end
@@ -238,7 +262,7 @@ local function ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
                         type = amp.effectType,
                         value = amp.perRank * talentRank,
                     }
-                    ApplyEffect(mods, syntheticEffect, 1, playerState)
+                    ApplyEffect(mods, syntheticEffect, 1, playerState, stackFactor)
                     break  -- Only amplify once per aura
                 end
             end
@@ -275,16 +299,16 @@ function ModifierCalc.ApplyModifiers(baseResult, spellData, playerState, talentM
     ---------------------------------------------------------------------------
     -- 2. Aura modifiers (iterate active auras, look up in auraMap)
     ---------------------------------------------------------------------------
-    for spellID, _ in pairs(playerState.auras.player) do
+    for spellID, applications in pairs(playerState.auras.player) do
         local entry = auraMap[spellID]
         if entry and not entry.alreadyInStats and entry.target == "player" then
-            ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+            ApplyAuraEntry(entry, spellData, rankData, playerState, mods, applications)
         end
     end
-    for spellID, _ in pairs(playerState.auras.target) do
+    for spellID, applications in pairs(playerState.auras.target) do
         local entry = auraMap[spellID]
         if entry and not entry.alreadyInStats and entry.target == "target" then
-            ApplyAuraEntry(entry, spellData, rankData, playerState, mods)
+            ApplyAuraEntry(entry, spellData, rankData, playerState, mods, applications)
         end
     end
 

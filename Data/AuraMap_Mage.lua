@@ -7,6 +7,7 @@
 local ADDON_NAME, ns = ...
 ns.AuraMap = ns.AuraMap or {}
 
+local SCHOOL_FIRE = ns.SCHOOL_FIRE
 local MOD = ns.MOD
 
 local AuraMap = {}
@@ -29,8 +30,17 @@ AuraMap[30482] = {
     },
 }
 
--- TODO: Fire Vulnerability (22959) — target debuff, +3% fire damage taken per stack (5 max)
--- Requires debuff stack tracking (not yet implemented in engine)
+-- Fire Vulnerability / Improved Scorch (22959): target takes up to +15% Fire damage.
+-- Stack-aware: +3% per stack, max 5 stacks. Engine scales by applications/maxStacks.
+AuraMap[22959] = {
+    name = "Fire Vulnerability",
+    target = "target",
+    maxStacks = 5,
+    effects = {
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.15,
+          filter = { school = SCHOOL_FIRE } },
+    },
+}
 
 -- TODO: Icy Veins (12472) — player buff, +20% spell haste
 -- Haste is already reflected in spellHaste stat from GetCombatRating; no damage modifier needed

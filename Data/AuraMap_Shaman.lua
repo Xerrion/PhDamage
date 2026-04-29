@@ -69,12 +69,15 @@ AuraMap[17364] = {
     },
 }
 
--- Healing Way: +6% Healing Wave healing per stack (up to 3 stacks, modeled per stack)
+-- Healing Way (29203): increases Healing Wave healing on target.
+-- Stack-aware: +6% per stack, max 3 stacks (+18% at full stacks).
+-- Engine scales by applications/maxStacks.
 AuraMap[29203] = {
     name = "Healing Way",
     target = "target",
+    maxStacks = 3,
     effects = {
-        { type = MOD.DAMAGE_MULTIPLIER, value = 0.06,
+        { type = MOD.DAMAGE_MULTIPLIER, value = 0.18,
           filter = { spellNames = { "Healing Wave" } } },
     },
 }

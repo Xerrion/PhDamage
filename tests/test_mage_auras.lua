@@ -76,14 +76,16 @@ describe("Mage Auras", function()
         end)
 
         it("should stack with talent crit bonuses", function()
+            -- Critical Mass (2:11) was removed from TalentMap (plan 44, Bug A);
+            -- substitute Improved Flamestrike (2:9, +5%/rank) on Flamestrike to
+            -- exercise aura + talent crit stacking on a Fire spell.
             local state = makeMageState()
             state.auras.player[30482] = true
-            state.talents["2:11"] = 3  -- Critical Mass +6%
-            local r = Pipeline.Calculate(2136, state)  -- Fire Blast
-            assert.is_near(0.10 + 0.03 + 0.06, r.critChance, 0.001)
+            state.talents["2:9"] = 3  -- Improved Flamestrike +15% crit on Flamestrike
+            local r = Pipeline.Calculate(2120, state)  -- Flamestrike R7
+            assert.is_near(0.10 + 0.03 + 0.15, r.critChance, 0.001)
         end)
     end)
 
-    -- TODO: Fire Vulnerability (22959) — needs debuff stack tracking
     -- TODO: Icy Veins (12472) — haste handled by WoW API, no damage modifier
 end)

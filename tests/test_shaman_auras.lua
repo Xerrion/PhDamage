@@ -267,20 +267,32 @@ describe("Shaman Auras", function()
     end)
 
     ---------------------------------------------------------------------------
-    -- 6. Healing Way (29203) — +6% Healing Wave healing (target buff)
+    -- 6. Healing Way (29203) — +6% per stack on Healing Wave, max 3 stacks
     ---------------------------------------------------------------------------
     describe("Healing Way", function()
 
-        it("increases Healing Wave R12 healing by 6%", function()
+        it("increases Healing Wave R12 healing by 6% at 1 stack", function()
             local baseState = makeShamanState()
             local baseResult = Pipeline.Calculate(331, baseState)
 
             local state = makeShamanState()
-            state.auras.target[29203] = true
+            state.auras.target[29203] = 1
             local result = Pipeline.Calculate(331, state)
 
             assert.is_near(baseResult.minDmg * 1.06, result.minDmg, 0.1)
             assert.is_near(baseResult.maxDmg * 1.06, result.maxDmg, 0.1)
+        end)
+
+        it("increases Healing Wave R12 healing by 18% at 3 stacks", function()
+            local baseState = makeShamanState()
+            local baseResult = Pipeline.Calculate(331, baseState)
+
+            local state = makeShamanState()
+            state.auras.target[29203] = 3
+            local result = Pipeline.Calculate(331, state)
+
+            assert.is_near(baseResult.minDmg * 1.18, result.minDmg, 0.1)
+            assert.is_near(baseResult.maxDmg * 1.18, result.maxDmg, 0.1)
         end)
 
         it("does NOT affect Lesser Healing Wave", function()
@@ -288,7 +300,7 @@ describe("Shaman Auras", function()
             local baseResult = Pipeline.Calculate(8004, baseState)
 
             local state = makeShamanState()
-            state.auras.target[29203] = true
+            state.auras.target[29203] = 3
             local result = Pipeline.Calculate(8004, state)
 
             assert.is_near(baseResult.minDmg, result.minDmg, 0.1)
@@ -300,7 +312,7 @@ describe("Shaman Auras", function()
             local baseResult = Pipeline.Calculate(1064, baseState)
 
             local state = makeShamanState()
-            state.auras.target[29203] = true
+            state.auras.target[29203] = 3
             local result = Pipeline.Calculate(1064, state)
 
             assert.is_near(baseResult.minDmg, result.minDmg, 0.1)
@@ -312,7 +324,7 @@ describe("Shaman Auras", function()
             local baseResult = Pipeline.Calculate(403, baseState)
 
             local state = makeShamanState()
-            state.auras.target[29203] = true
+            state.auras.target[29203] = 3
             local result = Pipeline.Calculate(403, state)
 
             assert.is_near(baseResult.minDmg, result.minDmg, 0.1)

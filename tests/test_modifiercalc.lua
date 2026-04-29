@@ -339,7 +339,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should apply Shadow Weaving +10% damageMultiplier on Shadow spells", function()
-            playerState.auras.target[15258] = true
+            playerState.auras.target[15258] = 5  -- 5 stacks = full +10%
             local spellData = ns.SpellData[686]  -- Shadow Bolt
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -351,7 +351,7 @@ describe("ModifierCalc", function()
         end)
 
         it("should not apply Shadow Weaving to Fire spells", function()
-            playerState.auras.target[15258] = true
+            playerState.auras.target[15258] = 5
             local spellData = ns.SpellData[5676]  -- Searing Pain (Fire)
             local rankData = spellData.ranks[8]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)
@@ -364,7 +364,7 @@ describe("ModifierCalc", function()
 
         it("should multiply Misery and Shadow Weaving on Shadow spells", function()
             playerState.auras.target[33198] = true  -- Misery +5%
-            playerState.auras.target[15258] = true  -- Shadow Weaving +10%
+            playerState.auras.target[15258] = 5     -- Shadow Weaving +10% (5 stacks)
             local spellData = ns.SpellData[686]
             local rankData = spellData.ranks[11]
             local baseResult = SpellCalc.ComputeBase(spellData, rankData, playerState)

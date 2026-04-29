@@ -404,7 +404,7 @@ function StateCollector.CollectAuras(state)
             if target == "player" then
                 local auraData = C_UnitAuras.GetPlayerAuraBySpellID(spellID)
                 if auraData then
-                    state.auras.player[spellID] = true
+                    state.auras.player[spellID] = auraData.applications or 1
                 end
             end
         end
@@ -418,7 +418,7 @@ function StateCollector.CollectAuras(state)
                 local ok, auraData = pcall(C_UnitAuras.GetAuraDataByIndex, unit, i, auraType)
                 if not ok or not auraData then break end
                 if auraData.spellId and watchedAuras[auraData.spellId] then
-                    state.auras[stateKey][auraData.spellId] = true
+                    state.auras[stateKey][auraData.spellId] = auraData.applications or 1
                 end
                 i = i + 1
             end
@@ -434,7 +434,7 @@ function StateCollector.CollectAuras(state)
             if not ok or not auraData then break end
             if auraData.spellId then
                 if watchedAuras[auraData.spellId] then
-                    state.auras.target[auraData.spellId] = true
+                    state.auras.target[auraData.spellId] = auraData.applications or 1
                 end
                 if AFFLICTION_SPELL_IDS[auraData.spellId] then
                     afflictionCount = afflictionCount + 1
