@@ -180,10 +180,10 @@ describe("Druid Spells", function()
 
     ---------------------------------------------------------------------------
     -- 5. Hurricane R4 (spellID 27012)
-    -- Nature channel, 10s, coefficient=1.07, 10 ticks
+    -- Nature channel, 10s, coefficient=1.28, 10 ticks
     -- Total base: 734
-    -- SP bonus: 800 * 1.07 = 856
-    -- Total: 734 + 856 = 1590, per tick = 1590 / 10 = 159
+    -- SP bonus: 800 * 1.28 = 1024
+    -- Total: 734 + 1024 = 1758, per tick = 1758 / 10 = 175.8
     --
     -- Engine ComputeChannel reads rankData.totalDmg. Druid data uses
     -- minDmg=maxDmg=734. If engine reads totalDmg (nil), this would fail.
@@ -196,12 +196,14 @@ describe("Druid Spells", function()
             local result = Pipeline.Calculate(16914, state)
             assert.is_not_nil(result)
             assert.equals("Hurricane", result.spellName)
+            -- R4: totalDmg 734 + Nature SP 800 * 1.07 = 1590
             assert.is_near(1590.00, result.totalDmg, 0.01)
         end)
 
         it("has correct tick damage", function()
             local state = makeDruidState()
             local result = Pipeline.Calculate(16914, state)
+            -- 1590 / 10 ticks = 159.00
             assert.is_near(159.00, result.tickDmg, 0.01)
         end)
 

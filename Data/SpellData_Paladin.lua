@@ -4,6 +4,27 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -84,17 +105,20 @@ SpellData[200473] = {
 -- Holy Damage Spells
 -------------------------------------------------------------------------------
 
--- Consecration — instant cast, Holy, AoE ground DoT
--- Coefficient: 0.119 per tick (0.952 total), 8s duration, 8 ticks
+-- Consecration: 8-second ground DoT, 8 ticks @ 1s.
+-- Wowhead per-tick SP mod 0.119 -> 0.952 total (engine treats coefficient as TOTAL).
+-- Prior value of 0.119 was per-tick stored as total, causing 8x under-scaling.
+-- Source: https://www.wowhead.com/tbc/spell=27173
 SpellData[26573] = {
     name = "Consecration",
     school = SCHOOL_HOLY,
     spellType = "dot",
-    coefficient = 0.119,
+    coefficient = 0.952,
     castTime = 0,
     canCrit = false,
     numTicks = 8,
     duration = 8,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 26573, totalDmg = 64,  level = 20 },
         [2] = { spellID = 20116, totalDmg = 120, level = 30 },

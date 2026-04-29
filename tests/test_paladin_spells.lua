@@ -112,7 +112,7 @@ describe("Paladin Spells", function()
 
     ---------------------------------------------------------------------------
     -- 3. Consecration (base ID 26573, DoT)
-    -- Holy AoE ground DoT, instant cast, coefficient 0.119 (total),
+    -- Holy AoE ground DoT, instant cast, coefficient 0.952 (TOTAL = per-tick 0.119 x 8),
     -- 8s duration, 8 ticks
     ---------------------------------------------------------------------------
     describe("Consecration", function()
@@ -145,11 +145,12 @@ describe("Paladin Spells", function()
             state.stats.spellPower[2] = 800
             state.stats.healingPower = 0
             local result = Pipeline.Calculate(26573, state)
-            -- SP bonus = 800 * 0.119 = 95.2
-            -- totalDmg = 512 + 95.2 = 607.2
-            -- tickDmg = 607.2 / 8 = 75.9
-            assert.is_near(607.2, result.totalDmg, 0.01)
-            assert.is_near(75.9, result.tickDmg, 0.01)
+            -- Coefficient 0.952 (TOTAL = per-tick 0.119 x 8 ticks).
+            -- SP bonus = 800 * 0.952 = 761.6
+            -- totalDmg = 512 + 761.6 = 1273.6
+            -- tickDmg = 1273.6 / 8 = 159.2
+            assert.is_near(1273.6, result.totalDmg, 0.01)
+            assert.is_near(159.2, result.tickDmg, 0.01)
         end)
 
         it("has correct tick count and duration", function()
@@ -455,7 +456,7 @@ describe("Paladin Spells", function()
             assert.is_near(0.714, ns.SpellData[635].coefficient, 0.001)    -- Holy Light
             assert.is_near(0.429, ns.SpellData[19750].coefficient, 0.001)  -- Flash of Light
             assert.is_near(0.429, ns.SpellData[200473].coefficient, 0.001) -- Holy Shock (Heal)
-            assert.is_near(0.119, ns.SpellData[26573].coefficient, 0.001)  -- Consecration
+            assert.is_near(0.952, ns.SpellData[26573].coefficient, 0.001)  -- Consecration (TOTAL)
             assert.is_near(0.429, ns.SpellData[879].coefficient, 0.001)    -- Exorcism
             assert.is_near(0.429, ns.SpellData[24275].coefficient, 0.001)  -- Hammer of Wrath
             assert.is_near(0.286, ns.SpellData[2812].coefficient, 0.001)   -- Holy Wrath

@@ -4,6 +4,27 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -31,10 +52,14 @@ SpellData[133] = {
     castTime = 3.5,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 133,   minDmg = 16,  maxDmg = 25,  dotDmg = 2,   level = 1  },
-        [2]  = { spellID = 143,   minDmg = 34,  maxDmg = 49,  dotDmg = 3,   level = 6  },
-        [3]  = { spellID = 145,   minDmg = 57,  maxDmg = 77,  dotDmg = 6,   level = 12 },
-        [4]  = { spellID = 3140,  minDmg = 89,  maxDmg = 122, dotDmg = 12,  level = 18 },
+        -- Wowhead spell=133 (sub-cap penalty rank, direct SP mod 0.123)
+        [1]  = { spellID = 133,   minDmg = 16,  maxDmg = 25,  dotDmg = 2,   level = 1,  directCoefficient = 0.123 },
+        -- Wowhead spell=143 (sub-cap penalty rank, direct SP mod 0.271)
+        [2]  = { spellID = 143,   minDmg = 34,  maxDmg = 49,  dotDmg = 3,   level = 6,  directCoefficient = 0.271 },
+        -- Wowhead spell=145 (sub-cap penalty rank, direct SP mod 0.5)
+        [3]  = { spellID = 145,   minDmg = 57,  maxDmg = 77,  dotDmg = 6,   level = 12, directCoefficient = 0.5   },
+        -- Wowhead spell=3140 (sub-cap penalty rank, direct SP mod 0.793)
+        [4]  = { spellID = 3140,  minDmg = 89,  maxDmg = 122, dotDmg = 12,  level = 18, directCoefficient = 0.793 },
         [5]  = { spellID = 8400,  minDmg = 146, maxDmg = 195, dotDmg = 20,  level = 24 },
         [6]  = { spellID = 8401,  minDmg = 207, maxDmg = 274, dotDmg = 28,  level = 30 },
         [7]  = { spellID = 8402,  minDmg = 264, maxDmg = 345, dotDmg = 32,  level = 36 },
@@ -58,8 +83,10 @@ SpellData[2136] = {
     castTime = 0,
     canCrit = true,
     ranks = {
-        [1] = { spellID = 2136,  minDmg = 27,  maxDmg = 35,  level = 6  },
-        [2] = { spellID = 2137,  minDmg = 62,  maxDmg = 76,  level = 14 },
+        -- Wowhead spell=2136 (sub-cap penalty rank, SP mod 0.204)
+        [1] = { spellID = 2136,  minDmg = 27,  maxDmg = 35,  level = 6,  coefficient = 0.204 },
+        -- Wowhead spell=2137 (sub-cap penalty rank, SP mod 0.332)
+        [2] = { spellID = 2137,  minDmg = 62,  maxDmg = 76,  level = 14, coefficient = 0.332 },
         [3] = { spellID = 2138,  minDmg = 110, maxDmg = 134, level = 22 },
         [4] = { spellID = 8412,  minDmg = 177, maxDmg = 211, level = 30 },
         [5] = { spellID = 8413,  minDmg = 253, maxDmg = 301, level = 38 },
@@ -119,9 +146,9 @@ SpellData[11366] = {
     },
 }
 
--- Flamestrike — 3.0s cast, Fire, hybrid (direct + DoT)
--- Direct coefficient: 0.236, DoT coefficient: 0.03 per tick × 4 ticks = 0.12 total
--- DoT: 8s duration, 4 ticks
+-- Flamestrike: instant AoE + 8s ground DoT (4 ticks @ 2s).
+-- Wowhead direct SP mod 0.236; DoT per-tick SP mod 0.03 -> 0.12 total.
+-- Source: https://www.wowhead.com/tbc/spell=27086
 SpellData[2120] = {
     name = "Flamestrike",
     school = SCHOOL_FIRE,
@@ -132,8 +159,11 @@ SpellData[2120] = {
     numTicks = 4,
     castTime = 3.0,
     canCrit = true,
+    isAoe = true,
     ranks = {
-        [1] = { spellID = 2120,  minDmg = 55,  maxDmg = 71,  dotDmg = 48,  level = 16 },
+        -- Wowhead spell=2120 (sub-cap penalty rank, dir SP mod 0.20, dot per-tick 0.026 x 4 = 0.104)
+        [1] = { spellID = 2120,  minDmg = 55,  maxDmg = 71,  dotDmg = 48,  level = 16,
+                directCoefficient = 0.20, dotCoefficient = 0.104 },
         [2] = { spellID = 2121,  minDmg = 100, maxDmg = 126, dotDmg = 88,  level = 24 },
         [3] = { spellID = 8422,  minDmg = 159, maxDmg = 197, dotDmg = 140, level = 32 },
         [4] = { spellID = 8423,  minDmg = 226, maxDmg = 279, dotDmg = 196, level = 40 },
@@ -143,15 +173,16 @@ SpellData[2120] = {
     },
 }
 
--- Blast Wave — instant cast, Fire, direct (talent)
--- Coefficient: 0.193
+-- Blast Wave: instant PBAoE. Stored value 0.1357 is post-AoE-penalty (DBC raw SP mod 0.193).
+-- Source: https://www.wowhead.com/tbc/spell=33933
 SpellData[11113] = {
     name = "Blast Wave",
     school = SCHOOL_FIRE,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 11113, minDmg = 160, maxDmg = 192, level = 30 },
         [2] = { spellID = 13018, minDmg = 208, maxDmg = 249, level = 36 },
@@ -163,15 +194,16 @@ SpellData[11113] = {
     },
 }
 
--- Dragon's Breath — instant cast, Fire, direct (talent)
--- Coefficient: 0.193
+-- Dragon's Breath: instant frontal cone AoE. Stored value 0.1357 is post-AoE-penalty (DBC raw SP mod 0.193).
+-- Source: https://www.wowhead.com/tbc/spell=33041
 SpellData[31661] = {
     name = "Dragon's Breath",
     school = SCHOOL_FIRE,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 31661, minDmg = 382, maxDmg = 442, level = 62 },
         [2] = { spellID = 33041, minDmg = 463, maxDmg = 536, level = 64 },
@@ -194,10 +226,14 @@ SpellData[116] = {
     castTime = 3.0,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 116,   minDmg = 20,  maxDmg = 22,  level = 4  },
-        [2]  = { spellID = 205,   minDmg = 33,  maxDmg = 38,  level = 8  },
-        [3]  = { spellID = 837,   minDmg = 54,  maxDmg = 61,  level = 14 },
-        [4]  = { spellID = 7322,  minDmg = 78,  maxDmg = 87,  level = 20 },
+        -- Wowhead spell=116 (sub-cap penalty rank, SP mod 0.163)
+        [1]  = { spellID = 116,   minDmg = 20,  maxDmg = 22,  level = 4,  coefficient = 0.163 },
+        -- Wowhead spell=205 (sub-cap penalty rank, SP mod 0.269)
+        [2]  = { spellID = 205,   minDmg = 33,  maxDmg = 38,  level = 8,  coefficient = 0.269 },
+        -- Wowhead spell=837 (sub-cap penalty rank, SP mod 0.463)
+        [3]  = { spellID = 837,   minDmg = 54,  maxDmg = 61,  level = 14, coefficient = 0.463 },
+        -- Wowhead spell=7322 (sub-cap penalty rank, SP mod 0.706)
+        [4]  = { spellID = 7322,  minDmg = 78,  maxDmg = 87,  level = 20, coefficient = 0.706 },
         [5]  = { spellID = 8406,  minDmg = 132, maxDmg = 144, level = 26 },
         [6]  = { spellID = 8407,  minDmg = 180, maxDmg = 197, level = 32 },
         [7]  = { spellID = 8408,  minDmg = 235, maxDmg = 255, level = 38 },
@@ -225,15 +261,16 @@ SpellData[30455] = {
     },
 }
 
--- Cone of Cold — instant cast, Frost, direct
--- Coefficient: 0.193
+-- Cone of Cold: instant frontal AoE. Stored value 0.1357 is post-AoE-penalty (DBC raw SP mod 0.193).
+-- Source: https://www.wowhead.com/tbc/spell=27087
 SpellData[120] = {
     name = "Cone of Cold",
     school = SCHOOL_FROST,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 120,   minDmg = 102, maxDmg = 112, level = 26 },
         [2] = { spellID = 8492,  minDmg = 151, maxDmg = 165, level = 34 },
@@ -244,8 +281,8 @@ SpellData[120] = {
     },
 }
 
--- Blizzard — channeled, Frost, 8s duration, 8 ticks
--- Coefficient: 0.119 per tick = 0.952 total
+-- Blizzard: 8-second channel, 8 ticks @ 1s. Wowhead per-tick SP mod 0.119 -> 0.952 total.
+-- Source: https://www.wowhead.com/tbc/spell=27085
 SpellData[10] = {
     name = "Blizzard",
     school = SCHOOL_FROST,
@@ -254,6 +291,7 @@ SpellData[10] = {
     duration = 8,
     numTicks = 8,
     canCrit = false,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 10,    effectID = 42208, totalDmg = 208,  level = 20 },
         [2] = { spellID = 6141,  effectID = 42209, totalDmg = 360,  level = 28 },
@@ -265,15 +303,23 @@ SpellData[10] = {
     },
 }
 
--- Frost Nova — instant cast, Frost, direct
--- Coefficient: 0.043
+-- Frost Nova - spell ID 122
+-- Stored coefficient (0.1357) is the Wowhead-published EFFECTIVE coefficient
+-- for instant AoE spells. It already incorporates the TBC AoE penalty and the
+-- instant-cast 1.5s/3.5s downscale factor. The raw DBC EffectBonusCoefficient
+-- is 0.043 (informational only); the engine consumes the effective value
+-- verbatim and does NOT re-derive it from the DBC raw.
+-- Per the file header policy: all coefficients in this file are Wowhead
+-- effective values, NOT raw DBC values.
+-- Source: https://www.wowhead.com/tbc/spell=122/frost-nova (TBC Classic tooltip)
 SpellData[122] = {
     name = "Frost Nova",
     school = SCHOOL_FROST,
     spellType = "direct",
-    coefficient = 0.043,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 122,   minDmg = 21,  maxDmg = 24,  level = 10 },
         [2] = { spellID = 865,   minDmg = 35,  maxDmg = 40,  level = 26 },
@@ -287,22 +333,29 @@ SpellData[122] = {
 -- Arcane Spells
 -------------------------------------------------------------------------------
 
--- Arcane Missiles — channeled, Arcane
--- Coefficient: 0.143 per wave = 0.715 total
--- Note: R1 = 3 waves (3s), R2 = 4 waves (4s), R3+ = 5 waves (5s)
--- Base duration/numTicks set to R3+ values (5 waves)
+-- Arcane Missiles: 5-second channel, 5 missiles @ 1s.
+-- Wowhead per-missile SP mod 0.286 (top ranks) -> 1.43 total.
+-- Lower ranks (R1=3 missiles, R2=4 missiles, both with sub-cap penalty) need
+-- per-rank coefficient overrides; see per-rank table.
+-- Source (parent): https://www.wowhead.com/tbc/spell=38704
+-- Source (trigger): https://www.wowhead.com/tbc/spell=38703
 SpellData[5143] = {
     name = "Arcane Missiles",
     school = SCHOOL_ARCANE,
     spellType = "channel",
-    coefficient = 0.715,
+    coefficient = 1.43,
     duration = 5,
     numTicks = 5,
     canCrit = true,
+    -- Per-rank overrides: R1/R2 carry sub-cap-level penalty (3 / 4 missiles vs 5 at R3+).
+    -- R3+ all use the spell-level coefficient 1.43 (5 missiles x 0.286 SP mod).
     ranks = {
-        [1]  = { spellID = 5143,  totalDmg = 78,   level = 8  },  -- 3 waves x 26
-        [2]  = { spellID = 5144,  totalDmg = 152,  level = 16 },  -- 4 waves x 38
-        [3]  = { spellID = 5145,  totalDmg = 290,  level = 24 },  -- 5 waves x 58
+        -- Wowhead spell=5144 (per-missile SP mod 0.157 x 3 missiles)
+        [1]  = { spellID = 5143,  totalDmg = 78,   level = 8,  coefficient = 0.471 },  -- 3 waves x 26
+        -- Wowhead spell=6125 (per-missile SP mod 0.243 x 4 missiles)
+        [2]  = { spellID = 5144,  totalDmg = 152,  level = 16, coefficient = 0.972 },  -- 4 waves x 38
+        -- Wowhead spell=8419 (matches top-rank; explicit for clarity)
+        [3]  = { spellID = 5145,  totalDmg = 290,  level = 24, coefficient = 1.43  },  -- 5 waves x 58
         [4]  = { spellID = 8416,  totalDmg = 430,  level = 32 },  -- 5 waves x 86
         [5]  = { spellID = 8417,  totalDmg = 590,  level = 40 },  -- 5 waves x 118
         [6]  = { spellID = 10211, totalDmg = 775,  level = 48 },  -- 5 waves x 155
@@ -328,8 +381,8 @@ SpellData[30451] = {
     },
 }
 
--- Arcane Explosion — instant cast, Arcane, direct
--- Coefficient: 0.213
+-- Arcane Explosion: instant PBAoE. Wowhead SP mod 0.214 (we store 0.213, negligible diff).
+-- Source: https://www.wowhead.com/tbc/spell=27082
 SpellData[1449] = {
     name = "Arcane Explosion",
     school = SCHOOL_ARCANE,
@@ -337,8 +390,10 @@ SpellData[1449] = {
     coefficient = 0.213,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
-        [1] = { spellID = 1449,  minDmg = 34,  maxDmg = 38,  level = 14 },
+        -- Wowhead spell=1449 (sub-cap penalty rank, SP mod 0.166)
+        [1] = { spellID = 1449,  minDmg = 34,  maxDmg = 38,  level = 14, coefficient = 0.166 },
         [2] = { spellID = 8437,  minDmg = 60,  maxDmg = 66,  level = 22 },
         [3] = { spellID = 8438,  minDmg = 101, maxDmg = 110, level = 30 },
         [4] = { spellID = 8439,  minDmg = 143, maxDmg = 156, level = 38 },

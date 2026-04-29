@@ -68,7 +68,11 @@ function SpellCalc.ComputeDirect(spellData, rankData, playerState)
     end
 
     local sp = playerState.stats.spellPower[spellData.school] or 0
-    local spBonus = sp * (spellData.coefficient or 0)
+    -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+    -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+    -- SP mod per rank.
+    local effectiveCoeff = rankData.coefficient or spellData.coefficient or 0
+    local spBonus = sp * effectiveCoeff
 
     return {
         spellData = spellData,
@@ -76,7 +80,7 @@ function SpellCalc.ComputeDirect(spellData, rankData, playerState)
         avgBaseDamage = avgBase,
         minBaseDamage = rankData.minDmg,
         maxBaseDamage = rankData.maxDmg,
-        coefficient = spellData.coefficient,
+        coefficient = effectiveCoeff,
         spellPowerBonus = spBonus,
         totalDamage = avgBase + spBonus,
         totalMin = rankData.minDmg + spBonus,
@@ -91,7 +95,10 @@ end
 -------------------------------------------------------------------------------
 function SpellCalc.ComputeRangedDirect(spellData, rankData, playerState, avgBase)
     local rap = playerState.stats.rangedAttackPower or 0
-    local coefficient = spellData.coefficient or 0
+    -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+    -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+    -- RAP mod per rank.
+    local coefficient = rankData.coefficient or spellData.coefficient or 0
     local rapBonus = rap * coefficient
 
     -- Weapon damage integration for spells like Steady Shot / Aimed Shot
@@ -164,10 +171,14 @@ function SpellCalc.ComputeMeleeDirect(spellData, rankData, playerState)
             castTime = spellData.castTime,
         }
 
-    elseif spellData.apCoefficient then
-        -- Type 2: AP-based — AP * coefficient + optional base damage
+    elseif spellData.apCoefficient or rankData.apCoefficient then
+        -- Type 2: AP-based - AP * coefficient + optional base damage
         -- Bloodthirst-style (no base) and Eviscerate/Envenom-style (with base)
-        local apDmg = ap * spellData.apCoefficient
+        -- Per-rank override: rank.apCoefficient takes precedence over spell-level.
+        -- Note: rank.coefficient is reserved for SP-scaling spells; do not accept it
+        -- here to avoid ambiguous SP vs AP semantics for melee spells.
+        local effectiveCoeff = rankData.apCoefficient or spellData.apCoefficient or 0
+        local apDmg = ap * effectiveCoeff
         local baseMin = rankData.minDmg or 0
         local baseMax = rankData.maxDmg or 0
         local avgBase = (baseMin + baseMax) / 2
@@ -177,7 +188,7 @@ function SpellCalc.ComputeMeleeDirect(spellData, rankData, playerState)
             avgBaseDamage = avgBase,
             minBaseDamage = baseMin,
             maxBaseDamage = baseMax,
-            coefficient = spellData.apCoefficient,
+            coefficient = effectiveCoeff,
             spellPowerBonus = apDmg,
             totalDamage = avgBase + apDmg,
             totalMin = baseMin + apDmg,
@@ -213,7 +224,11 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
         scalingPower = playerState.stats.rangedAttackPower or 0
     elseif spellData.scalingType == "melee" then
         local ap = playerState.stats.attackPower or 0
-        local coefficient = spellData.coefficient or spellData.apCoefficient or 0
+        -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+        -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+        -- SP/AP mod per rank.
+        local coefficient = rankData.coefficient or rankData.apCoefficient
+            or spellData.coefficient or spellData.apCoefficient or 0
         local baseDmg = rankData.totalDmg or 0
         -- For melee bleeds with weapon scaling (like Rend)
         if spellData.weaponDotCoefficient then
@@ -243,7 +258,11 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
     else
         scalingPower = playerState.stats.spellPower[spellData.school] or 0
     end
-    local spBonus = scalingPower * (spellData.coefficient or 0)
+    -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+    -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+    -- SP mod per rank.
+    local effectiveCoeff = rankData.coefficient or spellData.coefficient or 0
+    local spBonus = scalingPower * effectiveCoeff
     local totalDmg = rankData.totalDmg + spBonus
     local numTicks = rankData.numTicks or spellData.numTicks
     if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -253,7 +272,7 @@ function SpellCalc.ComputeDot(spellData, rankData, playerState)
         spellData = spellData,
         rankData = rankData,
         avgBaseDamage = rankData.totalDmg,
-        coefficient = spellData.coefficient,
+        coefficient = effectiveCoeff,
         spellPowerBonus = spBonus,
         totalDamage = totalDmg,
         tickDamage = tickDmg,
@@ -276,14 +295,19 @@ function SpellCalc.ComputeHybrid(spellData, rankData, playerState)
         scalingPower = playerState.stats.spellPower[spellData.school] or 0
     end
 
+    -- Per-rank override: rank.directCoefficient/dotCoefficient take precedence over the
+    -- spell-level values. Used for TBC sub-cap-level penalty ranks where Wowhead reports
+    -- a different SP mod per rank.
     -- Direct portion
-    local directCoeff = spellData.directCoefficient or spellData.apCoefficient or 0
+    local directCoeff = rankData.directCoefficient
+        or spellData.directCoefficient or spellData.apCoefficient or 0
     local directAvg = (rankData.minDmg + rankData.maxDmg) / 2
     local directSpBonus = scalingPower * directCoeff
     local directDamage = directAvg + directSpBonus
 
     -- DoT portion
-    local dotCoeff = spellData.dotCoefficient or spellData.dotApCoefficient or 0
+    local dotCoeff = rankData.dotCoefficient
+        or spellData.dotCoefficient or spellData.dotApCoefficient or 0
     local dotSpBonus = scalingPower * dotCoeff
     local dotDamage = rankData.dotDmg + dotSpBonus
     local numTicks = rankData.numTicks or spellData.numTicks
@@ -330,7 +354,11 @@ function SpellCalc.ComputeChannel(spellData, rankData, playerState)
     else
         scalingPower = playerState.stats.spellPower[spellData.school] or 0
     end
-    local spBonus = scalingPower * (spellData.coefficient or 0)
+    -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+    -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+    -- SP mod per rank.
+    local effectiveCoeff = rankData.coefficient or spellData.coefficient or 0
+    local spBonus = scalingPower * effectiveCoeff
     local totalDmg = rankData.totalDmg + spBonus
     local numTicks = rankData.numTicks or spellData.numTicks
     if not numTicks or numTicks == 0 then numTicks = 1 end
@@ -340,7 +368,7 @@ function SpellCalc.ComputeChannel(spellData, rankData, playerState)
         spellData = spellData,
         rankData = rankData,
         avgBaseDamage = rankData.totalDmg,
-        coefficient = spellData.coefficient,
+        coefficient = effectiveCoeff,
         spellPowerBonus = spBonus,
         totalDamage = totalDmg,
         tickDamage = tickDmg,
@@ -362,13 +390,17 @@ function SpellCalc.ComputeUtility(spellData, rankData, playerState)
     else
         scalingPower = playerState.stats.spellPower[spellData.school] or 0
     end
-    local spBonus = scalingPower * (spellData.coefficient or 0)
+    -- Per-rank override: rank.coefficient takes precedence over spellData.coefficient.
+    -- Used for TBC sub-cap-level penalty ranks where Wowhead reports a different
+    -- SP mod per rank.
+    local effectiveCoeff = rankData.coefficient or spellData.coefficient or 0
+    local spBonus = scalingPower * effectiveCoeff
     local manaGain = rankData.manaGain + spBonus
 
     return {
         spellData = spellData,
         rankData = rankData,
-        coefficient = spellData.coefficient,
+        coefficient = effectiveCoeff,
         spellPowerBonus = spBonus,
         healthCost = rankData.healthCost,
         manaGain = manaGain,

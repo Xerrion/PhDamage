@@ -27,8 +27,10 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(589, state, 1)
             assert.is_not_nil(r)
-            -- R1: 30 base + 1000*1.098 = 1128
-            assert.is_near(1128, r.totalDmg, 1)
+            -- R1 has per-rank coefficient 0.4392 (sub-cap penalty rank).
+            -- 30 base + 1000*0.4392 = 469.2; tickDmg = 469.2/6 = 78.2
+            assert.is_near(469.2, r.totalDmg, 1)
+            assert.is_near(78.2, r.tickDmg, 1)
         end)
     end)
 
@@ -46,9 +48,10 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(8092, state, 1)
             assert.is_not_nil(r)
-            -- R1: 39-43 + 1000*0.4286 = 467.6-471.6
-            assert.is_near(467.6, r.minDmg, 1)
-            assert.is_near(471.6, r.maxDmg, 1)
+            -- R1 has per-rank coefficient 0.268 (sub-cap penalty rank).
+            -- 39-43 + 1000*0.268 = 307-311
+            assert.is_near(307, r.minDmg, 1)
+            assert.is_near(311, r.maxDmg, 1)
         end)
     end)
 
@@ -109,9 +112,10 @@ describe("Priest Spells", function()
             local state = makePriestState()
             local r = Pipeline.Calculate(585, state, 1)
             assert.is_not_nil(r)
-            -- R1: 13-17 + 1000*0.7143 = 727.3-731.3
-            assert.is_near(727.3, r.minDmg, 1)
-            assert.is_near(731.3, r.maxDmg, 1)
+            -- R1 has per-rank coefficient 0.123 (sub-cap penalty rank).
+            -- 13-17 + 1000*0.123 = 136-140
+            assert.is_near(136, r.minDmg, 1)
+            assert.is_near(140, r.maxDmg, 1)
         end)
     end)
 

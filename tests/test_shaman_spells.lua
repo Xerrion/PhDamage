@@ -68,7 +68,7 @@ describe("Shaman Spells", function()
 
     ---------------------------------------------------------------------------
     -- 2. Chain Lightning R6 (spellID 25442)
-    -- Nature direct, 2.0s cast, coefficient 0.651
+    -- Nature direct, 2.0s cast, coefficient 0.651 (Wowhead spell=25442 SP mod)
     -- Base: min=734, max=838
     -- SP bonus: 800 * 0.651 = 520.8
     -- min = 734 + 520.8 = 1254.8
@@ -81,8 +81,9 @@ describe("Shaman Spells", function()
             local result = Pipeline.Calculate(421, state)
             assert.is_not_nil(result)
             assert.equals("Chain Lightning", result.spellName)
-            assert.is_near(1254.80, result.minDmg, 0.01)
-            assert.is_near(1358.80, result.maxDmg, 0.01)
+            -- R6: 734-838 + Nature SP 800 * 0.651 = 1254.8-1358.8
+            assert.is_near(1254.8, result.minDmg, 0.01)
+            assert.is_near(1358.8, result.maxDmg, 0.01)
         end)
 
         it("scales Chain Lightning with spell power", function()

@@ -1,8 +1,29 @@
 local ADDON_NAME, ns = ...
 
 -------------------------------------------------------------------------------
--- Hunter Spell Data — TBC Anniversary (2.5.5)
+-- Hunter Spell Data - TBC Anniversary (2.5.5)
 -- Source of truth: Wowhead TBC Classic
+-------------------------------------------------------------------------------
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
 -------------------------------------------------------------------------------
 
 local SCHOOL_PHYSICAL = ns.SCHOOL_PHYSICAL
@@ -60,7 +81,8 @@ SpellData[34120] = {
     },
 }
 
--- Multi-Shot (0.5s cast, Physical, 20% RAP, 3 targets)
+-- Multi-Shot: instant 3-target ranged. RAP coefficient 0.20 total per target
+-- (TBC convention; Wowhead does not expose RAP coefficients).
 SpellData[2643] = {
     name = "Multi-Shot",
     school = SCHOOL_PHYSICAL,
@@ -185,11 +207,22 @@ SpellData[13795] = {
 -- CHANNELS
 -------------------------------------------------------------------------------
 
--- Volley (6s channel, Arcane, ~0.50 RAP total across 6 ticks, AoE, no crit)
+-- Volley - spell ID 1510
+-- TBC RAP coefficient: 0.0837 per tick x 6 ticks (1s/tick over 6s channel).
+-- Source: Blizzard Patch 3.2.2 patch notes ("The attack power coefficient has
+-- been increased from 0.0586 to 0.0837. Base points did not change."), which
+-- reverted the 3.0.8 -30% nerf and restored the original TBC 2.x value.
+-- See: https://warcraft.wiki.gg/wiki/Patch_3.2.2 (Hunter section)
+--      https://warcraft.wiki.gg/wiki/Patch_3.0.8 (Hunter, Volley nerf -30%)
+--      https://warcraft.wiki.gg/wiki/Patch_2.2.0 (Hunter, RAP scaling introduced)
+--      https://warcraft.wiki.gg/wiki/Volley (Wrath Classic tooltip displays
+--      "8.37% of Ranged attack power + 52" per tick)
+-- Volley is the only Hunter ability in TBC with a stored RAP spell coefficient;
+-- ranged shots scale via the standard weapon-damage + normalized-AP formula.
 SpellData[1510] = {
     name = "Volley",
     school = SCHOOL_ARCANE,
-    coefficient = 0.50,
+    coefficient = 0.0837,
     castTime = 0,
     canCrit = false,
     isDot = false,

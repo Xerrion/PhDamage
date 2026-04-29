@@ -4,6 +4,27 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 
 local SCHOOL_NATURE = ns.SCHOOL_NATURE
@@ -26,9 +47,12 @@ SpellData[5176] = {
     castTime = 2.0,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 5176,  minDmg = 13,  maxDmg = 16,  level = 1  },
-        [2]  = { spellID = 5177,  minDmg = 28,  maxDmg = 33,  level = 6  },
-        [3]  = { spellID = 5178,  minDmg = 48,  maxDmg = 54,  level = 14 },
+        -- Wowhead spell=5176 (sub-cap penalty rank, SP mod 0.123)
+        [1]  = { spellID = 5176,  minDmg = 13,  maxDmg = 16,  level = 1,  coefficient = 0.123 },
+        -- Wowhead spell=5177 (sub-cap penalty rank, SP mod 0.231)
+        [2]  = { spellID = 5177,  minDmg = 28,  maxDmg = 33,  level = 6,  coefficient = 0.231 },
+        -- Wowhead spell=5178 (sub-cap penalty rank, SP mod 0.443)
+        [3]  = { spellID = 5178,  minDmg = 48,  maxDmg = 54,  level = 14, coefficient = 0.443 },
         [4]  = { spellID = 5179,  minDmg = 69,  maxDmg = 79,  level = 22 },
         [5]  = { spellID = 5180,  minDmg = 108, maxDmg = 123, level = 30 },
         [6]  = { spellID = 6780,  minDmg = 148, maxDmg = 167, level = 38 },
@@ -74,9 +98,15 @@ SpellData[8921] = {
     castTime = 0,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 8921,  minDmg = 9,   maxDmg = 9,   dotDmg = 12,  level = 4  },
-        [2]  = { spellID = 8924,  minDmg = 17,  maxDmg = 17,  dotDmg = 32,  level = 10 },
-        [3]  = { spellID = 8925,  minDmg = 30,  maxDmg = 30,  dotDmg = 52,  level = 16 },
+        -- Wowhead spell=8921 (sub-cap penalty rank, dir SP mod 0.06, dot per-tick 0.052 x 4 = 0.208)
+        [1]  = { spellID = 8921,  minDmg = 9,   maxDmg = 9,   dotDmg = 12,  level = 4,
+                 directCoefficient = 0.06,  dotCoefficient = 0.208 },
+        -- Wowhead spell=8924 (sub-cap penalty rank, dir SP mod 0.094, dot per-tick 0.081 x 4 = 0.324)
+        [2]  = { spellID = 8924,  minDmg = 17,  maxDmg = 17,  dotDmg = 32,  level = 10,
+                 directCoefficient = 0.094, dotCoefficient = 0.324 },
+        -- Wowhead spell=8925 (sub-cap penalty rank, dir SP mod 0.128, dot per-tick 0.111 x 4 = 0.444)
+        [3]  = { spellID = 8925,  minDmg = 30,  maxDmg = 30,  dotDmg = 52,  level = 16,
+                 directCoefficient = 0.128, dotCoefficient = 0.444 },
         [4]  = { spellID = 8926,  minDmg = 47,  maxDmg = 47,  dotDmg = 80,  level = 22 },
         [5]  = { spellID = 8927,  minDmg = 70,  maxDmg = 70,  dotDmg = 124, level = 28 },
         [6]  = { spellID = 8928,  minDmg = 91,  maxDmg = 91,  dotDmg = 164, level = 34 },
@@ -111,8 +141,8 @@ SpellData[5570] = {
     },
 }
 
--- Hurricane — channeled, Nature, 10s duration, 10 ticks
--- Coefficient: 1.07 (total)
+-- Hurricane: 10-second channel, 10 ticks @ 1s. Wowhead per-tick SP mod 0.107 -> 1.07 total.
+-- Source: https://www.wowhead.com/tbc/spell=27012
 SpellData[16914] = {
     name = "Hurricane",
     school = SCHOOL_NATURE,
@@ -121,6 +151,7 @@ SpellData[16914] = {
     duration = 10,
     numTicks = 10,
     canCrit = false,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 16914, effectID = 42231, totalDmg = 206, level = 40 },
         [2] = { spellID = 17401, effectID = 42232, totalDmg = 338, level = 50 },
@@ -313,8 +344,8 @@ SpellData[6807] = {
     },
 }
 
--- Swipe (Bear) — instant, Physical, AP-scaling AoE
--- AP coefficient: 0.07
+-- Swipe (Bear): instant cleave. AP coefficient 0.07 retained from prior PhDamage convention;
+-- Wowhead does not expose AP coefficients for Druid Feral spells.
 SpellData[779] = {
     name = "Swipe",
     school = SCHOOL_PHYSICAL,
@@ -323,6 +354,7 @@ SpellData[779] = {
     apCoefficient = 0.07,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 779,   minDmg = 18,  maxDmg = 18,  level = 16 },
         [2] = { spellID = 780,   minDmg = 25,  maxDmg = 25,  level = 24 },

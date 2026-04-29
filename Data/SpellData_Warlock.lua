@@ -5,6 +5,27 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
+-------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
 
@@ -30,9 +51,12 @@ SpellData[686] = {
     isChanneled = false,
     spellType = "direct",
     ranks = {
-        [1]  = { spellID = 686,   minDmg = 13,   maxDmg = 18,   level = 1  },
-        [2]  = { spellID = 695,   minDmg = 26,   maxDmg = 32,   level = 6  },
-        [3]  = { spellID = 705,   minDmg = 52,   maxDmg = 61,   level = 12 },
+        -- Wowhead spell=686 (sub-cap penalty rank, SP mod 0.14)
+        [1]  = { spellID = 686,   minDmg = 13,   maxDmg = 18,   level = 1,  coefficient = 0.14  },
+        -- Wowhead spell=695 (sub-cap penalty rank, SP mod 0.299)
+        [2]  = { spellID = 695,   minDmg = 26,   maxDmg = 32,   level = 6,  coefficient = 0.299 },
+        -- Wowhead spell=705 (sub-cap penalty rank, SP mod 0.56)
+        [3]  = { spellID = 705,   minDmg = 52,   maxDmg = 61,   level = 12, coefficient = 0.56  },
         [4]  = { spellID = 1088,  minDmg = 92,   maxDmg = 104,  level = 20 },
         [5]  = { spellID = 1106,  minDmg = 150,  maxDmg = 170,  level = 28 },
         [6]  = { spellID = 7641,  minDmg = 213,  maxDmg = 240,  level = 36 },
@@ -56,7 +80,8 @@ SpellData[5676] = {
     isChanneled = false,
     spellType = "direct",
     ranks = {
-        [1] = { spellID = 5676,  minDmg = 42,  maxDmg = 52,  level = 18 },
+        -- Wowhead spell=5676 (sub-cap penalty rank, SP mod 0.396)
+        [1] = { spellID = 5676,  minDmg = 42,  maxDmg = 52,  level = 18, coefficient = 0.396 },
         [2] = { spellID = 17919, minDmg = 64,  maxDmg = 76,  level = 26 },
         [3] = { spellID = 17920, minDmg = 91,  maxDmg = 107, level = 34 },
         [4] = { spellID = 17921, minDmg = 128, maxDmg = 150, level = 42 },
@@ -325,8 +350,12 @@ SpellData[348] = {
     tickInterval = 3,
     numTicks = 5,
     ranks = {
-        [1] = { spellID = 348,   minDmg = 8,   maxDmg = 8,   dotDmg = 20,  level = 1  },
-        [2] = { spellID = 707,   minDmg = 19,  maxDmg = 19,  dotDmg = 40,  level = 10 },
+        -- Wowhead spell=348 (sub-cap penalty rank, dir SP mod 0.058, dot per-tick 0.037 x 5 = 0.185)
+        [1] = { spellID = 348,   minDmg = 8,   maxDmg = 8,   dotDmg = 20,  level = 1,
+                directCoefficient = 0.058, dotCoefficient = 0.185 },
+        -- Wowhead spell=707 (sub-cap penalty rank, dir SP mod 0.125, dot per-tick 0.081 x 5 = 0.405)
+        [2] = { spellID = 707,   minDmg = 19,  maxDmg = 19,  dotDmg = 40,  level = 10,
+                directCoefficient = 0.125, dotCoefficient = 0.405 },
         [3] = { spellID = 1094,  minDmg = 45,  maxDmg = 45,  dotDmg = 90,  level = 20 },
         [4] = { spellID = 2941,  minDmg = 90,  maxDmg = 90,  dotDmg = 165, level = 30 },
         [5] = { spellID = 11665, minDmg = 134, maxDmg = 134, dotDmg = 255, level = 40 },
@@ -360,7 +389,8 @@ SpellData[689] = {
     numTicks = 5,
     heals = true,
     ranks = {
-        [1] = { spellID = 689,   totalDmg = 10,  totalHeal = 10,  level = 14 },
+        -- Wowhead spell=689 (per-tick SP mod 0.111 x 5 ticks = 0.555; sub-cap penalty rank)
+        [1] = { spellID = 689,   totalDmg = 10,  totalHeal = 10,  level = 14, coefficient = 0.555 },
         [2] = { spellID = 699,   totalDmg = 85,  totalHeal = 85,  level = 22 },
         [3] = { spellID = 709,   totalDmg = 145, totalHeal = 145, level = 30 },
         [4] = { spellID = 7651,  totalDmg = 205, totalHeal = 205, level = 38 },
@@ -371,13 +401,12 @@ SpellData[689] = {
     },
 }
 
--- Drain Soul — 15.0s channel, Shadow
--- Coefficient: ~2.0 (long channel duration, but low base damage — utility spell)
--- 5 ticks every 3 seconds
+-- Drain Soul: 15s channel, 5 ticks @ 3s. Wowhead per-tick SP mod 0.429 -> 2.145 total.
+-- Source: https://www.wowhead.com/tbc/spell=27217
 SpellData[1120] = {
     name = "Drain Soul",
     school = SCHOOL_SHADOW,
-    coefficient = 2.0,
+    coefficient = 2.145,
     castTime = 15.0,
     canCrit = false,
     isDot = false,
@@ -387,7 +416,8 @@ SpellData[1120] = {
     tickInterval = 3,
     numTicks = 5,
     ranks = {
-        [1] = { spellID = 1120,  totalDmg = 55,  level = 10 },
+        -- Wowhead spell=1120 (per-tick SP mod 0.0893 x 15 ticks = 1.34; sub-cap penalty rank)
+        [1] = { spellID = 1120,  totalDmg = 55,  level = 10, coefficient = 1.34 },
         [2] = { spellID = 8288,  totalDmg = 155, level = 24 },
         [3] = { spellID = 8289,  totalDmg = 295, level = 38 },
         [4] = { spellID = 11675, totalDmg = 455, level = 52 },
@@ -395,13 +425,13 @@ SpellData[1120] = {
     },
 }
 
--- Rain of Fire — 8.0s channel, Fire (AoE)
--- Coefficient: ~0.57 per target over full channel (8.0 / 3.5 = 2.2857, but AoE penalty)
--- 4 ticks every 2 seconds
+-- Rain of Fire: 8-second channel, 4 ticks @ 2s. Wowhead per-tick SP mod 0.237 -> 0.948 total
+-- (we round to 0.952 to align with the long-standing WoWWiki figure; difference is negligible).
+-- Source: https://www.wowhead.com/tbc/spell=27212
 SpellData[5740] = {
     name = "Rain of Fire",
     school = SCHOOL_FIRE,
-    coefficient = 0.57,
+    coefficient = 0.952,
     castTime = 8.0,
     canCrit = false,
     isDot = false,
@@ -420,13 +450,14 @@ SpellData[5740] = {
     },
 }
 
--- Hellfire — 15.0s channel, Fire (PBAoE)
--- Coefficient: ~0.4286 per tick period (each tick = 1s, 15 ticks)
--- Also damages the caster
+-- Hellfire: 15-second self-channel; ticks every 1s for 15 ticks.
+-- Wowhead spell=11684 / top rank 27213: per-tick SP mod 0.095 -> total 1.425.
+-- Self-damage component is not modeled (out of scope; see issue #46).
+-- Source: https://www.wowhead.com/tbc/spell=27213
 SpellData[1949] = {
     name = "Hellfire",
     school = SCHOOL_FIRE,
-    coefficient = 0.4286,
+    coefficient = 1.425,
     castTime = 15.0,
     canCrit = false,
     isDot = false,
@@ -477,14 +508,15 @@ SpellData[1454] = {
 -- AoE Spells
 -------------------------------------------------------------------------------
 
--- Seed of Corruption — 2.0s cast, Shadow (AoE detonation)
--- Coefficient: ~0.2286 for the detonation portion
--- Detonates when 1044 damage is absorbed by the embedded DoT
--- For Phase 1, modeled as detonation damage only
+-- Seed of Corruption: detonation direct damage on detonation trigger.
+-- Wowhead detonation SP mod 0.214 (spell 27285 is the detonation effect).
+-- The 18s background DoT is a separate effect; not modeled here.
+-- Source (parent): https://www.wowhead.com/tbc/spell=27243
+-- Source (detonation): https://www.wowhead.com/tbc/spell=27285
 SpellData[27243] = {
     name = "Seed of Corruption",
     school = SCHOOL_SHADOW,
-    coefficient = 0.2286,
+    coefficient = 0.214,
     castTime = 2.0,
     canCrit = false,
     isDot = false,
@@ -497,8 +529,8 @@ SpellData[27243] = {
     },
 }
 
--- Shadowfury — 0.5s cast, Shadow (AoE)
--- Coefficient: 0.193
+-- Shadowfury: instant AoE direct shadow damage. Wowhead SP mod 0.193.
+-- Source: https://www.wowhead.com/tbc/spell=30414
 SpellData[30283] = {
     name = "Shadowfury",
     school = SCHOOL_SHADOW,
