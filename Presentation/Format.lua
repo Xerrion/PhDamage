@@ -45,6 +45,15 @@ function Format.FormatNumber(n)
 end
 
 -------------------------------------------------------------------------------
+-- FormatNumberFull(n)
+-- Full integer display without "k" abbreviation: 15000 -> "15000"
+-------------------------------------------------------------------------------
+function Format.FormatNumberFull(n)
+    if n == nil then return "?" end
+    return tostring(floor(n + 0.5))
+end
+
+-------------------------------------------------------------------------------
 -- FormatDPS(n)
 -- DPS/HPS with one decimal place, "k" suffix for large values.
 -------------------------------------------------------------------------------

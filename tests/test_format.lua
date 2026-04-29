@@ -76,6 +76,44 @@ describe("Format Module", function()
         end)
     end)
 
+    describe("FormatNumberFull", function()
+        it("returns '?' for nil", function()
+            assert.are.equal("?", Format.FormatNumberFull(nil))
+        end)
+
+        it("returns '0' for 0", function()
+            assert.are.equal("0", Format.FormatNumberFull(0))
+        end)
+
+        it("returns '1' for 1", function()
+            assert.are.equal("1", Format.FormatNumberFull(1))
+        end)
+
+        it("returns '500' for 500", function()
+            assert.are.equal("500", Format.FormatNumberFull(500))
+        end)
+
+        it("returns '1500' for 1500 (no abbreviation)", function()
+            assert.are.equal("1500", Format.FormatNumberFull(1500))
+        end)
+
+        it("returns '10000' for 10000 (no abbreviation)", function()
+            assert.are.equal("10000", Format.FormatNumberFull(10000))
+        end)
+
+        it("returns '100000' for 100000 (no abbreviation)", function()
+            assert.are.equal("100000", Format.FormatNumberFull(100000))
+        end)
+
+        it("returns '0' for 0.4 (floors to 0)", function()
+            assert.are.equal("0", Format.FormatNumberFull(0.4))
+        end)
+
+        it("returns '1' for 0.6 (rounds up)", function()
+            assert.are.equal("1", Format.FormatNumberFull(0.6))
+        end)
+    end)
+
     describe("FormatDPS", function()
         it("returns '?' for nil", function()
             assert.are.equal("?", Format.FormatDPS(nil))

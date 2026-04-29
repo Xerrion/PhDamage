@@ -21,7 +21,7 @@ read_globals = {
     -- Lua globals
     "table", "string", "math", "pairs", "ipairs", "type", "tostring", "tonumber",
     "select", "unpack", "print", "format", "wipe", "sort", "tinsert", "tremove",
-    "strsplit", "strtrim", "strlower",
+    "strsplit", "strtrim", "strlower", "strupper",
 
     -- Lua builtins (used or anticipated)
     "pcall",
