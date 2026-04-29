@@ -412,11 +412,11 @@ SpellData[5740] = {
     tickInterval = 2,
     numTicks = 4,
     ranks = {
-        [1] = { spellID = 5740,  totalDmg = 372, level = 20 },
-        [2] = { spellID = 6219,  totalDmg = 564, level = 34 },
-        [3] = { spellID = 11677, totalDmg = 748, level = 46 },
-        [4] = { spellID = 11678, totalDmg = 932, level = 58 },
-        [5] = { spellID = 27212, totalDmg = 944, level = 69 },
+        [1] = { spellID = 5740,  effectID = 42223, totalDmg = 372, level = 20 },
+        [2] = { spellID = 6219,  effectID = 42224, totalDmg = 564, level = 34 },
+        [3] = { spellID = 11677, effectID = 42225, totalDmg = 748, level = 46 },
+        [4] = { spellID = 11678, effectID = 42226, totalDmg = 932, level = 58 },
+        [5] = { spellID = 27212, effectID = 42218, totalDmg = 944, level = 69 },
     },
 }
 
