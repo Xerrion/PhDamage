@@ -4,6 +4,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -159,8 +170,9 @@ SpellData[14914] = {
     },
 }
 
--- Holy Nova — instant cast, Holy, AoE direct damage + healing (talent)
--- Coefficient: 0.161 (AoE instant penalty)
+-- Holy Nova - instant cast, Holy, AoE direct damage + healing (talent).
+-- Coefficient: 0.161 (post-penalty, retained from prior data).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[15237] = {
     name = "Holy Nova",
     school = SCHOOL_HOLY,
@@ -168,6 +180,7 @@ SpellData[15237] = {
     coefficient = 0.161,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 15237, minDmg = 28,  maxDmg = 32,  level = 20 },
         [2] = { spellID = 15430, minDmg = 50,  maxDmg = 58,  level = 28 },

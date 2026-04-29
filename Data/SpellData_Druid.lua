@@ -4,6 +4,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 
 local SCHOOL_NATURE = ns.SCHOOL_NATURE
@@ -111,16 +122,18 @@ SpellData[5570] = {
     },
 }
 
--- Hurricane — channeled, Nature, 10s duration, 10 ticks
--- Coefficient: 1.07 (total)
+-- Hurricane - channeled, Nature, 10s duration, 10 ticks. AoE.
+-- Coefficient: 1.28 total (post-penalty).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[16914] = {
     name = "Hurricane",
     school = SCHOOL_NATURE,
     spellType = "channel",
-    coefficient = 1.07,
+    coefficient = 1.28,
     duration = 10,
     numTicks = 10,
     canCrit = false,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 16914, effectID = 42231, totalDmg = 206, level = 40 },
         [2] = { spellID = 17401, effectID = 42232, totalDmg = 338, level = 50 },
@@ -313,8 +326,9 @@ SpellData[6807] = {
     },
 }
 
--- Swipe (Bear) — instant, Physical, AP-scaling AoE
--- AP coefficient: 0.07
+-- Swipe (Bear) - instant, Physical, AP-scaling AoE.
+-- AP coefficient: 0.07 (retained; TBC AP coefficient untested in archive).
+-- Source: WoWWiki Attack_power_coefficient archive (Druid; TBC AP coefficient untested in archive, retained 0.07)
 SpellData[779] = {
     name = "Swipe",
     school = SCHOOL_PHYSICAL,
@@ -323,6 +337,7 @@ SpellData[779] = {
     apCoefficient = 0.07,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 779,   minDmg = 18,  maxDmg = 18,  level = 16 },
         [2] = { spellID = 780,   minDmg = 25,  maxDmg = 25,  level = 24 },

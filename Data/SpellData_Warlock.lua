@@ -5,6 +5,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 
 local ADDON_NAME, ns = ...
 
@@ -395,13 +406,13 @@ SpellData[1120] = {
     },
 }
 
--- Rain of Fire — 8.0s channel, Fire (AoE)
--- Coefficient: ~0.57 per target over full channel (8.0 / 3.5 = 2.2857, but AoE penalty)
--- 4 ticks every 2 seconds
+-- Rain of Fire - 8.0s channel, Fire (AoE). Coefficient 0.952 total
+-- (~23.81%/tick over 4 ticks).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[5740] = {
     name = "Rain of Fire",
     school = SCHOOL_FIRE,
-    coefficient = 0.57,
+    coefficient = 0.952,
     castTime = 8.0,
     canCrit = false,
     isDot = false,
@@ -420,13 +431,15 @@ SpellData[5740] = {
     },
 }
 
--- Hellfire — 15.0s channel, Fire (PBAoE)
--- Coefficient: ~0.4286 per tick period (each tick = 1s, 15 ticks)
--- Also damages the caster
+-- Hellfire - 15.0s PBAoE channel, Fire. Enemy coefficient 2.1429 total
+-- (~14.29%/tick over 15 ticks; TBC empirical 214.29%). Also damages caster
+-- with a separate empirical ~142.86% SP coefficient; the addon does not
+-- model self-damage in DPS output. Keep damagesSelf flag.
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180.
 SpellData[1949] = {
     name = "Hellfire",
     school = SCHOOL_FIRE,
-    coefficient = 0.4286,
+    coefficient = 2.1429,
     castTime = 15.0,
     canCrit = false,
     isDot = false,
@@ -481,6 +494,7 @@ SpellData[1454] = {
 -- Coefficient: ~0.2286 for the detonation portion
 -- Detonates when 1044 damage is absorbed by the embedded DoT
 -- For Phase 1, modeled as detonation damage only
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[27243] = {
     name = "Seed of Corruption",
     school = SCHOOL_SHADOW,
@@ -497,8 +511,9 @@ SpellData[27243] = {
     },
 }
 
--- Shadowfury — 0.5s cast, Shadow (AoE)
--- Coefficient: 0.193
+-- Shadowfury - 0.5s cast, Shadow (AoE).
+-- Coefficient: 0.193 (post-penalty, retained from prior data).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[30283] = {
     name = "Shadowfury",
     school = SCHOOL_SHADOW,

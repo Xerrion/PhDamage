@@ -4,6 +4,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -119,19 +130,21 @@ SpellData[11366] = {
     },
 }
 
--- Flamestrike — 3.0s cast, Fire, hybrid (direct + DoT)
--- Direct coefficient: 0.236, DoT coefficient: 0.03 per tick × 4 ticks = 0.12 total
--- DoT: 8s duration, 4 ticks
+-- Flamestrike - 3.0s cast, Fire, hybrid (direct + DoT). AoE.
+-- Direct coefficient: 0.1761 (post-penalty). DoT coefficient: 0.1096 total.
+-- DoT: 8s duration, 4 ticks.
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[2120] = {
     name = "Flamestrike",
     school = SCHOOL_FIRE,
     spellType = "hybrid",
-    directCoefficient = 0.236,
-    dotCoefficient = 0.12,
+    directCoefficient = 0.1761,
+    dotCoefficient = 0.1096,
     duration = 8,
     numTicks = 4,
     castTime = 3.0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 2120,  minDmg = 55,  maxDmg = 71,  dotDmg = 48,  level = 16 },
         [2] = { spellID = 2121,  minDmg = 100, maxDmg = 126, dotDmg = 88,  level = 24 },
@@ -143,15 +156,17 @@ SpellData[2120] = {
     },
 }
 
--- Blast Wave — instant cast, Fire, direct (talent)
--- Coefficient: 0.193
+-- Blast Wave - instant cast, Fire, direct (talent). AoE.
+-- Coefficient: 0.1357 (post-penalty).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[11113] = {
     name = "Blast Wave",
     school = SCHOOL_FIRE,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 11113, minDmg = 160, maxDmg = 192, level = 30 },
         [2] = { spellID = 13018, minDmg = 208, maxDmg = 249, level = 36 },
@@ -163,15 +178,17 @@ SpellData[11113] = {
     },
 }
 
--- Dragon's Breath — instant cast, Fire, direct (talent)
--- Coefficient: 0.193
+-- Dragon's Breath - instant cast, Fire, direct (talent). AoE.
+-- Coefficient: 0.1357 (post-penalty).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[31661] = {
     name = "Dragon's Breath",
     school = SCHOOL_FIRE,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 31661, minDmg = 382, maxDmg = 442, level = 62 },
         [2] = { spellID = 33041, minDmg = 463, maxDmg = 536, level = 64 },
@@ -225,15 +242,17 @@ SpellData[30455] = {
     },
 }
 
--- Cone of Cold — instant cast, Frost, direct
--- Coefficient: 0.193
+-- Cone of Cold - instant cast, Frost, direct. AoE.
+-- Coefficient: 0.1357 (post-penalty).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[120] = {
     name = "Cone of Cold",
     school = SCHOOL_FROST,
     spellType = "direct",
-    coefficient = 0.193,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 120,   minDmg = 102, maxDmg = 112, level = 26 },
         [2] = { spellID = 8492,  minDmg = 151, maxDmg = 165, level = 34 },
@@ -244,16 +263,18 @@ SpellData[120] = {
     },
 }
 
--- Blizzard — channeled, Frost, 8s duration, 8 ticks
--- Coefficient: 0.119 per tick = 0.952 total
+-- Blizzard - channeled, Frost, 8s duration, 8 ticks. AoE.
+-- Coefficient: 0.7619 total (post-penalty, ~9.52%/tick).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[10] = {
     name = "Blizzard",
     school = SCHOOL_FROST,
     spellType = "channel",
-    coefficient = 0.952,
+    coefficient = 0.7619,
     duration = 8,
     numTicks = 8,
     canCrit = false,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 10,    effectID = 42208, totalDmg = 208,  level = 20 },
         [2] = { spellID = 6141,  effectID = 42209, totalDmg = 360,  level = 28 },
@@ -265,15 +286,17 @@ SpellData[10] = {
     },
 }
 
--- Frost Nova — instant cast, Frost, direct
--- Coefficient: 0.043
+-- Frost Nova - instant cast, Frost, direct. AoE.
+-- Coefficient: 0.1357 (post-penalty).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[122] = {
     name = "Frost Nova",
     school = SCHOOL_FROST,
     spellType = "direct",
-    coefficient = 0.043,
+    coefficient = 0.1357,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 122,   minDmg = 21,  maxDmg = 24,  level = 10 },
         [2] = { spellID = 865,   minDmg = 35,  maxDmg = 40,  level = 26 },
@@ -328,8 +351,9 @@ SpellData[30451] = {
     },
 }
 
--- Arcane Explosion — instant cast, Arcane, direct
--- Coefficient: 0.213
+-- Arcane Explosion - instant cast, Arcane, direct. AoE.
+-- Coefficient: 0.213 (post-penalty, retained from prior data).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[1449] = {
     name = "Arcane Explosion",
     school = SCHOOL_ARCANE,
@@ -337,6 +361,7 @@ SpellData[1449] = {
     coefficient = 0.213,
     castTime = 0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 1449,  minDmg = 34,  maxDmg = 38,  level = 14 },
         [2] = { spellID = 8437,  minDmg = 60,  maxDmg = 66,  level = 22 },

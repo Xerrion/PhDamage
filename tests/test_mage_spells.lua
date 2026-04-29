@@ -74,11 +74,11 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(2120, state)
             assert.is_not_nil(r)
-            -- R7: 480-585 direct + 1000*0.236 = 716-821
-            assert.is_near(716, r.directMin, 1)
-            assert.is_near(821, r.directMax, 1)
-            -- DoT: 424 base + 1000*0.03*4ticks = 424+120 = 544
-            assert.is_near(544, r.dotTotalDmg, 1)
+            -- R7: 480-585 direct + 1000*0.1761 = 656.1-761.1
+            assert.is_near(656.1, r.directMin, 1)
+            assert.is_near(761.1, r.directMax, 1)
+            -- DoT: 424 base + 1000*0.1096 (total) = 533.6
+            assert.is_near(533.6, r.dotTotalDmg, 1)
         end)
     end)
 
@@ -87,9 +87,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(11113, state)
             assert.is_not_nil(r)
-            -- R7: 616-724 + 1000*0.193 = 809-917
-            assert.is_near(809, r.minDmg, 1)
-            assert.is_near(917, r.maxDmg, 1)
+            -- R7: 616-724 + 1000*0.1357 = 751.7-859.7
+            assert.is_near(751.7, r.minDmg, 1)
+            assert.is_near(859.7, r.maxDmg, 1)
         end)
     end)
 
@@ -98,9 +98,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(31661, state)
             assert.is_not_nil(r)
-            -- R4: 680-790 + 1000*0.193 = 873-983
-            assert.is_near(873, r.minDmg, 1)
-            assert.is_near(983, r.maxDmg, 1)
+            -- R4: 680-790 + 1000*0.1357 = 815.7-925.7
+            assert.is_near(815.7, r.minDmg, 1)
+            assert.is_near(925.7, r.maxDmg, 1)
         end)
     end)
 
@@ -143,9 +143,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(120, state)
             assert.is_not_nil(r)
-            -- R6: 418-457 + 1000*0.193 = 611-650
-            assert.is_near(611, r.minDmg, 1)
-            assert.is_near(650, r.maxDmg, 1)
+            -- R6: 418-457 + 1000*0.1357 = 553.7-592.7
+            assert.is_near(553.7, r.minDmg, 1)
+            assert.is_near(592.7, r.maxDmg, 1)
         end)
     end)
 
@@ -154,9 +154,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(10, state)
             assert.is_not_nil(r)
-            -- R7: 1480 base + 1000*0.119*8ticks = 1480+952 = 2432
-            assert.is_near(2432, r.totalDmg, 1)
-            assert.is_near(304, r.tickDmg, 1)
+            -- R7: 1480 base + 1000*0.7619 = 2241.9, tickDmg = 2241.9/8 = 280.2375
+            assert.is_near(2241.9, r.totalDmg, 1)
+            assert.is_near(280.24, r.tickDmg, 1)
             assert.equals(8, r.numTicks)
         end)
     end)
@@ -166,9 +166,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(122, state)
             assert.is_not_nil(r)
-            -- R5: 100-113 + 1000*0.043 = 143-156
-            assert.is_near(143, r.minDmg, 1)
-            assert.is_near(156, r.maxDmg, 1)
+            -- R5: 100-113 + 1000*0.1357 = 235.7-248.7
+            assert.is_near(235.7, r.minDmg, 1)
+            assert.is_near(248.7, r.maxDmg, 1)
         end)
     end)
 

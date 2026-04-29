@@ -4,6 +4,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -84,8 +95,13 @@ SpellData[200473] = {
 -- Holy Damage Spells
 -------------------------------------------------------------------------------
 
--- Consecration — instant cast, Holy, AoE ground DoT
--- Coefficient: 0.119 per tick (0.952 total), 8s duration, 8 ticks
+-- Consecration - 8.0s ground DoT, Holy (AoE).
+-- Coefficient 0.119 (TOTAL, applied once to the persistent area aura). The
+-- WoWWiki Spell_power_coefficient archive lists 95.24% but that figure is
+-- stale pre-Patch 2.3 (the Paladin revamp); the canonical TBC 2.4.3 DBC
+-- value is 0.119 (Wowhead spell=20924 SP mod field). Confirmed via
+-- Atlantiss bugtracker issue #3402 and existing test_paladin_spells.lua.
+-- Source: Wowhead TBC Classic spell=20924 SP mod = 0.119.
 SpellData[26573] = {
     name = "Consecration",
     school = SCHOOL_HOLY,
@@ -95,6 +111,7 @@ SpellData[26573] = {
     canCrit = false,
     numTicks = 8,
     duration = 8,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 26573, totalDmg = 64,  level = 20 },
         [2] = { spellID = 20116, totalDmg = 120, level = 30 },

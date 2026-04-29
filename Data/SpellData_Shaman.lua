@@ -4,6 +4,17 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
+-------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
 
@@ -42,15 +53,17 @@ SpellData[403] = {
     },
 }
 
--- Chain Lightning — 2.0s cast, Nature, direct
--- Coefficient: 0.651
+-- Chain Lightning - 2.0s cast, Nature, direct. AoE (jumps).
+-- Coefficient: 0.7143 primary target only (matches single-target damage display).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[421] = {
     name = "Chain Lightning",
     school = SCHOOL_NATURE,
     spellType = "direct",
-    coefficient = 0.651,
+    coefficient = 0.7143,
     castTime = 2.0,
     canCrit = true,
+    isAoe = true,
     ranks = {
         [1] = { spellID = 421,   minDmg = 200, maxDmg = 227, level = 32 },
         [2] = { spellID = 930,   minDmg = 288, maxDmg = 323, level = 40 },

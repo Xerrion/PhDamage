@@ -275,25 +275,25 @@ describe("Mage Talents", function()
             local state = makeMageState()
             state.talents["3:6"] = 1
             local r = Pipeline.Calculate(120, state)  -- Cone of Cold R6
-            -- Base: 418-457 + 193 = 611-650
-            assert.is_near(611 * 1.15, r.minDmg, 1)
-            assert.is_near(650 * 1.15, r.maxDmg, 1)
+            -- Base: 418-457 + 1000*0.1357 = 553.7-592.7
+            assert.is_near(553.7 * 1.15, r.minDmg, 1)
+            assert.is_near(592.7 * 1.15, r.maxDmg, 1)
         end)
 
         it("should add 25% damage at rank 2", function()
             local state = makeMageState()
             state.talents["3:6"] = 2
             local r = Pipeline.Calculate(120, state)
-            assert.is_near(611 * 1.25, r.minDmg, 1)
-            assert.is_near(650 * 1.25, r.maxDmg, 1)
+            assert.is_near(553.7 * 1.25, r.minDmg, 1)
+            assert.is_near(592.7 * 1.25, r.maxDmg, 1)
         end)
 
         it("should add 35% damage at rank 3", function()
             local state = makeMageState()
             state.talents["3:6"] = 3
             local r = Pipeline.Calculate(120, state)
-            assert.is_near(611 * 1.35, r.minDmg, 1)
-            assert.is_near(650 * 1.35, r.maxDmg, 1)
+            assert.is_near(553.7 * 1.35, r.minDmg, 1)
+            assert.is_near(592.7 * 1.35, r.maxDmg, 1)
         end)
 
         it("should not affect Frostbolt", function()

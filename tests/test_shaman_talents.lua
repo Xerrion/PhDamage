@@ -21,9 +21,9 @@ local Pipeline = ns.Engine.Pipeline
 --   SP bonus: 800 * 0.794 = 635.2
 --   min = 571 + 635.2 = 1206.2, max = 652 + 635.2 = 1287.2
 --
--- Chain Lightning R6 (421): castTime=2.0, coeff=0.651, min=734, max=838
---   SP bonus: 800 * 0.651 = 520.8
---   min = 734 + 520.8 = 1254.8, max = 838 + 520.8 = 1358.8
+-- Chain Lightning R6 (421): castTime=2.0, coeff=0.7143, min=734, max=838
+--   SP bonus: 800 * 0.7143 = 571.44
+--   min = 734 + 571.44 = 1305.44, max = 838 + 571.44 = 1409.44
 --
 -- Earth Shock R8 (8042): castTime=1.5, coeff=0.386, min=658, max=692
 --   SP bonus: 800 * 0.386 = 308.8

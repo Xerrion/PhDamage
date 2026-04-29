@@ -1,8 +1,19 @@
 local ADDON_NAME, ns = ...
 
 -------------------------------------------------------------------------------
--- Hunter Spell Data — TBC Anniversary (2.5.5)
+-- Hunter Spell Data - TBC Anniversary (2.5.5)
 -- Source of truth: Wowhead TBC Classic
+-------------------------------------------------------------------------------
+-- Coefficient policy (TBC 2.4.3):
+-- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
+-- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
+-- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
+-- are baked into the stored value. The engine does NOT recompute or apply any
+-- AoE multiplier at runtime - it consumes these values verbatim, matching
+-- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
+-- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
+-- penalty terms here. Always cite the source URL when adding or correcting
+-- entries.
 -------------------------------------------------------------------------------
 
 local SCHOOL_PHYSICAL = ns.SCHOOL_PHYSICAL
@@ -61,6 +72,7 @@ SpellData[34120] = {
 }
 
 -- Multi-Shot (0.5s cast, Physical, 20% RAP, 3 targets)
+-- Source: WoWWiki Attack_power_coefficient archive (Hunter; Multi-Shot 20% RAP retained)
 SpellData[2643] = {
     name = "Multi-Shot",
     school = SCHOOL_PHYSICAL,
@@ -185,11 +197,13 @@ SpellData[13795] = {
 -- CHANNELS
 -------------------------------------------------------------------------------
 
--- Volley (6s channel, Arcane, ~0.50 RAP total across 6 ticks, AoE, no crit)
+-- Volley (6s channel, Arcane, AoE, no crit).
+-- Coefficient: 0.0586 RAP total (post-penalty, ~0.977%/tick over 6 ticks).
+-- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
 SpellData[1510] = {
     name = "Volley",
     school = SCHOOL_ARCANE,
-    coefficient = 0.50,
+    coefficient = 0.0586,
     castTime = 0,
     canCrit = false,
     isDot = false,
