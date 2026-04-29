@@ -104,23 +104,7 @@ describe("Warrior Talents", function()
         end)
     end)
 
-    describe("Poleaxe Specialization", function()
-
-        it("should add 5% crit chance at 5/5", function()
-            local state = makeWarriorState()
-            state.talents["1:11"] = 5
-            local r = Pipeline.Calculate(12294, state)
-            -- critChance = 0.25 + 5 * 0.01 = 0.30
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-
-        it("should apply to all melee abilities", function()
-            local state = makeWarriorState()
-            state.talents["1:11"] = 5
-            local r = Pipeline.Calculate(7384, state)  -- Overpower
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-    end)
+    -- Poleaxe Specialization (1:11) removed from TalentMap; see plan 44, Bug A.
 
     describe("Improved Mortal Strike", function()
 
@@ -145,23 +129,7 @@ describe("Warrior Talents", function()
     ---------------------------------------------------------------------------
     -- Fury (Tab 2)
     ---------------------------------------------------------------------------
-    describe("Cruelty", function()
-
-        it("should add 5% melee crit at 5/5", function()
-            local state = makeWarriorState()
-            state.talents["2:4"] = 5
-            local r = Pipeline.Calculate(12294, state)
-            -- critChance = 0.25 + 5 * 0.01 = 0.30
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-
-        it("should apply to all melee abilities", function()
-            local state = makeWarriorState()
-            state.talents["2:4"] = 5
-            local r = Pipeline.Calculate(7384, state)  -- Overpower
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-    end)
+    -- Cruelty (2:4) removed from TalentMap; see plan 44, Bug A.
 
     describe("Precision", function()
 
@@ -225,12 +193,13 @@ describe("Warrior Talents", function()
     ---------------------------------------------------------------------------
     describe("Stacking", function()
 
-        it("Cruelty 5/5 + Impale 2/2 should both apply to Mortal Strike", function()
+        it("Impale 2/2 should apply to Mortal Strike", function()
+            -- Cruelty (2:4) removed from TalentMap (plan 44, Bug A); the +5% crit
+            -- it provided is now counted in stats.meleeCrit only.
             local state = makeWarriorState()
-            state.talents["2:4"] = 5   -- Cruelty +5% crit
             state.talents["1:18"] = 2  -- Impale +0.20 crit mult
             local r = Pipeline.Calculate(12294, state)
-            assert.is_near(0.30, r.critChance, 0.001)
+            assert.is_near(0.25, r.critChance, 0.001)
             assert.is_near(2.20, r.critMult, 0.001)
         end)
 
@@ -244,13 +213,7 @@ describe("Warrior Talents", function()
             assert.is_near(1031.43 * 1.10, r.maxDmg, 0.1)
         end)
 
-        it("Poleaxe Spec + Cruelty should stack crit on Overpower", function()
-            local state = makeWarriorState()
-            state.talents["1:11"] = 5  -- Poleaxe +5% crit
-            state.talents["2:4"] = 5   -- Cruelty +5% crit
-            local r = Pipeline.Calculate(7384, state)
-            -- critChance = 0.25 + 0.05 + 0.05 = 0.35
-            assert.is_near(0.35, r.critChance, 0.001)
-        end)
+        -- Poleaxe Spec + Cruelty stacking test removed: both talents removed from
+        -- TalentMap (plan 44, Bug A); their crit contributions live in stats.meleeCrit.
     end)
 end)

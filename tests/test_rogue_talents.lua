@@ -87,33 +87,7 @@ describe("Rogue Talents", function()
         end)
     end)
 
-    ---------------------------------------------------------------------------
-    -- 2. Malice (1:3) - +1%/rank CRIT_BONUS global, 5 ranks
-    ---------------------------------------------------------------------------
-    describe("Malice", function()
-
-        it("should add 5% crit at 5/5", function()
-            local state = makeRogueState()
-            state.talents["1:3"] = 5
-            local r = Pipeline.Calculate(1752, state)  -- Sinister Strike
-            -- critChance = 0.25 + 0.05 = 0.30
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-
-        it("should add 3% crit at 3/5", function()
-            local state = makeRogueState()
-            state.talents["1:3"] = 3
-            local r = Pipeline.Calculate(1752, state)
-            assert.is_near(0.28, r.critChance, 0.001)
-        end)
-
-        it("should apply to all melee abilities", function()
-            local state = makeDaggerRogueState()
-            state.talents["1:3"] = 5
-            local r = Pipeline.Calculate(53, state)  -- Backstab
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-    end)
+    -- Malice (1:3) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- 3. Murder (1:6) - +1%/rank DAMAGE_MULT, 2 ranks, additive
@@ -347,61 +321,9 @@ describe("Rogue Talents", function()
         end)
     end)
 
-    ---------------------------------------------------------------------------
-    -- 8. Dagger Specialization (2:2) - +1%/rank CRIT_BONUS global, 5 ranks
-    ---------------------------------------------------------------------------
-    describe("Dagger Specialization", function()
+    -- Dagger Specialization (2:2) removed from TalentMap; see plan 44, Bug A.
 
-        it("should add 5% crit at 5/5", function()
-            local state = makeRogueState()
-            state.talents["2:2"] = 5
-            local r = Pipeline.Calculate(1752, state)  -- Sinister Strike
-            -- critChance = 0.25 + 0.05 = 0.30
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-
-        it("should add 3% crit at 3/5", function()
-            local state = makeRogueState()
-            state.talents["2:2"] = 3
-            local r = Pipeline.Calculate(1752, state)
-            assert.is_near(0.28, r.critChance, 0.001)
-        end)
-
-        it("should apply to all melee abilities", function()
-            local state = makeDaggerRogueState()
-            state.talents["2:2"] = 5
-            local r = Pipeline.Calculate(53, state)  -- Backstab
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-    end)
-
-    ---------------------------------------------------------------------------
-    -- 9. Fist Weapon Specialization (2:3) - +1%/rank CRIT_BONUS global, 5 ranks
-    ---------------------------------------------------------------------------
-    describe("Fist Weapon Specialization", function()
-
-        it("should add 5% crit at 5/5", function()
-            local state = makeRogueState()
-            state.talents["2:3"] = 5
-            local r = Pipeline.Calculate(1752, state)  -- Sinister Strike
-            -- critChance = 0.25 + 0.05 = 0.30
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-
-        it("should add 2% crit at 2/5", function()
-            local state = makeRogueState()
-            state.talents["2:3"] = 2
-            local r = Pipeline.Calculate(1752, state)
-            assert.is_near(0.27, r.critChance, 0.001)
-        end)
-
-        it("should apply to all melee abilities", function()
-            local state = makeDaggerRogueState()
-            state.talents["2:3"] = 5
-            local r = Pipeline.Calculate(53, state)  -- Backstab
-            assert.is_near(0.30, r.critChance, 0.001)
-        end)
-    end)
+    -- Fist Weapon Specialization (2:3) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- 10. Aggression (2:17) - +2%/rank DAMAGE_MULT on SS/BS/Evis
@@ -742,13 +664,15 @@ describe("Rogue Talents", function()
             assert.is_near(1027.286 * 1.25, r.maxDmg, 0.1)
         end)
 
-        it("Malice + Puncturing Wounds should stack crit on BS", function()
+        it("Puncturing Wounds should add crit on BS", function()
+            -- Malice (1:3) removed from TalentMap (plan 44, Bug A). This test now
+            -- exercises Puncturing Wounds in isolation; the meleeCrit baseline is
+            -- already counted via stats.meleeCrit.
             local state = makeDaggerRogueState()
-            state.talents["1:3"] = 5  -- Malice +5% crit
             state.talents["1:8"] = 3  -- Puncturing Wounds +30% BS crit
             local r = Pipeline.Calculate(53, state)
-            -- critChance = 0.25 + 0.05 + 0.30 = 0.60
-            assert.is_near(0.60, r.critChance, 0.001)
+            -- critChance = 0.25 + 0.30 = 0.55
+            assert.is_near(0.55, r.critChance, 0.001)
         end)
 
         it("Improved Eviscerate + Aggression should stack additively on Evis", function()
@@ -782,13 +706,7 @@ describe("Rogue Talents", function()
             assert.is_near(0.935, r.hitProbability, 0.001)
         end)
 
-        it("Malice + Dagger Spec should stack crit globally", function()
-            local state = makeRogueState()
-            state.talents["1:3"] = 5   -- Malice +5% crit
-            state.talents["2:2"] = 5   -- Dagger Spec +5% crit
-            local r = Pipeline.Calculate(1752, state)
-            -- critChance = 0.25 + 0.05 + 0.05 = 0.35
-            assert.is_near(0.35, r.critChance, 0.001)
-        end)
+        -- Malice + Dagger Spec stacking test removed: both talents removed from
+        -- TalentMap (plan 44, Bug A); their crit contributions live in stats.meleeCrit.
     end)
 end)

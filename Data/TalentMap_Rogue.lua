@@ -43,14 +43,9 @@ TalentMap["1:2"] = {
     },
 }
 
--- Malice (1:3): +1% crit chance per rank
-TalentMap["1:3"] = {
-    name = "Malice",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Malice (1:3): REMOVED - already counted in stats.meleeCrit by StateCollector
+-- when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Remorseless Attacks (1:4): +20% crit chance on next SS/Hemo/BS/Ambush/GS
 -- after killing a target that yields XP/honor. Proc-based - deferred to AuraMap.
@@ -180,25 +175,13 @@ TalentMap["2:1"] = {
     },
 }
 
--- Dagger Specialization (2:2): +1% crit with Daggers per rank
--- TODO: Needs weaponType filter support. Currently applies to all abilities.
-TalentMap["2:2"] = {
-    name = "Dagger Specialization",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Dagger Specialization (2:2): REMOVED - already counted in stats.meleeCrit by
+-- StateCollector when the talent is learned (and the weapon is equipped).
+-- Re-applying here would double-count. See plan 44, Bug A.
 
--- Fist Weapon Specialization (2:3): +1% crit with Fist Weapons per rank.
--- TODO: Needs weaponType filter support.
-TalentMap["2:3"] = {
-    name = "Fist Weapon Specialization",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Fist Weapon Specialization (2:3): REMOVED - already counted in stats.meleeCrit by
+-- StateCollector when the talent is learned (and the weapon is equipped).
+-- Re-applying here would double-count. See plan 44, Bug A.
 
 -- Mace Specialization (2:4): Increases expertise with Maces per rank.
 -- Also has a chance to reduce movement speed. The expertise portion is a

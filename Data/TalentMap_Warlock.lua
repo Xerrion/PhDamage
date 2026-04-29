@@ -180,16 +180,8 @@ TalentMap["2:11"] = {
 -- rank. Skipped for Phase 1 because it requires reading live pet stats.
 -- TODO: integrate with pet stat snapshot from StateCollector.
 
--------------------------------------------------------------------------------
--- Demonic Tactics (Demonology, Tier 9) - +1/2/3/4/5% crit to all spells
--------------------------------------------------------------------------------
-TalentMap["2:20"] = {
-    name = "Demonic Tactics",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Demonic Tactics (2:20): REMOVED - already counted in stats.spellCrit by StateCollector
+-- when the talent is learned. Re-applying here would double-count. See plan 44, Bug A.
 
 -------------------------------------------------------------------------------
 -- Tab 3: Destruction
@@ -289,14 +281,8 @@ TalentMap["3:18"] = {
     },
 }
 
--- Backlash: +1% crit to all spells per rank (no school filter)
-TalentMap["3:21"] = {
-    name = "Backlash",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Backlash (3:21): REMOVED - already counted in stats.spellCrit by StateCollector
+-- when the talent is learned. Re-applying here would double-count. See plan 44, Bug A.
 
 for key, data in pairs(TalentMap) do
     ns.TalentMap["WARLOCK:" .. key] = data

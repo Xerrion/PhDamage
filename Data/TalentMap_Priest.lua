@@ -6,7 +6,7 @@ local ADDON_NAME, ns = ...
 -- (ordered by internal talentID)
 -------------------------------------------------------------------------------
 
-local SCHOOL_HOLY = ns.SCHOOL_HOLY
+-- SCHOOL_HOLY removed: only consumer was Holy Specialization (2:2), deleted in plan 44, Bug A.
 local SCHOOL_SHADOW = ns.SCHOOL_SHADOW
 local MOD = ns.MOD
 
@@ -27,13 +27,15 @@ local TalentMap = {}
 -- 1:21 Pain Suppression (1)               1:22 Focused Will (3)
 -------------------------------------------------------------------------------
 
--- Force of Will: +1% spell damage AND +1% spell crit per rank (Discipline 1:15)
+-- Force of Will: +1% spell damage per rank (Discipline 1:15)
+-- NOTE: The +1%/rank crit portion was REMOVED - already counted in stats.spellCrit by
+-- StateCollector when the talent is learned. The damage multiplier is kept because
+-- the WoW API does not expose a generic "all-spell damage %" stat. See plan 44, Bug A.
 TalentMap["1:15"] = {
     name = "Force of Will",
     maxRank = 5,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.01, perRank = true, stacking = "additive" },
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
     },
 }
 
@@ -61,14 +63,9 @@ TalentMap["1:18"] = {
 -- 2:21 Circle of Healing (1)
 -------------------------------------------------------------------------------
 
--- Holy Specialization: +1% holy spell crit per rank (Holy 2:2)
-TalentMap["2:2"] = {
-    name = "Holy Specialization",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true, filter = { school = SCHOOL_HOLY } },
-    },
-}
+-- Holy Specialization (2:2): REMOVED - already counted in stats.spellCrit[SCHOOL_HOLY] by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Searing Light: +5% Smite and Holy Fire damage per rank (Holy 2:4)
 TalentMap["2:4"] = {

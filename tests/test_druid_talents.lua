@@ -426,31 +426,7 @@ describe("Druid Talents", function()
     ---------------------------------------------------------------------------
     -- 10. Sharpened Claws (2:5) — +2%/rank crit to feral abilities
     ---------------------------------------------------------------------------
-    describe("Sharpened Claws", function()
-
-        it("should add 6% crit to Claw at 3/3", function()
-            local state = makeDruidState()
-            state.talents["2:5"] = 3
-            local r = Pipeline.Calculate(1082, state)
-            -- baseCrit = 0.25, + 3*0.02 = 0.06
-            -- critChance = 0.25 + 0.06 = 0.31
-            assert.is_near(0.31, r.critChance, 0.001)
-        end)
-
-        it("should add 6% crit to Shred at 3/3", function()
-            local state = makeDruidState()
-            state.talents["2:5"] = 3
-            local r = Pipeline.Calculate(5221, state)
-            assert.is_near(0.31, r.critChance, 0.001)
-        end)
-
-        it("should not affect Wrath crit", function()
-            local state = makeDruidState()
-            state.talents["2:5"] = 3
-            local r = Pipeline.Calculate(5176, state)
-            assert.is_near(0.10, r.critChance, 0.001)
-        end)
-    end)
+    -- Sharpened Claws (2:5) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- 11. Savage Fury (2:11) — +10%/rank Claw/Rake/Mangle (Cat) dmg (additive)
@@ -728,39 +704,7 @@ describe("Druid Talents", function()
     ---------------------------------------------------------------------------
     -- 19. Natural Perfection (3:18) — +1%/rank crit to all spells
     ---------------------------------------------------------------------------
-    describe("Natural Perfection", function()
-
-        it("should add 3% crit to Wrath at 3/3", function()
-            local state = makeDruidState()
-            state.talents["3:18"] = 3
-            local r = Pipeline.Calculate(5176, state)
-            -- baseCrit = 0.10 (Nature), + 3*0.01 = 0.03
-            -- critChance = 0.10 + 0.03 = 0.13
-            assert.is_near(0.13, r.critChance, 0.001)
-        end)
-
-        it("should add 3% crit to Starfire at 3/3", function()
-            local state = makeDruidState()
-            state.talents["3:18"] = 3
-            local r = Pipeline.Calculate(2912, state)
-            assert.is_near(0.13, r.critChance, 0.001)
-        end)
-
-        it("should add 3% crit to Healing Touch at 3/3", function()
-            local state = makeDruidState()
-            state.talents["3:18"] = 3
-            local r = Pipeline.Calculate(5185, state)
-            assert.is_near(0.13, r.critChance, 0.001)
-        end)
-
-        it("should add 3% crit to melee abilities at 3/3", function()
-            local state = makeDruidState()
-            state.talents["3:18"] = 3
-            local r = Pipeline.Calculate(1082, state)
-            -- Claw base meleeCrit = 0.25, + 0.03 = 0.28
-            assert.is_near(0.28, r.critChance, 0.001)
-        end)
-    end)
+    -- Natural Perfection (3:18) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- Talent Stacking Tests
@@ -781,13 +725,14 @@ describe("Druid Talents", function()
             assert.is_near(1229.36, r.dotTotalDmg, 0.1)
         end)
 
-        it("Focused Starlight + Natural Perfection should stack crit on Wrath", function()
+        it("Focused Starlight should add crit on Wrath", function()
+            -- Natural Perfection (3:18) removed from TalentMap (plan 44, Bug A); the
+            -- +3% crit it provided is now counted in stats.spellCrit only.
             local state = makeDruidState()
             state.talents["1:21"] = 2  -- Focused Starlight +4%
-            state.talents["3:18"] = 3  -- Natural Perfection +3%
             local r = Pipeline.Calculate(5176, state)
-            -- critChance = 0.10 + 0.04 + 0.03 = 0.17
-            assert.is_near(0.17, r.critChance, 0.001)
+            -- critChance = 0.10 + 0.04 = 0.14
+            assert.is_near(0.14, r.critChance, 0.001)
         end)
 
         it("Savage Fury + Naturalist should stack additively on Claw", function()
@@ -800,14 +745,15 @@ describe("Druid Talents", function()
             assert.is_near(407.857 * 1.30, r.maxDmg, 0.1)
         end)
 
-        it("Sharpened Claws + Predatory Instincts should both apply to Shred", function()
+        it("Predatory Instincts should apply crit mult to Shred", function()
+            -- Sharpened Claws (2:5) removed from TalentMap (plan 44, Bug A); the
+            -- +6% crit it provided is now counted in stats.meleeCrit only.
             local state = makeDruidState()
-            state.talents["2:5"] = 3   -- Sharpened Claws +6% crit
             state.talents["2:19"] = 5  -- Predatory Instincts +0.16 crit mult
             local r = Pipeline.Calculate(5221, state)
-            -- critChance = 0.25 + 0.06 = 0.31
+            -- critChance unchanged from base meleeCrit (0.25)
             -- critMult = 2.0 + 0.16 = 2.16
-            assert.is_near(0.31, r.critChance, 0.001)
+            assert.is_near(0.25, r.critChance, 0.001)
             assert.is_near(2.16, r.critMult, 0.001)
         end)
 

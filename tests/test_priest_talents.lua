@@ -13,23 +13,24 @@ describe("Priest Talents", function()
     -- Discipline Talents
     ---------------------------------------------------------------------------
     describe("Force of Will", function()
-        it("should add 5% damage and 5% crit at 5/5", function()
+        -- Crit portion removed from TalentMap (already in stats.spellCrit). Plan 44, Bug A.
+        it("should add 5% damage at 5/5", function()
             local state = makePriestState()
             state.talents["1:15"] = 5
             local r = Pipeline.Calculate(8092, state)  -- Mind Blast R11
             -- Damage: (708-748 + 428.6) * 1.05 = 1136.6*1.05, 1176.6*1.05
             assert.is_near(1136.6 * 1.05, r.minDmg, 1)
             assert.is_near(1176.6 * 1.05, r.maxDmg, 1)
-            -- Crit: 0.10 + 0.05 = 0.15
-            assert.is_near(0.15, r.critChance, 0.001)
+            -- Crit unchanged from base now that the CRIT_BONUS effect is removed
+            assert.is_near(0.10, r.critChance, 0.001)
         end)
 
-        it("should add 2% damage and 2% crit at 2/5", function()
+        it("should add 2% damage at 2/5", function()
             local state = makePriestState()
             state.talents["1:15"] = 2
             local r = Pipeline.Calculate(8092, state)
             assert.is_near(1136.6 * 1.02, r.minDmg, 1)
-            assert.is_near(0.12, r.critChance, 0.001)
+            assert.is_near(0.10, r.critChance, 0.001)
         end)
 
         it("should affect holy spells too", function()
@@ -37,7 +38,7 @@ describe("Priest Talents", function()
             state.talents["1:15"] = 5
             local r = Pipeline.Calculate(585, state)  -- Smite R10
             assert.is_near(1259.3 * 1.05, r.minDmg, 1)
-            assert.is_near(0.15, r.critChance, 0.001)
+            assert.is_near(0.10, r.critChance, 0.001)
         end)
     end)
 
@@ -71,21 +72,7 @@ describe("Priest Talents", function()
     ---------------------------------------------------------------------------
     -- Holy Talents
     ---------------------------------------------------------------------------
-    describe("Holy Specialization", function()
-        it("should add 5% holy crit at 5/5", function()
-            local state = makePriestState()
-            state.talents["2:2"] = 5
-            local r = Pipeline.Calculate(585, state)  -- Smite R10
-            assert.is_near(0.15, r.critChance, 0.001)
-        end)
-
-        it("should not affect Shadow spells", function()
-            local state = makePriestState()
-            state.talents["2:2"] = 5
-            local r = Pipeline.Calculate(8092, state)  -- Mind Blast
-            assert.is_near(0.10, r.critChance, 0.001)
-        end)
-    end)
+    -- Holy Specialization (2:2) removed from TalentMap; see plan 44, Bug A.
 
     describe("Searing Light", function()
         it("should add 10% Smite damage at 2/2", function()
@@ -216,9 +203,11 @@ describe("Priest Talents", function()
     -- Combined talent tests
     ---------------------------------------------------------------------------
     describe("Full Shadow build", function()
+        -- Force of Will crit and Holy Specialization removed from TalentMap (plan 44, Bug A);
+        -- those crit contributions now live in stats.spellCrit only.
         it("should combine Force of Will + Focused Power + Shadow Focus + Darkness + Shadow Power", function()
             local state = makePriestState()
-            state.talents["1:15"] = 5  -- Force of Will +5% dmg, +5% crit
+            state.talents["1:15"] = 5  -- Force of Will +5% dmg
             state.talents["1:18"] = 2  -- Focused Power +4% dmg
             state.talents["3:3"] = 5   -- Shadow Focus +10% hit
             state.talents["3:2"] = 5   -- Darkness +10% dmg
@@ -227,8 +216,8 @@ describe("Priest Talents", function()
             -- Additive damage: 1 + 0.05 + 0.04 + 0.10 = 1.19
             assert.is_near(1136.6 * 1.19, r.minDmg, 1)
             assert.is_near(1176.6 * 1.19, r.maxDmg, 1)
-            -- Crit: 0.10 + 0.05 = 0.15
-            assert.is_near(0.15, r.critChance, 0.001)
+            -- Crit unchanged from base (no remaining TalentMap CRIT_BONUS contributors)
+            assert.is_near(0.10, r.critChance, 0.001)
             -- CritMult: 1.5 + 0.50 = 2.0
             assert.is_near(2.0, r.critMult, 0.001)
             -- Hit: 0.03 + 0.10 = 0.13
@@ -237,18 +226,17 @@ describe("Priest Talents", function()
     end)
 
     describe("Full Holy build", function()
-        it("should combine Force of Will + Focused Power + Holy Spec + Searing Light on Smite", function()
+        it("should combine Force of Will + Focused Power + Searing Light on Smite", function()
             local state = makePriestState()
-            state.talents["1:15"] = 5  -- Force of Will +5% dmg, +5% crit
+            state.talents["1:15"] = 5  -- Force of Will +5% dmg
             state.talents["1:18"] = 2  -- Focused Power +4% dmg
-            state.talents["2:2"] = 5   -- Holy Specialization +5% crit
             state.talents["2:4"] = 2   -- Searing Light +10% Smite/HF dmg
             local r = Pipeline.Calculate(585, state)  -- Smite R10
             -- Additive damage: 1 + 0.05 + 0.04 + 0.10 = 1.19
             assert.is_near(1259.3 * 1.19, r.minDmg, 1)
             assert.is_near(1325.3 * 1.19, r.maxDmg, 1)
-            -- Crit: 0.10 + 0.05 + 0.05 = 0.20
-            assert.is_near(0.20, r.critChance, 0.001)
+            -- Crit unchanged from base (Force of Will crit and Holy Spec removed)
+            assert.is_near(0.10, r.critChance, 0.001)
         end)
     end)
 end)

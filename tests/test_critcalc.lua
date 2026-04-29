@@ -106,12 +106,11 @@ describe("CritCalc", function()
 
         it("should clamp crit chance to maximum of 1.0", function()
             playerState.stats.spellCrit[32] = 0.95
-            -- Add more crit via Devastation 5/5 + Backlash 3/3 = 0.08
+            -- Backlash (3:21) removed from TalentMap (plan 44, Bug A); only Devastation 5/5 = 0.05 remains.
             playerState.talents["3:11"] = 5
-            playerState.talents["3:21"] = 3
             local result = runFullChain(686, playerState)
 
-            -- Total: 0.95 + 0.05 + 0.03 = 1.03, clamped to 1.0
+            -- Total: 0.95 + 0.05 = 1.00, clamped to 1.0
             assert.is_near(1.0, result.critChance, 0.001)
         end)
 

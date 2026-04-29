@@ -151,31 +151,7 @@ describe("Paladin Talents", function()
         end)
     end)
 
-    ---------------------------------------------------------------------------
-    -- 4. Holy Power (1:13) -- +1%/rank Holy spell crit
-    ---------------------------------------------------------------------------
-    describe("Holy Power", function()
-
-        it("should increase Exorcism crit by 5% at 5/5", function()
-            local baseResult = Pipeline.Calculate(879, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["1:13"] = 5
-            local result = Pipeline.Calculate(879, state)
-
-            assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
-        end)
-
-        it("should increase Holy Light crit by 5% at 5/5", function()
-            local baseResult = Pipeline.Calculate(635, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["1:13"] = 5
-            local result = Pipeline.Calculate(635, state)
-
-            assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
-        end)
-    end)
+    -- Holy Power (1:13) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- 5. Holy Guidance (1:19) -- +5%/rank INT as spell power
@@ -258,31 +234,7 @@ describe("Paladin Talents", function()
         end)
     end)
 
-    ---------------------------------------------------------------------------
-    -- 7. Combat Expertise (2:20) -- +1%/rank crit (all spells)
-    ---------------------------------------------------------------------------
-    describe("Combat Expertise", function()
-
-        it("should increase Exorcism crit by 5% at 5/5", function()
-            local baseResult = Pipeline.Calculate(879, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["2:20"] = 5
-            local result = Pipeline.Calculate(879, state)
-
-            assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
-        end)
-
-        it("should increase Holy Light crit by 5% at 5/5", function()
-            local baseResult = Pipeline.Calculate(635, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["2:20"] = 5
-            local result = Pipeline.Calculate(635, state)
-
-            assert.is_near(baseResult.critChance + 0.05, result.critChance, 0.001)
-        end)
-    end)
+    -- Combat Expertise (2:20) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- Retribution (Tab 3)
@@ -326,47 +278,23 @@ describe("Paladin Talents", function()
         end)
     end)
 
-    ---------------------------------------------------------------------------
-    -- 9. Sanctified Seals (3:21) -- +1%/rank crit (all spells)
-    ---------------------------------------------------------------------------
-    describe("Sanctified Seals", function()
-
-        it("should increase Exorcism crit by 3% at 3/3", function()
-            local baseResult = Pipeline.Calculate(879, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["3:21"] = 3
-            local result = Pipeline.Calculate(879, state)
-
-            assert.is_near(baseResult.critChance + 0.03, result.critChance, 0.001)
-        end)
-
-        it("should increase Holy Light crit by 3% at 3/3", function()
-            local baseResult = Pipeline.Calculate(635, makePaladinState())
-
-            local state = makePaladinState()
-            state.talents["3:21"] = 3
-            local result = Pipeline.Calculate(635, state)
-
-            assert.is_near(baseResult.critChance + 0.03, result.critChance, 0.001)
-        end)
-    end)
+    -- Sanctified Seals (3:21) removed from TalentMap; see plan 44, Bug A.
 
     ---------------------------------------------------------------------------
     -- Talent Metadata
     ---------------------------------------------------------------------------
     describe("Metadata", function()
 
+        -- Holy Power (1:13), Combat Expertise (2:20) and Sanctified Seals (3:21)
+        -- were removed from TalentMap (plan 44, Bug A) - they are already counted in
+        -- stats.spellCrit/meleeCrit by StateCollector.
         local expectedKeys = {
             "PALADIN:1:5",   -- Healing Light
             "PALADIN:1:11",  -- Sanctified Light
-            "PALADIN:1:13",  -- Holy Power
             "PALADIN:1:16",  -- Purifying Power
             "PALADIN:1:19",  -- Holy Guidance
             "PALADIN:2:15",  -- Precision
-            "PALADIN:2:20",  -- Combat Expertise
             "PALADIN:3:16",  -- Crusade
-            "PALADIN:3:21",  -- Sanctified Seals
         }
 
         for _, key in ipairs(expectedKeys) do
@@ -390,22 +318,15 @@ describe("Paladin Talents", function()
     ---------------------------------------------------------------------------
     describe("Stacking", function()
 
-        it("Holy Power + Sanctified Light should stack crit on Holy Light", function()
+        -- Holy Power (1:13), Combat Expertise (2:20) and Sanctified Seals (3:21) stacking
+        -- tests removed: those talents are no longer in TalentMap (plan 44, Bug A).
+        -- Sanctified Light still stacks with itself on Holy Light:
+        it("Sanctified Light should add crit to Holy Light", function()
             local state = makePaladinState()
-            state.talents["1:13"] = 5  -- Holy Power +5% crit
-            state.talents["1:11"] = 3  -- Sanctified Light +6% crit
+            state.talents["1:11"] = 3  -- Sanctified Light +6% crit on HL/FoL
             local r = Pipeline.Calculate(635, state)
-            -- critChance = 0.15 + 0.05 + 0.06 = 0.26
-            assert.is_near(0.26, r.critChance, 0.001)
-        end)
-
-        it("Combat Expertise + Sanctified Seals should stack crit on Exorcism", function()
-            local state = makePaladinState()
-            state.talents["2:20"] = 5  -- Combat Expertise +5% crit
-            state.talents["3:21"] = 3  -- Sanctified Seals +3% crit
-            local r = Pipeline.Calculate(879, state)
-            -- critChance = 0.15 + 0.05 + 0.03 = 0.23
-            assert.is_near(0.23, r.critChance, 0.001)
+            -- critChance = 0.15 + 0.06 = 0.21
+            assert.is_near(0.21, r.critChance, 0.001)
         end)
 
         it("Crusade + Holy Guidance should both affect Exorcism", function()

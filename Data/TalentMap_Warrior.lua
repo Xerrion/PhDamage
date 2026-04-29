@@ -64,16 +64,9 @@ TalentMap["1:10"] = {
     },
 }
 
--- Poleaxe Specialization: +1% crit with Axes and Polearms per rank (Arms 1:11)
--- TODO: Needs weaponType filter support in MatchesFilter. Currently applies
--- to all abilities regardless of weapon type.
-TalentMap["1:11"] = {
-    name = "Poleaxe Specialization",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Poleaxe Specialization (1:11): REMOVED - already counted in stats.meleeCrit by
+-- StateCollector when the talent is learned (and the weapon is equipped).
+-- Re-applying here would double-count. See plan 44, Bug A.
 
 -- Death Wish: +20% physical damage, active ability (30s duration)
 -- NOTE: This is an activated ability, not a passive talent. The damage
@@ -147,14 +140,9 @@ TalentMap["1:23"] = {
 -- as a simple modifier - requires proc modeling or AuraMap.
 -- TalentMap["2:3"] - Flurry: deferred to AuraMap
 
--- Cruelty: +1% melee crit chance per rank (Fury 2:4)
-TalentMap["2:4"] = {
-    name = "Cruelty",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Cruelty (2:4): REMOVED - already counted in stats.meleeCrit by StateCollector
+-- when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Improved Cleave: +40% bonus Cleave damage per rank (Fury 2:10)
 TalentMap["2:10"] = {

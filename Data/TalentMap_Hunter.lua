@@ -55,18 +55,9 @@ TalentMap["1:15"] = {
 -- 2:19 Rapid Killing (2)                   2:20 Improved Barrage (3)
 -------------------------------------------------------------------------------
 
--- Lethal Shots: +1/2/3/4/5% ranged crit chance (Marksmanship 2:4)
-TalentMap["2:4"] = {
-    name = "Lethal Shots",
-    maxRank = 5,
-    effects = {
-        {
-            type = MOD.CRIT_BONUS,
-            value = 0.01,
-            perRank = true,
-        },
-    },
-}
+-- Lethal Shots (2:4): REMOVED - already counted in stats.rangedCrit by StateCollector
+-- when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Barrage: +4/8/12% Multi-Shot and Volley damage (Marksmanship 2:7)
 TalentMap["2:7"] = {
@@ -185,18 +176,9 @@ TalentMap["3:16"] = {
     },
 }
 
--- Survival Instincts: +2/4% crit chance for all (Survival 3:18)
-TalentMap["3:18"] = {
-    name = "Survival Instincts",
-    maxRank = 2,
-    effects = {
-        {
-            type = MOD.CRIT_BONUS,
-            value = 0.02,
-            perRank = true,
-        },
-    },
-}
+-- Survival Instincts (3:18): REMOVED - already counted in stats.meleeCrit/rangedCrit by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -------------------------------------------------------------------------------
 -- Merge into global TalentMap
