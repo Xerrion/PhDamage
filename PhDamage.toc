@@ -28,6 +28,7 @@ Core\SpellResolver.lua
 
 # Engine
 Engine\SpellCalc.lua
+Engine\LevelPenalty.lua
 Engine\ModifierCalc.lua
 Engine\CritCalc.lua
 Engine\Pipeline.lua

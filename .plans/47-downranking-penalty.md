@@ -29,14 +29,14 @@ Recon source: orchestrator delegation at `m0072` (file:line citations for `Build
 - [ ] **1.1 Create `Engine/LevelPenalty.lua` with `CalculateLevelPenalty(spellLevel, maxLevel, playerLevel)`** ← CURRENT
 - [ ] 1.2 Implement cMaNGOS-TBC formula: top-rank exemption when `spellLevel >= maxLevel`, sub-20 multiplier `(20 - spellLevel) * 3.75`, level factor `(maxLevel + 6) / playerLevel` capped at 1.0
 - [ ] 1.3 Defensive fallbacks: `maxLevel == nil` returns 1.0; `spellLevel <= 0` returns 1.0; `playerLevel <= 0` returns 1.0
-- [ ] 1.4 Register on `ns.LevelPenalty` namespace and add to `PhDamage.toc` after `Engine/SpellCalc.lua`, before `Engine/ModifierCalc.lua`
+- [ ] 1.4 Register on `ns.Engine.LevelPenalty` namespace and add to `PhDamage.toc` after `Engine/SpellCalc.lua`, before `Engine/ModifierCalc.lua`
 - [ ] 1.5 Create `tests/test_levelpenalty.lua` with cases: top-rank exemption, sub-20 stacking (Frostbolt R3 @ L70 = 0.250), MaxLevel+6 (Greater Heal R1 = 0.729, Shadow Bolt R5 = 0.586), nil/zero defensive returns
 - [ ] 1.6 Verify `busted --verbose` passes with new test count = 1184 + N (where N is number of new tests, target 8-12)
 - [ ] 1.7 `luacheck .` clean
 
 ## Phase 2: Engine Integration [PENDING]
 
-- [ ] 2.1 Modify `Engine/ModifierCalc.lua::BuildModifiedResult` standard path (L376): apply `levelPenalty = ns.LevelPenalty.CalculateLevelPenalty(rankData.level, rankData.maxLevel, playerState.level)` then `spBonus = effectiveSp * effectiveCoeff * levelPenalty`
+- [ ] 2.1 Modify `Engine/ModifierCalc.lua::BuildModifiedResult` standard path (L376): apply `levelPenalty = ns.Engine.LevelPenalty.CalculateLevelPenalty(rankData.level, rankData.maxLevel, playerState.level)` then `spBonus = effectiveSp * effectiveCoeff * levelPenalty`
 - [ ] 2.2 Apply same penalty in hybrid path (L442 directSpBonus, L459 dotSpBonus)
 - [ ] 2.3 Apply same penalty in utility path (L360 Life Tap)
 - [ ] 2.4 Verify all existing tests still pass (data has no `maxLevel` yet, so penalty = 1.0 fallback - engine should be functionally unchanged)
