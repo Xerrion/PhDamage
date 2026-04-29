@@ -14,6 +14,21 @@ local ModifierCalc = {}
 ns.Engine.ModifierCalc = ModifierCalc
 
 -------------------------------------------------------------------------------
+-- GetLevelPenalty(rankData, playerState)
+-- Resolves the cMaNGOS-TBC SP-coefficient level penalty for a (rank, player)
+-- pair. Returns 1.0 (no penalty) when rankData/playerState are missing or when
+-- rankData.maxLevel is not yet populated - this keeps the engine inert until
+-- Phase 4 backfills the data. See Engine/LevelPenalty.lua for the formula.
+-------------------------------------------------------------------------------
+local function GetLevelPenalty(rankData, playerState)
+    return ns.Engine.LevelPenalty.CalculateLevelPenalty(
+        rankData and rankData.level,
+        rankData and rankData.maxLevel,
+        playerState and playerState.level
+    )
+end
+
+-------------------------------------------------------------------------------
 -- MatchesFilter(filter, spellData, rankData, playerState)
 -- Returns true if the spell matches all filter criteria (AND logic).
 -- A nil filter matches everything.
@@ -355,9 +370,12 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
     local effectiveSp = baseSp + mods.spellPowerBonus
 
     if spellData.spellType == "utility" then
-        -- Utility spells: recalculate mana gain with modified coefficient
+        -- Utility spells: recalculate mana gain with modified coefficient.
+        -- TBC level penalty: scale SP contribution down for sub-max-rank spells
+        -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
+        local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
         local effectiveCoeff = (baseResult.coefficient or 0) + mods.coefficientBonus
-        local spBonus = effectiveSp * effectiveCoeff
+        local spBonus = effectiveSp * effectiveCoeff * levelPenalty
         result.coefficient = effectiveCoeff
         result.spellPowerBonus = spBonus
         result.healthCost = baseResult.healthCost
@@ -368,12 +386,15 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         return result
     end
     if spellData.spellType == "hybrid" then
-        return ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods)
+        return ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods, playerState)
     end
 
     -- Standard damage spells (direct, dot, channel)
+    -- TBC level penalty: scale SP contribution down for sub-max-rank spells
+    -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
+    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
     local effectiveCoeff = (baseResult.coefficient or 0) + mods.coefficientBonus
-    local spBonus = effectiveSp * effectiveCoeff
+    local spBonus = effectiveSp * effectiveCoeff * levelPenalty
 
     result.coefficient = effectiveCoeff
     result.spellPowerBonus = spBonus
@@ -425,10 +446,11 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
 end
 
 -------------------------------------------------------------------------------
--- BuildHybridResult(baseResult, spellData, effectiveSp, mods)
+-- BuildHybridResult(baseResult, spellData, effectiveSp, mods, playerState)
 -- Handles hybrid spells (Immolate) with separate direct + DoT portions.
+-- playerState is used to resolve the TBC SP-coefficient level penalty.
 -------------------------------------------------------------------------------
-function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mods)
+function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mods, playerState)
     if not baseResult.dotBaseDamage then
         return nil
     end
@@ -437,9 +459,13 @@ function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mod
     result.spellData = baseResult.spellData
     result.rankData = baseResult.rankData
 
+    -- TBC level penalty: scale SP contribution down for sub-max-rank spells
+    -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
+    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
+
     -- Direct portion
     local directCoeff = (baseResult.directCoefficient or 0) + mods.coefficientBonus
-    local directSpBonus = effectiveSp * directCoeff
+    local directSpBonus = effectiveSp * directCoeff * levelPenalty
     local directMin = (baseResult.minBaseDamage + mods.flatDamageBonus + directSpBonus)
         * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.directDamageMultiplier
     local directMax = (baseResult.maxBaseDamage + mods.flatDamageBonus + directSpBonus)
@@ -456,7 +482,7 @@ function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mod
     -- The DoT portion uses its base coefficient unchanged. To add DoT-specific coefficient
     -- bonuses, a separate dotCoefficientBonus modifier type would be needed.
     local dotCoeff = baseResult.dotCoefficient or 0
-    local dotSpBonus = effectiveSp * dotCoeff
+    local dotSpBonus = effectiveSp * dotCoeff * levelPenalty
     local dotDamage = (baseResult.dotBaseDamage + dotSpBonus)
         * (1 + mods.talentDamageBonus) * mods.damageMultiplier * mods.dotDamageMultiplier
 

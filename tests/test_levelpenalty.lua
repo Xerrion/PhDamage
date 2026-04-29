@@ -13,6 +13,7 @@
 local bootstrap = require("tests.bootstrap")
 local ns = bootstrap.ns
 local CalculateLevelPenalty = ns.Engine.LevelPenalty.CalculateLevelPenalty
+local Pipeline = ns.Engine.Pipeline
 
 describe("LevelPenalty.CalculateLevelPenalty (issue #47)", function()
 
@@ -86,6 +87,99 @@ describe("LevelPenalty.CalculateLevelPenalty (issue #47)", function()
         -- Result     = (100 - 3.75) * 0.44286 / 100 ~ 0.42625
         it("applies sub-20 penalty at boundary spellLevel == 19", function()
             assert.is_near(0.4262, CalculateLevelPenalty(19, 25, 70), 0.0001)
+        end)
+    end)
+end)
+
+-------------------------------------------------------------------------------
+-- Engine integration: ModifierCalc.BuildModifiedResult / BuildHybridResult
+-- must scale the SP-bonus contribution by the level penalty when rankData
+-- carries a maxLevel. When maxLevel is absent the engine must remain inert
+-- (Phase 4 backfill compatibility).
+--
+-- Tests mutate rankData.maxLevel in-place and restore it after each case so
+-- the global SpellData stays clean for subsequent tests.
+-------------------------------------------------------------------------------
+describe("LevelPenalty engine integration (Phase 2)", function()
+
+    local function withMaxLevel(rankData, maxLevel, fn)
+        local original = rankData.maxLevel
+        rankData.maxLevel = maxLevel
+        local ok, err = pcall(fn)
+        rankData.maxLevel = original
+        if not ok then error(err, 0) end
+    end
+
+    describe("standard path (BuildModifiedResult)", function()
+        -- Frostbolt R3: level=14. Forcing maxLevel=19 (next rank starts at 20)
+        -- yields cMaNGOS-TBC penalty (14, 19, 70):
+        --   LvlPenalty = (20 - 14) * 3.75 = 22.5
+        --   LvlFactor  = (19 + 6) / 70 ~ 0.35714
+        --   Result     = (100 - 22.5) * 0.35714 / 100 ~ 0.27679
+        it("scales spellPowerBonus by the cMaNGOS penalty for sub-max-rank Frostbolt R3 @ L70", function()
+            local rankData = ns.SpellData[116].ranks[3]
+            local state = bootstrap.makeMageState()
+
+            local baseline = Pipeline.Calculate(116, state, 3)
+            local baselineSpBonus = baseline.spellPowerBonus
+            assert.is_true(baselineSpBonus > 0, "baseline SP bonus must be positive")
+
+            withMaxLevel(rankData, 19, function()
+                local penalized = Pipeline.Calculate(116, state, 3)
+                local expectedPenalty = CalculateLevelPenalty(rankData.level, 19, state.level)
+                assert.is_near(0.2768, expectedPenalty, 0.0001)
+                assert.is_near(baselineSpBonus * expectedPenalty, penalized.spellPowerBonus, 0.001)
+            end)
+        end)
+
+        -- Phase 1-3 compatibility: rankData without maxLevel must be untouched.
+        it("leaves spellPowerBonus untouched when maxLevel is nil (data backfill safety)", function()
+            local rankData = ns.SpellData[116].ranks[3]
+            assert.is_nil(rankData.maxLevel, "Frostbolt R3 should not have maxLevel pre-Phase-4")
+            local state = bootstrap.makeMageState()
+
+            local result = Pipeline.Calculate(116, state, 3)
+            -- Without maxLevel, penalty=1.0; spellPowerBonus must equal effectiveSp * effectiveCoeff.
+            local sp = state.stats.spellPower[ns.SpellData[116].school]
+            local expectedCoeff = rankData.coefficient or ns.SpellData[116].coefficient
+            assert.is_near(sp * expectedCoeff, result.spellPowerBonus, 0.001)
+        end)
+
+        -- Top-rank exemption: maxLevel == spellLevel triggers cMaNGOS short-circuit.
+        it("applies no penalty when rank is top-rank (maxLevel == level)", function()
+            local rankData = ns.SpellData[116].ranks[14]  -- level=69 (top)
+            local state = bootstrap.makeMageState()
+
+            local baseline = Pipeline.Calculate(116, state, 14)
+            withMaxLevel(rankData, rankData.level, function()
+                local result = Pipeline.Calculate(116, state, 14)
+                assert.is_near(baseline.spellPowerBonus, result.spellPowerBonus, 0.001)
+            end)
+        end)
+    end)
+
+    describe("hybrid path (BuildHybridResult)", function()
+        -- Immolate R1: level=1, has explicit per-rank directCoefficient/dotCoefficient.
+        -- Forcing maxLevel=9 (next rank at 10) yields penalty (1, 9, 70):
+        --   LvlPenalty = (20 - 1) * 3.75 = 71.25
+        --   LvlFactor  = (9 + 6) / 70 = 15/70 ~ 0.21429
+        --   Result     = (100 - 71.25) * 0.21429 / 100 ~ 0.0616
+        it("scales both directSpBonus and dotSpBonus by the same penalty", function()
+            local rankData = ns.SpellData[348].ranks[1]
+            local state = bootstrap.makePlayerState()  -- Warlock, 1000 Fire SP
+
+            local baseline = Pipeline.Calculate(348, state, 1)
+            local baselineDirect = baseline.directSpBonus
+            local baselineDot = baseline.dotSpBonus
+            assert.is_true(baselineDirect > 0, "baseline directSpBonus must be positive")
+            assert.is_true(baselineDot > 0, "baseline dotSpBonus must be positive")
+
+            withMaxLevel(rankData, 9, function()
+                local penalized = Pipeline.Calculate(348, state, 1)
+                local expectedPenalty = CalculateLevelPenalty(rankData.level, 9, state.level)
+                assert.is_near(baselineDirect * expectedPenalty, penalized.directSpBonus, 0.001)
+                assert.is_near(baselineDot * expectedPenalty, penalized.dotSpBonus, 0.001)
+            end)
         end)
     end)
 end)
