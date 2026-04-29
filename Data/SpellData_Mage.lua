@@ -303,8 +303,15 @@ SpellData[10] = {
     },
 }
 
--- Frost Nova: instant PBAoE. Stored value 0.1357 is post-AoE-penalty (DBC raw SP mod 0.043).
--- Source: https://www.wowhead.com/tbc/spell=27088
+-- Frost Nova - spell ID 122
+-- Stored coefficient (0.1357) is the Wowhead-published EFFECTIVE coefficient
+-- for instant AoE spells. It already incorporates the TBC AoE penalty and the
+-- instant-cast 1.5s/3.5s downscale factor. The raw DBC EffectBonusCoefficient
+-- is 0.043 (informational only); the engine consumes the effective value
+-- verbatim and does NOT re-derive it from the DBC raw.
+-- Per the file header policy: all coefficients in this file are Wowhead
+-- effective values, NOT raw DBC values.
+-- Source: https://www.wowhead.com/tbc/spell=122/frost-nova (TBC Classic tooltip)
 SpellData[122] = {
     name = "Frost Nova",
     school = SCHOOL_FROST,

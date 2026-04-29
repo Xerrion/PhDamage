@@ -68,12 +68,12 @@ describe("Ranged Engine", function()
 
         it("should use RAP for channel spells (Volley)", function()
             local state = makeHunterState()
-            -- Volley rank 4: totalDmg 450, coeff 0.0586, RAP 1000
-            -- expected: 450 + 58.6 = 508.6
+            -- Volley rank 4: totalDmg 450, coeff 0.0837, RAP 1000
+            -- expected: 450 + 83.7 = 533.7
             local spellData = ns.SpellData[1510]
             local _, rankData = SpellCalc.GetCurrentRank(spellData, state)
             local result = SpellCalc.ComputeBase(spellData, rankData, state)
-            assert.is_near(508.6, result.totalDamage, 0.01)
+            assert.is_near(533.7, result.totalDamage, 0.01)
         end)
 
         it("should use RAP for hybrid spells (Explosive Trap)", function()

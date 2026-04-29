@@ -40,7 +40,7 @@ local CHANNEL_COEFFICIENT_EXPECTATIONS = {
     -- Warlock (Wowhead spell=27213 per-tick SP mod 0.095 x 15 ticks = 1.425)
     { spellID = 1949,  name = "Hellfire",         coefficient = 1.425,  isAoe = true },
     -- Hunter (RAP-scaling channeled AoE)
-    { spellID = 1510,  name = "Volley",           coefficient = 0.0586, isAoe = true },
+    { spellID = 1510,  name = "Volley",           coefficient = 0.0837, isAoe = true },
 }
 
 local DOT_COEFFICIENT_EXPECTATIONS = {
@@ -101,6 +101,19 @@ describe("AoE coefficient corrections (issue #46)", function()
                     expected.name .. " must have isAoe = true")
             end)
         end
+
+        -- RAP-vs-SP scaling guard: Volley's stored coefficient is a ranged-AP
+        -- coefficient, not a spellpower coefficient. The engine distinguishes
+        -- the two via `scalingType = "ranged"`. If a future change drops or
+        -- changes that field, the engine would silently apply the value as an
+        -- SP coefficient, producing wildly incorrect damage. Lock the intent.
+        it("Volley (1510) scales by ranged attack power, not spellpower", function()
+            local spell = ns.SpellData[1510]
+            assert.is_not_nil(spell, "Volley missing from SpellData")
+            assert.are.equal("ranged", spell.scalingType,
+                "Volley must use scalingType = 'ranged' so its coefficient is "
+                .. "applied to RAP, not spellpower")
+        end)
     end)
 
     describe("DoT AoE spells", function()

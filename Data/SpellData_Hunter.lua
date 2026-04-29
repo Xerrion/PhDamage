@@ -207,14 +207,22 @@ SpellData[13795] = {
 -- CHANNELS
 -------------------------------------------------------------------------------
 
--- Volley: 6-second ranged channel, 6 ticks @ 1s. RAP coefficient 0.0586 total
--- (TBC pre-Patch-3.2.2; Wowhead does not expose RAP coefficients).
--- Source: Hunter-DPS blog (http://hunter-dps.dungeoneer.com/2009/09/marks-volley-win.html)
---         documenting the patch 3.2.2 buff from 0.0586 to 0.0837.
+-- Volley - spell ID 1510
+-- TBC RAP coefficient: 0.0837 per tick x 6 ticks (1s/tick over 6s channel).
+-- Source: Blizzard Patch 3.2.2 patch notes ("The attack power coefficient has
+-- been increased from 0.0586 to 0.0837. Base points did not change."), which
+-- reverted the 3.0.8 -30% nerf and restored the original TBC 2.x value.
+-- See: https://warcraft.wiki.gg/wiki/Patch_3.2.2 (Hunter section)
+--      https://warcraft.wiki.gg/wiki/Patch_3.0.8 (Hunter, Volley nerf -30%)
+--      https://warcraft.wiki.gg/wiki/Patch_2.2.0 (Hunter, RAP scaling introduced)
+--      https://warcraft.wiki.gg/wiki/Volley (Wrath Classic tooltip displays
+--      "8.37% of Ranged attack power + 52" per tick)
+-- Volley is the only Hunter ability in TBC with a stored RAP spell coefficient;
+-- ranged shots scale via the standard weapon-damage + normalized-AP formula.
 SpellData[1510] = {
     name = "Volley",
     school = SCHOOL_ARCANE,
-    coefficient = 0.0586,
+    coefficient = 0.0837,
     castTime = 0,
     canCrit = false,
     isDot = false,
