@@ -104,12 +104,16 @@ function PhDamage:OnSlashCommand(input)
         else
             self:Print("Options module not loaded.")
         end
+    elseif cmd == "debug" then
+        local slot = tonumber(args[2])
+        ns.Diagnostics.PrintDebug(slot)
     elseif cmd == "help" then
         self:Print("Usage:")
         self:Print("  /phd - Show all spell computations")
         self:Print("  /phd state - Show current player state snapshot")
         self:Print("  /phd spell <name> - Detailed breakdown for one spell")
         self:Print("  /phd config - Open the overlay options panel")
+        self:Print("  /phd debug [slot] - Diagnose action slot(s) (default: bar 1-12)")
         self:Print("  /phd help - Show this help")
     else
         ns.Diagnostics.PrintAll()

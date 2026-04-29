@@ -33,7 +33,6 @@ end
 -- Cache WoW globals
 local GameTooltip = GameTooltip
 local CreateFrame = CreateFrame
-local pairs = pairs
 local format = string.format
 local floor = math.floor
 local concat = table.concat
@@ -43,9 +42,6 @@ local Format  -- forward-declared; resolved in init
 local FN, FD  -- FormatNumber / FormatDPS aliases
 local COLOR_GOLD, COLOR_GREEN, COLOR_WHITE, COLOR_LABEL, COLOR_RESET
 local MULTIPLY, ARROW
-
--- SpellID reverse lookup: rankSpellID -> { spellKey, rankIndex }
-local spellIDMap = {}
 
 -- Re-entry guard: tracks the spellID last appended to avoid duplicate lines
 local lastTooltipSpellID = nil
@@ -122,30 +118,6 @@ local function FinalizeFrame()
     companionFrame:ClearAllPoints()
     companionFrame:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 0, -4)
     companionFrame:Show()
-end
-
--------------------------------------------------------------------------------
--- BuildSpellIDMap
--- Creates a reverse lookup from rank-specific spellID -> { spellKey, rankIndex }.
--- spellKey is the base spellID used as the key in ns.SpellData.
--------------------------------------------------------------------------------
-
-local function BuildSpellIDMap()
-    for spellKey, spellData in pairs(ns.SpellData) do
-        if spellData.ranks then
-            for rankIdx, rankData in pairs(spellData.ranks) do
-                spellIDMap[rankData.spellID] = { spellKey = spellKey, rankIndex = rankIdx }
-            end
-        end
-    end
-end
-
--------------------------------------------------------------------------------
--- GetSpellIDMap -- expose the reverse lookup for ActionBar.lua to reuse
--------------------------------------------------------------------------------
-
-function Tooltip.GetSpellIDMap()
-    return spellIDMap
 end
 
 -------------------------------------------------------------------------------
@@ -453,16 +425,16 @@ local function OnTooltipSetSpell(tooltip)
     -- Guard against re-entry (OnTooltipSetSpell can fire more than once)
     if spellID == lastTooltipSpellID then return end
 
-    -- Look up the rank-specific spellID in the reverse map
-    local lookup = spellIDMap[spellID]
-    if not lookup then return end
+    -- Resolve the rank-specific spellID to (baseKey, rankIndex)
+    local baseKey, rankIndex = ns.SpellResolver.Resolve(spellID)
+    if not baseKey then return end
 
     -- Get current player state (uses cached snapshot, refreshed on relevant events)
     local playerState = ns.StateCollector.GetCachedState()
     if not playerState then return end
 
     -- Run the full computation pipeline for the specific rank being hovered
-    local result = ns.Engine.Pipeline.Calculate(lookup.spellKey, playerState, lookup.rankIndex)
+    local result = ns.Engine.Pipeline.Calculate(baseKey, playerState, rankIndex)
     if not result then return end
 
     -- Mark this spellID as processed only after all guards pass
@@ -507,8 +479,6 @@ initFrame:SetScript("OnEvent", function(self, event)
         COLOR_RESET = Format.COLOR_RESET
         MULTIPLY    = Format.MULTIPLY
         ARROW       = Format.ARROW
-
-        BuildSpellIDMap()
 
         -- Create companion tooltip frame
         companionFrame = CreateFrame("Frame", "PhDamageTooltip", UIParent, "BackdropTemplate")

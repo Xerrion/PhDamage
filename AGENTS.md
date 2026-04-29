@@ -39,6 +39,7 @@ Sub-namespaces:
 - `ns.Engine.ModifierCalc` - Modifier application
 - `ns.Engine.CritCalc` - Crit/hit expected value
 - `ns.StateCollector` - WoW API → PlayerState bridge
+- `ns.SpellResolver` - Reverse lookup from any rank/effect spell ID to base SpellData key + rank index
 - `ns.Events` - Event registration
 - `ns.Diagnostics` - Slash command output
 - `ns.Tooltip` - Tooltip hook and spell display

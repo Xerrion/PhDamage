@@ -30,10 +30,12 @@ AuraMap[10060] = {
     },
 }
 
--- Shadow Weaving (15258): +10% shadow damage taken on target (max stacks assumed)
+-- Shadow Weaving (15258): up to +10% shadow damage taken on target
+-- Stack-aware: +2% per stack, max 5 stacks. Engine scales by applications/maxStacks.
 AuraMap[15258] = {
     name = "Shadow Weaving",
     target = "target",
+    maxStacks = 5,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.10, filter = { school = SCHOOL_SHADOW } },
     },

@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 -- Diagnostics.lua
 -- Slash command diagnostic output for PhDamage
--- Provides /phd, /phd state, /phd spell <name> commands
+-- Provides /phd, /phd state, /phd spell <name>, /phd config, /phd debug [slot] commands.
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
@@ -624,4 +624,123 @@ function Diagnostics.PrintState()
 
     PrintAuras("Player", state.auras.player or {})
     PrintAuras("Target", state.auras.target or {})
+end
+
+-------------------------------------------------------------------------------
+-- PrintDebug(slot)
+-- Diagnostic dump for action bar slot(s). When slot is nil, iterates the
+-- default action bar (slots 1-12). When slot is a number, dumps just that slot.
+-- Used to investigate why an expected overlay is missing on a given button.
+-------------------------------------------------------------------------------
+
+-- Cached WoW globals (Presentation layer is allowed to call WoW APIs)
+local GetActionInfo = GetActionInfo
+local GetMacroSpell = GetMacroSpell
+
+-- Spell ID resolution is delegated to ns.SpellResolver, which caches its
+-- lookup table for the session. If a future feature mutates ns.SpellData
+-- at runtime, callers must invoke ns.SpellResolver.Rebuild() first.
+
+local function FormatID(id)
+    if id == nil then
+        return "nil"
+    end
+    return tostring(id)
+end
+
+local function DumpSlot(slot)
+    local actionType, id, subType = GetActionInfo(slot)
+
+    if actionType == nil then
+        Diagnostics.Print(COLOR_LABEL .. "slot " .. slot .. ": empty" .. COLOR_RESET)
+        return
+    end
+
+    Diagnostics.Print(COLOR_HEADER .. "--- slot " .. slot .. " ---" .. COLOR_RESET)
+    Diagnostics.Print("  " .. LabelValue("actionType", tostring(actionType))
+        .. " | " .. LabelValue("id", FormatID(id))
+        .. " | " .. LabelValue("subType", tostring(subType)))
+
+    -- Resolve to a candidate spellID
+    local spellID
+    if actionType == "spell" then
+        spellID = id
+    elseif actionType == "macro" then
+        local ok, result = pcall(GetMacroSpell, id)
+        if ok then
+            spellID = result
+        end
+        Diagnostics.Print("  " .. LabelValue("GetMacroSpell", FormatID(spellID)))
+    end
+
+    if actionType ~= "spell" and actionType ~= "macro" then
+        Diagnostics.Print("  " .. COLOR_LABEL .. "(not a spell or macro - skipping resolution)" .. COLOR_RESET)
+        return
+    end
+
+    if not spellID then
+        Diagnostics.Print("  " .. COLOR_LABEL .. "no spellID resolved (macro may not be /cast SpellName)"
+            .. COLOR_RESET)
+        return
+    end
+
+    -- Map any-rank spellID -> base spellID used by ns.SpellData
+    local baseID = ns.SpellResolver.Resolve(spellID)
+    if not baseID then
+        Diagnostics.Print("  " .. LabelValue("base spellID", "no resolution")
+            .. " | " .. LabelValue("SpellData", "absent"))
+        return
+    end
+
+    if baseID == spellID then
+        Diagnostics.Print("  " .. LabelValue("base spellID", tostring(baseID) .. " (direct)")
+            .. " | " .. LabelValue("SpellData", COLOR_GOOD .. "present" .. COLOR_RESET))
+    else
+        Diagnostics.Print("  " .. LabelValue("base spellID", tostring(baseID)
+            .. " (mapped from rank " .. tostring(spellID) .. ")")
+            .. " | " .. LabelValue("SpellData", COLOR_GOOD .. "present" .. COLOR_RESET))
+    end
+
+    -- Run the pipeline
+    local playerState = ns.StateCollector and ns.StateCollector.GetCachedState
+        and ns.StateCollector.GetCachedState() or nil
+    if not playerState then
+        Diagnostics.Print("  " .. LabelValue("Pipeline", "skipped (no cached player state)"))
+        return
+    end
+
+    local ok, result = pcall(ns.Engine.Pipeline.Calculate, baseID, playerState)
+    if not ok then
+        Diagnostics.Print("  " .. LabelValue("Pipeline", "error: " .. tostring(result)))
+        return
+    end
+
+    if not result then
+        Diagnostics.Print("  " .. LabelValue("Pipeline", "no result (rank/level gate or unknown spell)"))
+        return
+    end
+
+    local value = result.expectedDamageWithMiss or result.expectedDamage or result.manaGain
+    Diagnostics.Print("  " .. LabelValue("Pipeline", COLOR_GOOD .. "ok" .. COLOR_RESET)
+        .. " | " .. LabelValue("expected", Diagnostics.FormatNumber(value))
+        .. " | " .. LabelValue("spellType", tostring(result.spellType or "direct")))
+end
+
+function Diagnostics.PrintDebug(slot)
+    if slot ~= nil then
+        if type(slot) ~= "number" or slot < 1 or slot > 120 then
+            Diagnostics.Print("Usage: /phd debug [slot]  (slot must be 1-120)")
+            return
+        end
+        Diagnostics.Print(COLOR_HEADER .. "PhDamage - Debug slot " .. slot .. COLOR_RESET)
+        Diagnostics.Print(COLOR_HEADER .. LINE_SINGLE .. COLOR_RESET)
+        DumpSlot(slot)
+        return
+    end
+
+    Diagnostics.Print(COLOR_HEADER .. "PhDamage - Debug action bar (slots 1-12)" .. COLOR_RESET)
+    Diagnostics.Print(COLOR_HEADER .. LINE_DOUBLE .. COLOR_RESET)
+    for i = 1, 12 do
+        DumpSlot(i)
+    end
 end

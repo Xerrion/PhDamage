@@ -412,11 +412,11 @@ SpellData[5740] = {
     tickInterval = 2,
     numTicks = 4,
     ranks = {
-        [1] = { spellID = 5740,  totalDmg = 372, level = 20 },
-        [2] = { spellID = 6219,  totalDmg = 564, level = 34 },
-        [3] = { spellID = 11677, totalDmg = 748, level = 46 },
-        [4] = { spellID = 11678, totalDmg = 932, level = 58 },
-        [5] = { spellID = 27212, totalDmg = 944, level = 69 },
+        [1] = { spellID = 5740,  effectID = 42223, totalDmg = 372, level = 20 },
+        [2] = { spellID = 6219,  effectID = 42224, totalDmg = 564, level = 34 },
+        [3] = { spellID = 11677, effectID = 42225, totalDmg = 748, level = 46 },
+        [4] = { spellID = 11678, effectID = 42226, totalDmg = 932, level = 58 },
+        [5] = { spellID = 27212, effectID = 42218, totalDmg = 944, level = 69 },
     },
 }
 
@@ -438,10 +438,10 @@ SpellData[1949] = {
     numTicks = 15,
     damagesSelf = true,
     ranks = {
-        [1] = { spellID = 1949,  totalDmg = 255, level = 12 },
-        [2] = { spellID = 11683, totalDmg = 510, level = 28 },
-        [3] = { spellID = 11684, totalDmg = 825, level = 44 },
-        [4] = { spellID = 27214, totalDmg = 1395, level = 68 },
+        [1] = { spellID = 1949,  effectID = 5857,  totalDmg = 1245, level = 30 },
+        [2] = { spellID = 11683, effectID = 11681, totalDmg = 2085, level = 42 },
+        [3] = { spellID = 11684, effectID = 11682, totalDmg = 3120, level = 54 },
+        [4] = { spellID = 27213, effectID = 27214, totalDmg = 4590, level = 68 },
     },
 }
 

@@ -6,7 +6,7 @@ local ADDON_NAME, ns = ...
 -- (ordered by internal talentID)
 -------------------------------------------------------------------------------
 
-local SCHOOL_HOLY = ns.SCHOOL_HOLY
+-- SCHOOL_HOLY removed: only consumer was Holy Power (1:13), deleted in plan 44, Bug A.
 local MOD = ns.MOD
 
 local TalentMap = {}
@@ -45,14 +45,9 @@ TalentMap["1:11"] = {
     },
 }
 
--- Holy Power: +1% Holy spell crit per rank (Holy 1:13)
-TalentMap["1:13"] = {
-    name = "Holy Power",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true, filter = { school = SCHOOL_HOLY } },
-    },
-}
+-- Holy Power (1:13): REMOVED - already counted in stats.spellCrit[SCHOOL_HOLY] by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Purifying Power: +10% crit on Exorcism and Holy Wrath per rank (Holy 1:16)
 TalentMap["1:16"] = {
@@ -97,14 +92,9 @@ TalentMap["2:15"] = {
     },
 }
 
--- Combat Expertise: +1% crit per rank (Protection 2:20)
-TalentMap["2:20"] = {
-    name = "Combat Expertise",
-    maxRank = 5,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Combat Expertise (2:20): REMOVED - already counted in stats.meleeCrit/spellCrit by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -------------------------------------------------------------------------------
 -- Retribution (Tab 3)
@@ -118,7 +108,7 @@ TalentMap["2:20"] = {
 -- 3:15 Pursuit of Justice (3)             3:16 Crusade (3)
 -- 3:17 Improved Sanctity Aura (2)         3:18 Divine Purpose (3)
 -- 3:19 Sanctified Judgement (3)           3:20 Fanaticism (5)
--- 3:21 Sanctified Seals (3)               3:22 Crusader Strike (1)
+-- 3:21 (removed)                          3:22 Crusader Strike (1)
 -------------------------------------------------------------------------------
 
 -- NOTE: Crusade is actually +1%/rank damage to Humanoids, Demons, Undead, and Elementals.
@@ -132,14 +122,9 @@ TalentMap["3:16"] = {
     },
 }
 
--- Sanctified Seals: +1% crit per rank (Retribution 3:21)
-TalentMap["3:21"] = {
-    name = "Sanctified Seals",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Sanctified Seals (3:21): REMOVED - already counted in stats.meleeCrit/spellCrit by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -------------------------------------------------------------------------------
 -- Merge into addon namespace with class prefix

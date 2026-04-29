@@ -61,6 +61,7 @@ LoadFile("Data/AuraMap_Shaman.lua")
 LoadFile("Data/SpellData_Paladin.lua")
 LoadFile("Data/TalentMap_Paladin.lua")
 LoadFile("Data/AuraMap_Paladin.lua")
+LoadFile("Core/SpellResolver.lua")
 LoadFile("Engine/SpellCalc.lua")
 LoadFile("Engine/ModifierCalc.lua")
 LoadFile("Engine/CritCalc.lua")
@@ -482,6 +483,10 @@ if isMain then
     assert(ns.Engine.ModifierCalc, "Engine.ModifierCalc not loaded")
     assert(ns.Engine.CritCalc, "Engine.CritCalc not loaded")
     assert(ns.Engine.Pipeline, "Engine.Pipeline not loaded")
+
+    -- Verify SpellResolver wired
+    assert(ns.SpellResolver, "SpellResolver not loaded")
+    assert(type(ns.SpellResolver.Resolve) == "function", "SpellResolver.Resolve not a function")
 
     -- Verify Pipeline runs end-to-end
     local state = MakePlayerState()

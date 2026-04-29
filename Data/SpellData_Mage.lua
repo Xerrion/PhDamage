@@ -255,13 +255,13 @@ SpellData[10] = {
     numTicks = 8,
     canCrit = false,
     ranks = {
-        [1] = { spellID = 10,    totalDmg = 208,  level = 20 },
-        [2] = { spellID = 6141,  totalDmg = 360,  level = 28 },
-        [3] = { spellID = 8427,  totalDmg = 528,  level = 36 },
-        [4] = { spellID = 10185, totalDmg = 736,  level = 44 },
-        [5] = { spellID = 10186, totalDmg = 952,  level = 52 },
-        [6] = { spellID = 10187, totalDmg = 1208, level = 60 },
-        [7] = { spellID = 27085, totalDmg = 1480, level = 65 },
+        [1] = { spellID = 10,    effectID = 42208, totalDmg = 208,  level = 20 },
+        [2] = { spellID = 6141,  effectID = 42209, totalDmg = 360,  level = 28 },
+        [3] = { spellID = 8427,  effectID = 42210, totalDmg = 528,  level = 36 },
+        [4] = { spellID = 10185, effectID = 42211, totalDmg = 736,  level = 44 },
+        [5] = { spellID = 10186, effectID = 42212, totalDmg = 952,  level = 52 },
+        [6] = { spellID = 10187, effectID = 42213, totalDmg = 1208, level = 60 },
+        [7] = { spellID = 27085, effectID = 42198, totalDmg = 1480, level = 65 },
     },
 }
 

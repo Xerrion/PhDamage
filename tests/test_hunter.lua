@@ -86,28 +86,7 @@ describe("Hunter", function()
         end)
     end)
 
-    describe("Talent: Lethal Shots (2:4)", function()
-
-        it("should increase crit by 5% at rank 5", function()
-            local state = makeHunterState()
-            local base = Pipeline.Calculate(3044, state)
-
-            state.talents["2:4"] = 5
-            local buffed = Pipeline.Calculate(3044, state)
-
-            assert.is_near(base.critChance + 0.05, buffed.critChance, 0.001)
-        end)
-
-        it("should increase crit by 1% at rank 1", function()
-            local state = makeHunterState()
-            local base = Pipeline.Calculate(3044, state)
-
-            state.talents["2:4"] = 1
-            local buffed = Pipeline.Calculate(3044, state)
-
-            assert.is_near(base.critChance + 0.01, buffed.critChance, 0.001)
-        end)
-    end)
+    -- Lethal Shots (2:4) removed from TalentMap; see plan 44, Bug A.
 
     describe("Talent: Mortal Shots (2:9)", function()
 
@@ -204,18 +183,7 @@ describe("Hunter", function()
         end)
     end)
 
-    describe("Talent: Survival Instincts (3:18)", function()
-
-        it("should increase crit by 4% at rank 2", function()
-            local state = makeHunterState()
-            local base = Pipeline.Calculate(3044, state)
-
-            state.talents["3:18"] = 2
-            local buffed = Pipeline.Calculate(3044, state)
-
-            assert.is_near(base.critChance + 0.04, buffed.critChance, 0.001)
-        end)
-    end)
+    -- Survival Instincts (3:18) removed from TalentMap; see plan 44, Bug A.
 
     describe("Talent: Focused Fire (1:15)", function()
 

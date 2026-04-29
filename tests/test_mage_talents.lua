@@ -52,12 +52,14 @@ describe("Mage Talents", function()
     end)
 
     describe("Arcane Instability", function()
-        it("should add 3% damage and 3% crit at 3/3 to all spells", function()
+        -- Crit portion removed from TalentMap (already in stats.spellCrit). Plan 44, Bug A.
+        it("should add 3% damage at 3/3 to all spells", function()
             local state = makeMageState()
             state.talents["1:14"] = 3
             -- Test on Frostbolt
             local r = Pipeline.Calculate(116, state)
-            assert.is_near(0.10 + 0.03, r.critChance, 0.001)
+            -- Crit unchanged from base now that the CRIT_BONUS effect is removed
+            assert.is_near(0.10, r.critChance, 0.001)
             -- Damage: (630-680 + 1000*0.814) * 1.03 = 1487.3-1538.8
             assert.is_near(1487.3, r.minDmg, 1)
             assert.is_near(1538.8, r.maxDmg, 1)
@@ -127,21 +129,7 @@ describe("Mage Talents", function()
         end)
     end)
 
-    describe("Critical Mass", function()
-        it("should add 6% crit to Fire spells at 3/3", function()
-            local state = makeMageState()
-            state.talents["2:11"] = 3
-            local r = Pipeline.Calculate(2136, state)  -- Fire Blast R9
-            assert.is_near(0.10 + 0.06, r.critChance, 0.001)
-        end)
-
-        it("should not affect Frost spells", function()
-            local state = makeMageState()
-            state.talents["2:11"] = 3
-            local r = Pipeline.Calculate(116, state)  -- Frostbolt
-            assert.is_near(0.10, r.critChance, 0.001)
-        end)
-    end)
+    -- Critical Mass (2:11) removed from TalentMap; see plan 44, Bug A.
 
     describe("Fire Power", function()
         it("should add 10% Fire damage at 5/5", function()
@@ -232,14 +220,7 @@ describe("Mage Talents", function()
         end)
     end)
 
-    describe("Pyromaniac", function()
-        it("should add 3% crit to Fire spells at 3/3", function()
-            local state = makeMageState()
-            state.talents["2:20"] = 3
-            local r = Pipeline.Calculate(2948, state)  -- Scorch
-            assert.is_near(0.10 + 0.03, r.critChance, 0.001)
-        end)
-    end)
+    -- Pyromaniac (2:20) removed from TalentMap; see plan 44, Bug A.
 
     describe("Empowered Fireball", function()
         it("should add 15% SP coefficient at 5/5", function()
@@ -409,18 +390,18 @@ describe("Mage Talents", function()
     -- Combined talent tests
     -------------------------------------------------------------------------------
     describe("Full Fire build", function()
-        it("should combine Fire Power + Playing with Fire + Critical Mass + Pyromaniac", function()
+        -- Critical Mass (2:11) and Pyromaniac (2:20) removed from TalentMap (plan 44, Bug A);
+        -- their crit contributions now live in stats.spellCrit only.
+        it("should combine Fire Power + Playing with Fire", function()
             local state = makeMageState()
             state.talents["2:13"] = 5  -- Fire Power +10%
             state.talents["2:17"] = 3  -- Playing with Fire +3%
-            state.talents["2:11"] = 3  -- Critical Mass +6% crit
-            state.talents["2:20"] = 3  -- Pyromaniac +3% crit
             local r = Pipeline.Calculate(2136, state)  -- Fire Blast R9
             -- Damage: (664-786 + 429) * (1 + 0.10 + 0.03) = 1093*1.13, 1215*1.13
             assert.is_near(1093 * 1.13, r.minDmg, 1)
             assert.is_near(1215 * 1.13, r.maxDmg, 1)
-            -- Crit: 0.10 + 0.06 + 0.03 = 0.19
-            assert.is_near(0.19, r.critChance, 0.001)
+            -- Crit unchanged from base now that the talent crit bonuses are removed
+            assert.is_near(0.10, r.critChance, 0.001)
         end)
     end)
 

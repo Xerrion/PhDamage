@@ -60,9 +60,9 @@ describe("Priest Auras", function()
     end)
 
     describe("Shadow Weaving", function()
-        it("should add 10% shadow damage on target", function()
+        it("should add 10% shadow damage on target at 5 stacks", function()
             local state = makePriestState()
-            state.auras.target[15258] = true
+            state.auras.target[15258] = 5  -- Shadow Weaving max stacks (+10% at 5/5)
             local r = Pipeline.Calculate(8092, state)  -- Mind Blast R11
             assert.is_near(1136.6 * 1.10, r.minDmg, 1)
             assert.is_near(1176.6 * 1.10, r.maxDmg, 1)
@@ -70,7 +70,7 @@ describe("Priest Auras", function()
 
         it("should not affect holy spells", function()
             local state = makePriestState()
-            state.auras.target[15258] = true
+            state.auras.target[15258] = 5
             local r = Pipeline.Calculate(585, state)  -- Smite R10
             assert.is_near(1259.3, r.minDmg, 1)
         end)
@@ -80,7 +80,7 @@ describe("Priest Auras", function()
         it("should stack Shadowform + Shadow Weaving multiplicatively", function()
             local state = makePriestState()
             state.auras.player[15473] = true  -- Shadowform +15%
-            state.auras.target[15258] = true  -- Shadow Weaving +10%
+            state.auras.target[15258] = 5     -- Shadow Weaving +10% (5 stacks)
             local r = Pipeline.Calculate(8092, state)  -- Mind Blast R11
             -- 1.15 * 1.10 = 1.265
             assert.is_near(1136.6 * 1.265, r.minDmg, 1)

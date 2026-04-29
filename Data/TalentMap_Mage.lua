@@ -53,13 +53,15 @@ TalentMap["1:7"] = {
     },
 }
 
--- Arcane Instability: +1% damage AND +1% crit per rank to all spells
+-- Arcane Instability: +1% damage per rank to all spells
+-- NOTE: The +1%/rank crit portion was REMOVED - already counted in stats.spellCrit by
+-- StateCollector when the talent is learned. The damage multiplier is kept because
+-- the WoW API does not expose a generic "all-spell damage %" stat. See plan 44, Bug A.
 TalentMap["1:14"] = {
     name = "Arcane Instability",
     maxRank = 3,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.01, perRank = true, stacking = "additive" },
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
     },
 }
 
@@ -117,14 +119,9 @@ TalentMap["2:9"] = {
     },
 }
 
--- Critical Mass: +2% crit per rank to Fire spells
-TalentMap["2:11"] = {
-    name = "Critical Mass",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.02, perRank = true, filter = { school = SCHOOL_FIRE } },
-    },
-}
+-- Critical Mass (2:11): REMOVED - already counted in stats.spellCrit[SCHOOL_FIRE] by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Fire Power: +2% Fire damage per rank (additive with other talent bonuses)
 TalentMap["2:13"] = {
@@ -165,14 +162,9 @@ TalentMap["2:19"] = {
     },
 }
 
--- Pyromaniac: +1% crit per rank to Fire spells
-TalentMap["2:20"] = {
-    name = "Pyromaniac",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true, filter = { school = SCHOOL_FIRE } },
-    },
-}
+-- Pyromaniac (2:20): REMOVED - already counted in stats.spellCrit[SCHOOL_FIRE] by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Empowered Fireball: +3% SP coefficient per rank to Fireball
 TalentMap["2:21"] = {

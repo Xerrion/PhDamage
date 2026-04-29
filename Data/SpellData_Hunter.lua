@@ -200,10 +200,10 @@ SpellData[1510] = {
     duration = 6,
     numTicks = 6,
     ranks = {
-        [1] = { spellID = 1510,  totalDmg = 120, level = 40 },
-        [2] = { spellID = 14294, totalDmg = 192, level = 50 },
-        [3] = { spellID = 14295, totalDmg = 264, level = 58 },
-        [4] = { spellID = 27022, totalDmg = 450, level = 69 },
+        [1] = { spellID = 1510,  effectID = 42243, totalDmg = 120, level = 40 },
+        [2] = { spellID = 14294, effectID = 42244, totalDmg = 192, level = 50 },
+        [3] = { spellID = 14295, effectID = 42245, totalDmg = 264, level = 58 },
+        [4] = { spellID = 27022, effectID = 42234, totalDmg = 450, level = 69 },
     },
 }
 

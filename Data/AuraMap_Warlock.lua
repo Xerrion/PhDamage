@@ -152,11 +152,12 @@ AuraMap[35702] = {
 -- Target Debuffs (target = "target")
 -------------------------------------------------------------------------------
 
--- Improved Shadow Bolt / Shadow Vulnerability: target takes +20% Shadow damage
--- Phase 1 simplification: assumes 5 stacks when debuff is present
+-- Improved Shadow Bolt / Shadow Vulnerability: target takes up to +20% Shadow damage
+-- Stack-aware: +4% per stack, max 5 stacks. Engine scales by applications/maxStacks.
 AuraMap[17800] = {
     name = "Shadow Vulnerability",
     target = "target",
+    maxStacks = 5,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.20,
           filter = { school = SCHOOL_SHADOW } },
@@ -167,6 +168,7 @@ AuraMap[17800] = {
 AuraMap[17803] = {
     name = "Shadow Vulnerability",
     target = "target",
+    maxStacks = 5,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.20,
           filter = { school = SCHOOL_SHADOW } },
@@ -261,11 +263,12 @@ AuraMap[33198] = {
     },
 }
 
--- Shadow Weaving (Shadow Priest, 5 stacks): target takes +10% Shadow damage
--- Phase 1 simplification: assumes 5 stacks when debuff is present
+-- Shadow Weaving (Shadow Priest, up to 5 stacks): target takes up to +10% Shadow damage
+-- Stack-aware: +2% per stack, max 5 stacks. Engine scales by applications/maxStacks.
 AuraMap[15258] = {
     name = "Shadow Weaving",
     target = "target",
+    maxStacks = 5,
     effects = {
         { type = MOD.DAMAGE_MULTIPLIER, value = 0.10,
           filter = { school = SCHOOL_SHADOW } },

@@ -137,16 +137,9 @@ TalentMap["1:21"] = {
 -- 2:21 Improved Leader of the Pack (2)
 -------------------------------------------------------------------------------
 
--- Sharpened Claws: +2% melee crit per rank (feral abilities)
-TalentMap["2:5"] = {
-    name = "Sharpened Claws",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.02, perRank = true,
-          filter = { spellNames = { "Claw", "Shred", "Mangle (Cat)", "Rake", "Ferocious Bite", "Rip",
-                                    "Maul", "Swipe", "Mangle (Bear)", "Lacerate" } } },
-    },
-}
+-- Sharpened Claws (2:5): REMOVED - already counted in stats.meleeCrit by StateCollector
+-- when the talent is learned (Blizzard rolls it into the unit's crit chance). Re-applying
+-- here would double-count. See plan 44, Bug A.
 
 -- Savage Fury: +10% Claw/Rake/Mangle (Cat) damage per rank
 TalentMap["2:11"] = {
@@ -245,14 +238,9 @@ TalentMap["3:17"] = {
     },
 }
 
--- Natural Perfection: +1% spell crit per rank (all spells)
-TalentMap["3:18"] = {
-    name = "Natural Perfection",
-    maxRank = 3,
-    effects = {
-        { type = MOD.CRIT_BONUS, value = 0.01, perRank = true },
-    },
-}
+-- Natural Perfection (3:18): REMOVED - already counted in stats.spellCrit/meleeCrit by
+-- StateCollector when the talent is learned. Re-applying here would double-count.
+-- See plan 44, Bug A.
 
 -- Merge into addon namespace with class prefix
 for key, data in pairs(TalentMap) do

@@ -542,18 +542,16 @@ describe("Rogue Auras", function()
         end)
 
         -----------------------------------------------------------------------
-        -- Crit stacking: Cold Blood + Malice 5/5
-        -- Base meleeCrit (0.25) + Cold Blood (1.00) + Malice 5/5 (0.05)
-        -- = 1.30, capped at 1.00
+        -- Crit stacking: Cold Blood (Malice removed from TalentMap; see plan 44, Bug A)
+        -- Base meleeCrit (0.25) + Cold Blood (1.00) = 1.25, capped at 1.00
         -----------------------------------------------------------------------
         describe("Crit stacking", function()
 
-            it("Cold Blood + Malice 5/5 caps at 1.00", function()
+            it("Cold Blood alone caps at 1.00", function()
                 local state = makeRogueState()
                 state.auras.player[14177] = true       -- Cold Blood +100%
-                state.talents["1:3"] = 5                    -- Malice 5/5 (+5%)
                 local result = Pipeline.Calculate(1752, state)
-                -- 0.25 + 1.00 + 0.05 = 1.30 → capped at 1.00
+                -- 0.25 + 1.00 = 1.25 -> capped at 1.00
                 assert.is_true(result.critChance >= 1.0,
                     "Expected critChance >= 1.0, got " .. tostring(result.critChance))
             end)

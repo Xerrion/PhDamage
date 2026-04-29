@@ -23,6 +23,9 @@ Core\StateCollector.lua
 # Data
 Data\embeds.xml
 
+# Core (post-data: depends on ns.SpellData being populated)
+Core\SpellResolver.lua
+
 # Engine
 Engine\SpellCalc.lua
 Engine\ModifierCalc.lua
