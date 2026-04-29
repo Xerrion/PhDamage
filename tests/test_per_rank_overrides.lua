@@ -99,14 +99,18 @@ describe("Per-rank coefficient overrides", function()
     describe("Hybrid path (ComputeHybrid)", function()
         it("Moonfire R3 uses rank directCoefficient 0.128 and dotCoefficient 0.444", function()
             local state = bootstrap.makeDruidState()
-            -- Druid bootstrap state: Arcane SP[64]=800
+            -- Druid bootstrap state: Arcane SP[64]=800; player level 70.
+            -- Rank 3 spellLevel=16, maxLevel=21 -> sub-max-rank, downranking penalty applies (cMaNGOS).
+            --   LvlPenalty = (16 < 20) * (20-16)*3.75 = 15
+            --   LvlFactor  = min(1.0, (21+6)/70)      = 0.385714
+            --   penalty    = (100-15)*0.385714/100    = 0.327857
             local r = Pipeline.Calculate(8921, state, 3)
             assert.is_not_nil(r)
-            -- Direct: 30-30 + 800*0.128 = 132.4 each
-            assert.is_near(132.4, r.directMin, 0.1)
-            assert.is_near(132.4, r.directMax, 0.1)
-            -- DoT: 52 + 800*0.444 = 407.2 total
-            assert.is_near(407.2, r.dotTotalDmg, 0.1)
+            -- Direct: 30 + 800*0.128*0.327857 = 63.5726 each
+            assert.is_near(63.5726, r.directMin, 0.01)
+            assert.is_near(63.5726, r.directMax, 0.01)
+            -- DoT: 52 + 800*0.444*0.327857 = 168.4549 total
+            assert.is_near(168.4549, r.dotTotalDmg, 0.01)
             -- Engine reports per-rank coefficients on the result
             assert.is_near(0.128, r.directCoefficient, 0.001)
             assert.is_near(0.444, r.dotCoefficient, 0.001)
