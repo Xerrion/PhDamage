@@ -188,8 +188,14 @@ SpellData[14914] = {
     },
 }
 
--- Holy Nova: instant AoE damage portion. Wowhead direct SP mod 0.161.
--- Source: https://www.wowhead.com/tbc/spell=25331
+-- Holy Nova - spell ID 15237 (R1) through 25331 (R7), damage component
+-- TBC SP coefficient: 0.161 (Wowhead structured "SP mod" field).
+-- Source: https://www.wowhead.com/tbc/spell=25331/holy-nova (Effect table
+-- displays "Value: X (SP mod: 0.161)" - this is the pre-AoE-penalty raw
+-- coefficient stored in the spell's DBC entry).
+-- The heal companion (spell ID 15238 R1 / 25329 R7) shares the same 0.161
+-- coefficient on its own DBC entry; PhDamage is damage-only and does not
+-- track the heal in SpellData_Priest.
 SpellData[15237] = {
     name = "Holy Nova",
     school = SCHOOL_HOLY,
