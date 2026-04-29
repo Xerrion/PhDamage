@@ -4,16 +4,26 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
--- Coefficient policy (TBC 2.4.3):
--- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
--- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
--- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
--- are baked into the stored value. The engine does NOT recompute or apply any
--- AoE multiplier at runtime - it consumes these values verbatim, matching
--- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
--- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
--- penalty terms here. Always cite the source URL when adding or correcting
--- entries.
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
 -------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
@@ -38,9 +48,12 @@ SpellData[403] = {
     castTime = 2.5,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 403,   minDmg = 15,  maxDmg = 17,  level = 1  },
-        [2]  = { spellID = 529,   minDmg = 28,  maxDmg = 33,  level = 8  },
-        [3]  = { spellID = 548,   minDmg = 48,  maxDmg = 57,  level = 14 },
+        -- Wowhead spell=403 (sub-cap penalty rank, SP mod 0.137)
+        [1]  = { spellID = 403,   minDmg = 15,  maxDmg = 17,  level = 1,  coefficient = 0.137 },
+        -- Wowhead spell=529 (sub-cap penalty rank, SP mod 0.349)
+        [2]  = { spellID = 529,   minDmg = 28,  maxDmg = 33,  level = 8,  coefficient = 0.349 },
+        -- Wowhead spell=548 (sub-cap penalty rank, SP mod 0.616)
+        [3]  = { spellID = 548,   minDmg = 48,  maxDmg = 57,  level = 14, coefficient = 0.616 },
         [4]  = { spellID = 915,   minDmg = 88,  maxDmg = 100, level = 20 },
         [5]  = { spellID = 943,   minDmg = 131, maxDmg = 149, level = 26 },
         [6]  = { spellID = 6041,  minDmg = 179, maxDmg = 202, level = 32 },
@@ -53,14 +66,14 @@ SpellData[403] = {
     },
 }
 
--- Chain Lightning - 2.0s cast, Nature, direct. AoE (jumps).
--- Coefficient: 0.7143 primary target only (matches single-target damage display).
--- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
+-- Chain Lightning: instant 3-target chain. Wowhead direct SP mod 0.651 (primary target).
+-- Jumps inherit the same SP scaling at the engine level; per-jump halving is data-side.
+-- Source: https://www.wowhead.com/tbc/spell=25442
 SpellData[421] = {
     name = "Chain Lightning",
     school = SCHOOL_NATURE,
     spellType = "direct",
-    coefficient = 0.7143,
+    coefficient = 0.651,
     castTime = 2.0,
     canCrit = true,
     isAoe = true,
@@ -84,9 +97,12 @@ SpellData[8042] = {
     castTime = 1.5,
     canCrit = true,
     ranks = {
-        [1] = { spellID = 8042,  minDmg = 19,  maxDmg = 22,  level = 4  },
-        [2] = { spellID = 8044,  minDmg = 35,  maxDmg = 38,  level = 8  },
-        [3] = { spellID = 8045,  minDmg = 65,  maxDmg = 69,  level = 14 },
+        -- Wowhead spell=8042 (sub-cap penalty rank, SP mod 0.154)
+        [1] = { spellID = 8042,  minDmg = 19,  maxDmg = 22,  level = 4,  coefficient = 0.154 },
+        -- Wowhead spell=8044 (sub-cap penalty rank, SP mod 0.212)
+        [2] = { spellID = 8044,  minDmg = 35,  maxDmg = 38,  level = 8,  coefficient = 0.212 },
+        -- Wowhead spell=8045 (sub-cap penalty rank, SP mod 0.299)
+        [3] = { spellID = 8045,  minDmg = 65,  maxDmg = 69,  level = 14, coefficient = 0.299 },
         [4] = { spellID = 8046,  minDmg = 126, maxDmg = 134, level = 24 },
         [5] = { spellID = 10412, minDmg = 235, maxDmg = 249, level = 36 },
         [6] = { spellID = 10413, minDmg = 372, maxDmg = 394, level = 48 },
@@ -135,8 +151,12 @@ SpellData[8050] = {
     castTime = 1.5,
     canCrit = true,
     ranks = {
-        [1] = { spellID = 8050,  minDmg = 25,  maxDmg = 25,  dotDmg = 28,  level = 10 },
-        [2] = { spellID = 8052,  minDmg = 51,  maxDmg = 51,  dotDmg = 48,  level = 18 },
+        -- Wowhead spell=8050 (sub-cap penalty rank, dir SP mod 0.134, dot per-tick 0.063 x 4 = 0.252)
+        [1] = { spellID = 8050,  minDmg = 25,  maxDmg = 25,  dotDmg = 28,  level = 10,
+                directCoefficient = 0.134, dotCoefficient = 0.252 },
+        -- Wowhead spell=8052 (sub-cap penalty rank, dir SP mod 0.198, dot per-tick 0.093 x 4 = 0.372)
+        [2] = { spellID = 8052,  minDmg = 51,  maxDmg = 51,  dotDmg = 48,  level = 18,
+                directCoefficient = 0.198, dotCoefficient = 0.372 },
         [3] = { spellID = 8053,  minDmg = 95,  maxDmg = 95,  dotDmg = 96,  level = 28 },
         [4] = { spellID = 10447, minDmg = 164, maxDmg = 164, dotDmg = 168, level = 40 },
         [5] = { spellID = 10448, minDmg = 245, maxDmg = 245, dotDmg = 256, level = 52 },

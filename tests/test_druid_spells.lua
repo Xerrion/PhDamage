@@ -196,13 +196,15 @@ describe("Druid Spells", function()
             local result = Pipeline.Calculate(16914, state)
             assert.is_not_nil(result)
             assert.equals("Hurricane", result.spellName)
-            assert.is_near(1758.00, result.totalDmg, 0.01)
+            -- R4: totalDmg 734 + Nature SP 800 * 1.07 = 1590
+            assert.is_near(1590.00, result.totalDmg, 0.01)
         end)
 
         it("has correct tick damage", function()
             local state = makeDruidState()
             local result = Pipeline.Calculate(16914, state)
-            assert.is_near(175.80, result.tickDmg, 0.01)
+            -- 1590 / 10 ticks = 159.00
+            assert.is_near(159.00, result.tickDmg, 0.01)
         end)
 
         it("has correct tick count and duration", function()

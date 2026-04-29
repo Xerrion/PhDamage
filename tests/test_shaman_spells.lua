@@ -68,11 +68,11 @@ describe("Shaman Spells", function()
 
     ---------------------------------------------------------------------------
     -- 2. Chain Lightning R6 (spellID 25442)
-    -- Nature direct, 2.0s cast, coefficient 0.7143
+    -- Nature direct, 2.0s cast, coefficient 0.651 (Wowhead spell=25442 SP mod)
     -- Base: min=734, max=838
-    -- SP bonus: 800 * 0.7143 = 571.44
-    -- min = 734 + 571.44 = 1305.44
-    -- max = 838 + 571.44 = 1409.44
+    -- SP bonus: 800 * 0.651 = 520.8
+    -- min = 734 + 520.8 = 1254.8
+    -- max = 838 + 520.8 = 1358.8
     ---------------------------------------------------------------------------
     describe("Chain Lightning", function()
 
@@ -81,8 +81,9 @@ describe("Shaman Spells", function()
             local result = Pipeline.Calculate(421, state)
             assert.is_not_nil(result)
             assert.equals("Chain Lightning", result.spellName)
-            assert.is_near(1305.44, result.minDmg, 0.01)
-            assert.is_near(1409.44, result.maxDmg, 0.01)
+            -- R6: 734-838 + Nature SP 800 * 0.651 = 1254.8-1358.8
+            assert.is_near(1254.8, result.minDmg, 0.01)
+            assert.is_near(1358.8, result.maxDmg, 0.01)
         end)
 
         it("scales Chain Lightning with spell power", function()
@@ -490,7 +491,7 @@ describe("Shaman Spells", function()
 
         it("has correct coefficients", function()
             assert.is_near(0.794, ns.SpellData[403].coefficient, 0.001)   -- Lightning Bolt
-            assert.is_near(0.7143, ns.SpellData[421].coefficient, 0.001)   -- Chain Lightning
+            assert.is_near(0.651, ns.SpellData[421].coefficient, 0.001)   -- Chain Lightning
             assert.is_near(0.386, ns.SpellData[8042].coefficient, 0.001)  -- Earth Shock
             assert.is_near(0.386, ns.SpellData[8056].coefficient, 0.001)  -- Frost Shock
             assert.is_near(0.857, ns.SpellData[331].coefficient, 0.001)   -- Healing Wave

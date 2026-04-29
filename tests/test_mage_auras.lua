@@ -48,7 +48,8 @@ describe("Mage Auras", function()
             local state = makeMageState()
             state.auras.player[12042] = true
             local r = Pipeline.Calculate(5143, state)  -- Arcane Missiles R11
-            assert.is_near(2145 * 1.30, r.totalDmg, 1)
+            -- Base totalDmg 2860 (1430 + 1000*1.43) * 1.30 = 3718
+            assert.is_near(2860 * 1.30, r.totalDmg, 1)
         end)
 
         it("should add 30% damage to hybrid spell direct portion", function()

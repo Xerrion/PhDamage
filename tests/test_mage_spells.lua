@@ -28,9 +28,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(133, state, 1)
             assert.is_not_nil(r)
-            -- R1: 16-25 direct + 1000*1.0 = 1016-1025
-            assert.is_near(1016, r.directMin, 1)
-            assert.is_near(1025, r.directMax, 1)
+            -- R1: 16-25 direct + 1000*0.123 (per-rank sub-cap penalty) = 139-148
+            assert.is_near(139, r.directMin, 1)
+            assert.is_near(148, r.directMax, 1)
         end)
     end)
 
@@ -74,11 +74,11 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(2120, state)
             assert.is_not_nil(r)
-            -- R7: 480-585 direct + 1000*0.1761 = 656.1-761.1
-            assert.is_near(656.1, r.directMin, 1)
-            assert.is_near(761.1, r.directMax, 1)
-            -- DoT: 424 base + 1000*0.1096 (total) = 533.6
-            assert.is_near(533.6, r.dotTotalDmg, 1)
+            -- R7: 480-585 direct + 1000*0.236 = 716-821
+            assert.is_near(716, r.directMin, 1)
+            assert.is_near(821, r.directMax, 1)
+            -- DoT: 424 base + 1000*0.12 (total) = 544
+            assert.is_near(544, r.dotTotalDmg, 1)
         end)
     end)
 
@@ -154,9 +154,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(10, state)
             assert.is_not_nil(r)
-            -- R7: 1480 base + 1000*0.7619 = 2241.9, tickDmg = 2241.9/8 = 280.2375
-            assert.is_near(2241.9, r.totalDmg, 1)
-            assert.is_near(280.24, r.tickDmg, 1)
+            -- R7: 1480 base + 1000*0.952 = 2432, tickDmg = 2432/8 = 304
+            assert.is_near(2432, r.totalDmg, 1)
+            assert.is_near(304, r.tickDmg, 1)
             assert.equals(8, r.numTicks)
         end)
     end)
@@ -180,9 +180,9 @@ describe("Mage Spells", function()
             local state = makeMageState()
             local r = Pipeline.Calculate(5143, state)
             assert.is_not_nil(r)
-            -- R11: 1430 base + 1000*0.143*5waves = 1430+715 = 2145
-            assert.is_near(2145, r.totalDmg, 1)
-            assert.is_near(429, r.tickDmg, 1)
+            -- R11: 1430 base + 1000*1.43 (5 missiles x 0.286 SP mod) = 2860
+            assert.is_near(2860, r.totalDmg, 1)
+            assert.is_near(572, r.tickDmg, 1)
             assert.equals(5, r.numTicks)
         end)
     end)

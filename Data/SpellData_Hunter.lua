@@ -4,16 +4,26 @@ local ADDON_NAME, ns = ...
 -- Hunter Spell Data - TBC Anniversary (2.5.5)
 -- Source of truth: Wowhead TBC Classic
 -------------------------------------------------------------------------------
--- Coefficient policy (TBC 2.4.3):
--- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
--- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
--- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
--- are baked into the stored value. The engine does NOT recompute or apply any
--- AoE multiplier at runtime - it consumes these values verbatim, matching
--- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
--- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
--- penalty terms here. Always cite the source URL when adding or correcting
--- entries.
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
 -------------------------------------------------------------------------------
 
 local SCHOOL_PHYSICAL = ns.SCHOOL_PHYSICAL
@@ -71,8 +81,8 @@ SpellData[34120] = {
     },
 }
 
--- Multi-Shot (0.5s cast, Physical, 20% RAP, 3 targets)
--- Source: WoWWiki Attack_power_coefficient archive (Hunter; Multi-Shot 20% RAP retained)
+-- Multi-Shot: instant 3-target ranged. RAP coefficient 0.20 total per target
+-- (TBC convention; Wowhead does not expose RAP coefficients).
 SpellData[2643] = {
     name = "Multi-Shot",
     school = SCHOOL_PHYSICAL,
@@ -197,9 +207,10 @@ SpellData[13795] = {
 -- CHANNELS
 -------------------------------------------------------------------------------
 
--- Volley (6s channel, Arcane, AoE, no crit).
--- Coefficient: 0.0586 RAP total (post-penalty, ~0.977%/tick over 6 ticks).
--- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
+-- Volley: 6-second ranged channel, 6 ticks @ 1s. RAP coefficient 0.0586 total
+-- (TBC pre-Patch-3.2.2; Wowhead does not expose RAP coefficients).
+-- Source: Hunter-DPS blog (http://hunter-dps.dungeoneer.com/2009/09/marks-volley-win.html)
+--         documenting the patch 3.2.2 buff from 0.0586 to 0.0837.
 SpellData[1510] = {
     name = "Volley",
     school = SCHOOL_ARCANE,

@@ -67,12 +67,13 @@ describe("Mage Talents", function()
     end)
 
     describe("Empowered Arcane Missiles", function()
-        it("should add 45% SP coefficient at 3/3", function()
+        it("should add 0.75 SP coefficient per rank at 3/3", function()
             local state = makeMageState()
             state.talents["1:20"] = 3
             local r = Pipeline.Calculate(5143, state)  -- Arcane Missiles R11
-            -- Base: 1430 + 1000*(0.143+0.45)*5 = 1430+2965 = 4395
-            assert.is_near(4395, r.totalDmg, 1)
+            -- Base spell coefficient 1.43 + talent +0.75*3 = 3.68
+            -- totalDmg = 1430 + 1000*3.68 = 5110
+            assert.is_near(5110, r.totalDmg, 1)
         end)
 
         it("should not affect Frostbolt", function()

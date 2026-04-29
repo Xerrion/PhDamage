@@ -4,16 +4,26 @@
 --
 -- Supported versions: TBC Anniversary
 -------------------------------------------------------------------------------
--- Coefficient policy (TBC 2.4.3):
--- This file stores POST-PENALTY empirical coefficients sourced from WoWWiki
--- Spell_power_coefficient archive (oldid=1549180, July 2008). AoE penalties,
--- secondary penalties (slow/snare/daze), and per-spell empirical adjustments
--- are baked into the stored value. The engine does NOT recompute or apply any
--- AoE multiplier at runtime - it consumes these values verbatim, matching
--- cMaNGOS-TBC SpellMgr::CalculateDefaultCoefficient convention.
--- DO NOT divide by 2 or 3 in engine code, and DO NOT multiply by inverse
--- penalty terms here. Always cite the source URL when adding or correcting
--- entries.
+-- Coefficient policy (TBC Classic 2.5.x):
+-- Authoritative source: Wowhead TBC Classic (https://www.wowhead.com/tbc/),
+-- per AGENTS.md. Values are stored as TOTAL spell-power coefficients consumed
+-- verbatim by the engine. The engine does NOT recompute or apply additional
+-- AoE/penalty multipliers at runtime.
+--
+-- Per-tick vs total: Wowhead's `SP mod` field on periodic effects is the
+-- per-tick coefficient. The engine treats `coefficient` (and `dotCoefficient`
+-- on hybrids) as TOTAL across the full duration, so periodic values stored
+-- here are `SP_mod * numTicks`. For spells whose periodic damage is split
+-- onto a trigger sub-spell (e.g. Arcane Missiles), the per-tick figure is
+-- harvested from the trigger row, not the parent.
+--
+-- Per-rank overrides: a `coefficient` (or `directCoefficient` /
+-- `dotCoefficient`) field on a per-rank table entry overrides the spell-level
+-- value. This is required for sub-cap-level penalty ranks where Wowhead
+-- reports a lower SP mod than the top-rank flat value.
+--
+-- Always cite the spell URL when adding or correcting entries:
+-- https://www.wowhead.com/tbc/spell=<id>
 -------------------------------------------------------------------------------
 local ADDON_NAME, ns = ...
 ns.SpellData = ns.SpellData or {}
@@ -40,9 +50,12 @@ SpellData[589] = {
     duration = 18,
     numTicks = 6,
     ranks = {
-        [1]  = { spellID = 589,   totalDmg = 30,   level = 4  },
-        [2]  = { spellID = 594,   totalDmg = 66,   level = 10 },
-        [3]  = { spellID = 970,   totalDmg = 132,  level = 18 },
+        -- Wowhead spell=589 (per-tick SP mod 0.0732 x 6 ticks; sub-cap penalty rank)
+        [1]  = { spellID = 589,   totalDmg = 30,   level = 4,  coefficient = 0.4392 },
+        -- Wowhead spell=594 (per-tick SP mod 0.114 x 6 ticks; sub-cap penalty rank)
+        [2]  = { spellID = 594,   totalDmg = 66,   level = 10, coefficient = 0.684  },
+        -- Wowhead spell=970 (per-tick SP mod 0.169 x 6 ticks; sub-cap penalty rank)
+        [3]  = { spellID = 970,   totalDmg = 132,  level = 18, coefficient = 1.014  },
         [4]  = { spellID = 992,   totalDmg = 234,  level = 26 },
         [5]  = { spellID = 2767,  totalDmg = 366,  level = 34 },
         [6]  = { spellID = 10892, totalDmg = 510,  level = 42 },
@@ -64,8 +77,10 @@ SpellData[8092] = {
     castTime = 1.5,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 8092,  minDmg = 39,  maxDmg = 43,  level = 10 },
-        [2]  = { spellID = 8102,  minDmg = 72,  maxDmg = 78,  level = 16 },
+        -- Wowhead spell=8092 (sub-cap penalty rank, SP mod 0.268)
+        [1]  = { spellID = 8092,  minDmg = 39,  maxDmg = 43,  level = 10, coefficient = 0.268 },
+        -- Wowhead spell=8102 (sub-cap penalty rank, SP mod 0.364)
+        [2]  = { spellID = 8102,  minDmg = 72,  maxDmg = 78,  level = 16, coefficient = 0.364 },
         [3]  = { spellID = 8103,  minDmg = 112, maxDmg = 120, level = 22 },
         [4]  = { spellID = 8104,  minDmg = 167, maxDmg = 177, level = 28 },
         [5]  = { spellID = 8105,  minDmg = 217, maxDmg = 231, level = 34 },
@@ -130,9 +145,12 @@ SpellData[585] = {
     castTime = 2.5,
     canCrit = true,
     ranks = {
-        [1]  = { spellID = 585,   minDmg = 13,  maxDmg = 17,  level = 1  },
-        [2]  = { spellID = 591,   minDmg = 25,  maxDmg = 31,  level = 6  },
-        [3]  = { spellID = 598,   minDmg = 54,  maxDmg = 62,  level = 14 },
+        -- Wowhead spell=585 (sub-cap penalty rank, SP mod 0.123)
+        [1]  = { spellID = 585,   minDmg = 13,  maxDmg = 17,  level = 1,  coefficient = 0.123 },
+        -- Wowhead spell=591 (sub-cap penalty rank, SP mod 0.271)
+        [2]  = { spellID = 591,   minDmg = 25,  maxDmg = 31,  level = 6,  coefficient = 0.271 },
+        -- Wowhead spell=598 (sub-cap penalty rank, SP mod 0.554)
+        [3]  = { spellID = 598,   minDmg = 54,  maxDmg = 62,  level = 14, coefficient = 0.554 },
         [4]  = { spellID = 984,   minDmg = 91,  maxDmg = 105, level = 22 },
         [5]  = { spellID = 1004,  minDmg = 150, maxDmg = 170, level = 30 },
         [6]  = { spellID = 6060,  minDmg = 212, maxDmg = 240, level = 38 },
@@ -170,9 +188,8 @@ SpellData[14914] = {
     },
 }
 
--- Holy Nova - instant cast, Holy, AoE direct damage + healing (talent).
--- Coefficient: 0.161 (post-penalty, retained from prior data).
--- Source: WoWWiki Spell_power_coefficient oldid=1549180 (July 2008, patch 2.4.3 era)
+-- Holy Nova: instant AoE damage portion. Wowhead direct SP mod 0.161.
+-- Source: https://www.wowhead.com/tbc/spell=25331
 SpellData[15237] = {
     name = "Holy Nova",
     school = SCHOOL_HOLY,
