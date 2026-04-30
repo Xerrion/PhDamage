@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/Xerrion/PhDamage/compare/1.3.5...1.4.0) (2026-04-29)
+
+
+### Features
+
+* add AceConfig options UI for overlay positioning ([#40](https://github.com/Xerrion/PhDamage/issues/40)) ([#41](https://github.com/Xerrion/PhDamage/issues/41)) ([690d9ce](https://github.com/Xerrion/PhDamage/commit/690d9ce6081e33d824ce54c70cfbf4138a7a5083))
+* Customizable action bar overlay position, font size, and number format ([#38](https://github.com/Xerrion/PhDamage/issues/38)) ([ff210d3](https://github.com/Xerrion/PhDamage/commit/ff210d343e673eb0648c71c2f11275c6ea66fd93))
+
+
+### Bug Fixes
+
+* **data:** correct TBC AoE spell coefficients ([#46](https://github.com/Xerrion/PhDamage/issues/46)) ([#50](https://github.com/Xerrion/PhDamage/issues/50)) ([88276d1](https://github.com/Xerrion/PhDamage/commit/88276d18a9cdda7fddfae6c5ec7254521f717b25))
+* **engine:** accuracy fixes + /phd debug diagnostic ([#44](https://github.com/Xerrion/PhDamage/issues/44)) ([#45](https://github.com/Xerrion/PhDamage/issues/45)) ([9f728a5](https://github.com/Xerrion/PhDamage/commit/9f728a56b1e81c721f41928b9d27d1861ddca6ef))
+
 ## [1.3.5](https://github.com/Xerrion/PhDamage/compare/1.3.4...1.3.5) (2026-03-15)
 
 
