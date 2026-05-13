@@ -14,13 +14,24 @@ local ModifierCalc = {}
 ns.Engine.ModifierCalc = ModifierCalc
 
 -------------------------------------------------------------------------------
--- GetLevelPenalty(rankData, playerState)
+-- GetLevelPenalty(rankData, playerState, scalingType)
 -- Resolves the cMaNGOS-TBC SP-coefficient level penalty for a (rank, player)
 -- pair. Returns 1.0 (no penalty) when rankData/playerState are missing or when
 -- rankData.maxLevel is not yet populated - this keeps the engine inert until
 -- Phase 4 backfills the data. See Engine/LevelPenalty.lua for the formula.
+--
+-- The penalty applies only to the spellpower-coefficient term. cMaNGOS-TBC
+-- (Unit::SpellBonusWithCoeffs in src/game/Entities/Unit.cpp ~L7387-L7424) adds
+-- the AP/RAP-coefficient contribution unpenalized, then multiplies only the
+-- spellpower benefit by LvlPenalty. Mirror that here: any non-nil scalingType
+-- ("melee" or "ranged") selects an AP-based bonus path and short-circuits to
+-- 1.0; the default (nil) scalingType is the spellpower path and runs the
+-- formula.
 -------------------------------------------------------------------------------
-local function GetLevelPenalty(rankData, playerState)
+local function GetLevelPenalty(rankData, playerState, scalingType)
+    if scalingType ~= nil then
+        return 1.0
+    end
     return ns.Engine.LevelPenalty.CalculateLevelPenalty(
         rankData and rankData.level,
         rankData and rankData.maxLevel,
@@ -373,7 +384,7 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
         -- Utility spells: recalculate mana gain with modified coefficient.
         -- TBC level penalty: scale SP contribution down for sub-max-rank spells
         -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
-        local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
+        local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState, spellData.scalingType)
         local effectiveCoeff = (baseResult.coefficient or 0) + mods.coefficientBonus
         local spBonus = effectiveSp * effectiveCoeff * levelPenalty
         result.coefficient = effectiveCoeff
@@ -392,7 +403,7 @@ function ModifierCalc.BuildModifiedResult(baseResult, spellData, playerState, mo
     -- Standard damage spells (direct, dot, channel)
     -- TBC level penalty: scale SP contribution down for sub-max-rank spells
     -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
-    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
+    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState, spellData.scalingType)
     local effectiveCoeff = (baseResult.coefficient or 0) + mods.coefficientBonus
     local spBonus = effectiveSp * effectiveCoeff * levelPenalty
 
@@ -449,8 +460,10 @@ end
 -- BuildHybridResult(baseResult, spellData, effectiveSp, mods, playerState)
 -- Handles hybrid spells (Immolate) with separate direct + DoT portions.
 -- playerState is used to resolve the TBC SP-coefficient level penalty.
+-- spellData.scalingType gates the penalty: only the spellpower path (nil
+-- scalingType) is penalized, mirroring cMaNGOS Unit::SpellBonusWithCoeffs.
 -------------------------------------------------------------------------------
-function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mods, playerState)
+function ModifierCalc.BuildHybridResult(baseResult, spellData, effectiveSp, mods, playerState)
     if not baseResult.dotBaseDamage then
         return nil
     end
@@ -461,7 +474,7 @@ function ModifierCalc.BuildHybridResult(baseResult, _spellData, effectiveSp, mod
 
     -- TBC level penalty: scale SP contribution down for sub-max-rank spells
     -- (cMaNGOS Unit.cpp::CalculateLevelPenalty). See Engine/LevelPenalty.lua.
-    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState)
+    local levelPenalty = GetLevelPenalty(baseResult.rankData, playerState, spellData and spellData.scalingType)
 
     -- Direct portion
     local directCoeff = (baseResult.directCoefficient or 0) + mods.coefficientBonus

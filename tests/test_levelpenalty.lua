@@ -205,3 +205,121 @@ describe("LevelPenalty engine integration (Phase 2)", function()
         end)
     end)
 end)
+
+-------------------------------------------------------------------------------
+-- Scaling-type gating: cMaNGOS-TBC applies the spell level penalty only to the
+-- spellpower coefficient term inside Unit::SpellBonusWithCoeffs
+-- (src/game/Entities/Unit.cpp ~L7387-7424). The AP/RAP coefficient term is
+-- added unpenalized. Mirror that here: scalingType "melee" / "ranged" must
+-- bypass the penalty even when rankData.maxLevel is populated.
+-------------------------------------------------------------------------------
+describe("LevelPenalty scaling-type gating (issue #47 AP-path immunity)", function()
+    local ModifierCalc = ns.Engine.ModifierCalc
+
+    -- Build a synthetic baseResult/spellData/playerState pair so the test does
+    -- not depend on real spell data with a populated maxLevel. The point is to
+    -- prove that the engine ignores the penalty whenever scalingType selects
+    -- the AP path, regardless of how aggressive the level penalty would be.
+    local function makeApFixture(scalingType, apStat)
+        local spellData = {
+            spellID = 9999,
+            name = "Synthetic AP Spell",
+            school = 1,        -- SCHOOL_PHYSICAL
+            spellType = "direct",
+            scalingType = scalingType,
+            coefficient = 0.20,
+        }
+        local rankData = {
+            spellID = 9999,
+            level = 1,
+            maxLevel = 7,        -- next rank trains at level 8 -> heavy penalty
+            coefficient = 0.20,
+            minBaseDamage = 0,
+            maxBaseDamage = 0,
+            castTime = 0,
+            manaCost = 0,
+        }
+        local baseResult = {
+            spellData = spellData,
+            rankData = rankData,
+            coefficient = 0.20,
+            minBaseDamage = 0,
+            maxBaseDamage = 0,
+            avgBaseDamage = 0,
+            castTime = 0,
+        }
+        local playerState = {
+            level = 70,
+            class = "HUNTER",
+            stats = {
+                spellPower = {},
+                rangedAttackPower = (scalingType == "ranged") and apStat or 0,
+                attackPower = (scalingType == "melee") and apStat or 0,
+                spellCrit = {},
+                spellHit = 0,
+            },
+            talents = {},
+            auras = { player = {}, target = {} },
+            gear = { setBonuses = {} },
+            targetArmor = 0,
+            targetHealthPercent = 100,
+        }
+        return baseResult, spellData, playerState
+    end
+
+    -- Sanity: confirm the chosen (level=1, maxLevel=7, playerLevel=70) fixture
+    -- would produce a strong penalty if it were applied. This guards against a
+    -- false pass where the formula happens to yield ~1.0 for this triple.
+    it("sanity: synthetic fixture would produce a strong penalty on the SP path", function()
+        local penalty = CalculateLevelPenalty(1, 7, 70)
+        assert.is_true(penalty < 0.5,
+            "expected synthetic fixture to yield a heavy penalty on SP path; got " .. tostring(penalty))
+    end)
+
+    it("ranged scalingType: spellPowerBonus equals RAP * coefficient with no penalty", function()
+        local baseResult, spellData, state = makeApFixture("ranged", 1000)
+        local mods = {
+            damageMultiplier = 1.0, talentDamageBonus = 0.0,
+            directDamageMultiplier = 1.0, dotDamageMultiplier = 1.0,
+            coefficientBonus = 0.0, critBonus = 0.0, critMultBonus = 0.0,
+            castTimeReduction = 0.0, castTimeOverride = nil,
+            spellHitBonus = 0.0, flatDamageBonus = 0.0, spellPowerBonus = 0.0,
+        }
+        local result = ModifierCalc.BuildModifiedResult(baseResult, spellData, state, mods)
+        assert.is_near(1000 * 0.20, result.spellPowerBonus, 0.0001)
+    end)
+
+    it("melee scalingType: spellPowerBonus equals AP * coefficient with no penalty", function()
+        local baseResult, spellData, state = makeApFixture("melee", 1000)
+        local mods = {
+            damageMultiplier = 1.0, talentDamageBonus = 0.0,
+            directDamageMultiplier = 1.0, dotDamageMultiplier = 1.0,
+            coefficientBonus = 0.0, critBonus = 0.0, critMultBonus = 0.0,
+            castTimeReduction = 0.0, castTimeOverride = nil,
+            spellHitBonus = 0.0, flatDamageBonus = 0.0, spellPowerBonus = 0.0,
+        }
+        local result = ModifierCalc.BuildModifiedResult(baseResult, spellData, state, mods)
+        assert.is_near(1000 * 0.20, result.spellPowerBonus, 0.0001)
+    end)
+
+    -- Counter-test: same (level, maxLevel) values, but with scalingType=nil
+    -- (the spellpower path) MUST still apply the penalty. Pins the gate.
+    it("nil scalingType (SP path): penalty still applies for sub-max-rank fixture", function()
+        local baseResult, spellData, state = makeApFixture(nil, 0)
+        spellData.school = 4  -- SCHOOL_FIRE
+        state.stats.spellPower = { [4] = 1000 }
+        local mods = {
+            damageMultiplier = 1.0, talentDamageBonus = 0.0,
+            directDamageMultiplier = 1.0, dotDamageMultiplier = 1.0,
+            coefficientBonus = 0.0, critBonus = 0.0, critMultBonus = 0.0,
+            castTimeReduction = 0.0, castTimeOverride = nil,
+            spellHitBonus = 0.0, flatDamageBonus = 0.0, spellPowerBonus = 0.0,
+        }
+        local result = ModifierCalc.BuildModifiedResult(baseResult, spellData, state, mods)
+        local expectedPenalty = CalculateLevelPenalty(1, 7, 70)
+        assert.is_near(1000 * 0.20 * expectedPenalty, result.spellPowerBonus, 0.0001)
+        -- And the penalty is meaningfully less than 1.0, so the assertion above
+        -- is genuinely distinguishing the SP path from the AP path.
+        assert.is_true(result.spellPowerBonus < 1000 * 0.20)
+    end)
+end)
