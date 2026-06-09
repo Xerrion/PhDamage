@@ -36,6 +36,13 @@ local ANCHOR_VALUES = {
     BOTTOMRIGHT = "BOTTOMRIGHT",
 }
 
+local TOOLTIP_POSITIONS = {
+    BOTTOM = "Below Tooltip",
+    TOP    = "Above Tooltip",
+    LEFT   = "Left of Tooltip",
+    RIGHT  = "Right of Tooltip",
+}
+
 -------------------------------------------------------------------------------
 -- Internal helpers
 -------------------------------------------------------------------------------
@@ -46,6 +53,16 @@ end
 local function ApplyOverlay()
     if ns.ActionBar and ns.ActionBar.ApplySettings then
         ns.ActionBar.ApplySettings()
+    end
+end
+
+local function GetTooltip()
+    return ns.Addon.db.profile.tooltip
+end
+
+local function ApplyTooltip()
+    if ns.Tooltip and ns.Tooltip.ApplySettings then
+        ns.Tooltip.ApplySettings()
     end
 end
 
@@ -136,6 +153,71 @@ function Options:BuildOptionsTable()
                 desc  = "Restore all overlay settings to their default values.",
                 func  = ResetToDefaults,
                 order = 70,
+            },
+            tooltipHeader = {
+                type  = "header",
+                name  = "Tooltip Position",
+                order = 80,
+            },
+            tooltipPosition = {
+                type   = "select",
+                name   = "Position",
+                desc   = "Where the PhDamage tooltip appears relative to the default GameTooltip.",
+                values = TOOLTIP_POSITIONS,
+                order  = 90,
+                get    = function() return GetTooltip().position end,
+                set    = function(_, value)
+                    GetTooltip().position = value
+                    ApplyTooltip()
+                end,
+            },
+            tooltipOffsetX = {
+                type  = "range",
+                name  = "Horizontal Offset",
+                desc  = "Fine-tune horizontal position (pixels).",
+                min   = -200,
+                max   = 200,
+                step  = 1,
+                order = 100,
+                get   = function() return GetTooltip().offsetX end,
+                set   = function(_, value)
+                    GetTooltip().offsetX = value
+                    ApplyTooltip()
+                end,
+            },
+            tooltipOffsetY = {
+                type  = "range",
+                name  = "Vertical Offset",
+                desc  = "Fine-tune vertical position (pixels).",
+                min   = -200,
+                max   = 200,
+                step  = 1,
+                order = 110,
+                get   = function() return GetTooltip().offsetY end,
+                set   = function(_, value)
+                    GetTooltip().offsetY = value
+                    ApplyTooltip()
+                end,
+            },
+            tooltipSpacer = {
+                type  = "description",
+                name  = " ",
+                order = 120,
+            },
+            tooltipReset = {
+                type  = "execute",
+                name  = "Reset Tooltip to Defaults",
+                desc  = "Restore tooltip position settings to their default values.",
+                order = 130,
+                func  = function()
+                    local defaults = ns.DB_DEFAULTS and ns.DB_DEFAULTS.profile and ns.DB_DEFAULTS.profile.tooltip
+                    if not defaults then return end
+                    local tooltip = GetTooltip()
+                    for key, value in pairs(defaults) do
+                        tooltip[key] = value
+                    end
+                    ApplyTooltip()
+                end,
             },
         },
     }

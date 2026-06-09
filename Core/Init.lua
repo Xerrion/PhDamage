@@ -33,6 +33,11 @@ local DB_DEFAULTS = {
             fontSize           = 10,
             abbreviateNumbers  = true,
         },
+        tooltip = {
+            position = "BOTTOM",
+            offsetX  = 0,
+            offsetY  = 0,
+        },
     },
 }
 ns.DB_DEFAULTS = DB_DEFAULTS
@@ -50,6 +55,11 @@ function PhDamage:OnInitialize()
     -- Register the AceConfig options panel
     if ns.Options and ns.Options.Register then
         ns.Options:Register()
+    end
+
+    -- Apply tooltip position settings
+    if ns.Tooltip and ns.Tooltip.ApplySettings then
+        ns.Tooltip.ApplySettings()
     end
 
     self:Print("PhDamage loaded. Type /phd for diagnostics.")
