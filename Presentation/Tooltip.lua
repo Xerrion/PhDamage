@@ -10,6 +10,12 @@ local _, ns = ...
 local Tooltip = {}
 ns.Tooltip = Tooltip
 
+-- Resolved tooltip position from config (updated by ApplySettings)
+local tooltipAnchorPoint = "TOPLEFT"
+local tooltipRelativePoint = "BOTTOMLEFT"
+local tooltipOffsetX = 0
+local tooltipOffsetY = -4
+
 -------------------------------------------------------------------------------
 -- Formatting Helpers (delegate to ns.Format, kept for backward compatibility)
 -------------------------------------------------------------------------------
@@ -36,7 +42,6 @@ local CreateFrame = CreateFrame
 local format = string.format
 local floor = math.floor
 local concat = table.concat
-
 -- Import shared formatting (populated by Format.lua, loaded before this file)
 local Format  -- forward-declared; resolved in init
 local FN, FD  -- FormatNumber / FormatDPS aliases
@@ -114,9 +119,9 @@ local function FinalizeFrame()
 
     companionFrame:SetSize(maxWidth + PADDING * 2, totalHeight)
 
-    -- Re-anchor to GameTooltip (it may have moved)
+    -- Re-anchor to GameTooltip using configured position
     companionFrame:ClearAllPoints()
-    companionFrame:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 0, -4)
+    companionFrame:SetPoint(tooltipAnchorPoint, GameTooltip, tooltipRelativePoint, tooltipOffsetX, tooltipOffsetY)
     companionFrame:Show()
 end
 
@@ -445,6 +450,36 @@ local function OnTooltipSetSpell(tooltip)
 end
 
 -------------------------------------------------------------------------------
+-- ApplySettings -- reads config and updates positioning variables
+-------------------------------------------------------------------------------
+
+local POSITION_MAP = {
+    BOTTOM = { anchor = "TOPLEFT", relative = "BOTTOMLEFT", baseX = 0,  baseY = -4 },
+    TOP    = { anchor = "BOTTOMLEFT", relative = "TOPLEFT",    baseX = 0,  baseY = 4  },
+    LEFT   = { anchor = "TOPRIGHT",  relative = "TOPLEFT",    baseX = -4, baseY = 0  },
+    RIGHT  = { anchor = "TOPLEFT",   relative = "TOPRIGHT",   baseX = 4,  baseY = 0  },
+}
+
+function ns.Tooltip.ApplySettings()
+    local config = ns.Addon and ns.Addon.db and ns.Addon.db.profile and ns.Addon.db.profile.tooltip
+    if not config then
+        config = { position = "BOTTOM", offsetX = 0, offsetY = 0 }
+    end
+
+    local pos = POSITION_MAP[config.position] or POSITION_MAP.BOTTOM
+    tooltipAnchorPoint   = pos.anchor
+    tooltipRelativePoint = pos.relative
+    tooltipOffsetX       = pos.baseX + (config.offsetX or 0)
+    tooltipOffsetY       = pos.baseY + (config.offsetY or 0)
+
+    -- Re-position if the companion frame exists and is visible
+    if companionFrame and companionFrame:IsVisible() then
+        companionFrame:ClearAllPoints()
+        companionFrame:SetPoint(tooltipAnchorPoint, GameTooltip, tooltipRelativePoint, tooltipOffsetX, tooltipOffsetY)
+    end
+end
+
+-------------------------------------------------------------------------------
 -- HookTooltip -- attaches the tooltip hooks (called once during init)
 -------------------------------------------------------------------------------
 
@@ -503,5 +538,8 @@ initFrame:SetScript("OnEvent", function(self, event)
         end
 
         HookTooltip()
+
+        -- Apply tooltip position settings
+        ns.Tooltip.ApplySettings()
     end
 end)
