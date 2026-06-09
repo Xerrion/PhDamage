@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/Xerrion/PhDamage/compare/1.4.0...1.5.0) (2026-06-09)
+
+
+### Features
+
+* add configurable tooltip position and offsets ([#54](https://github.com/Xerrion/PhDamage/issues/54)) ([0cc92e7](https://github.com/Xerrion/PhDamage/commit/0cc92e7f6e33dc19def999a00623d32edf74796b))
+
 ## [1.4.0](https://github.com/Xerrion/PhDamage/compare/1.3.5...1.4.0) (2026-04-29)
 
 
