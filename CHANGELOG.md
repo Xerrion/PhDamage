@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.5.1 (2026-11-18)
+
+<!-- Release notes generated using configuration in .github/release.yml at master -->
+
+## What's Changed
+### ⚙️ Other Changes
+* ci: validate PR titles as conventional commits by @Xerrion in https://github.com/Xerrion/PhDamage/pull/58
+* chore: use GitHub-generated release notes to credit contributors by @Xerrion in https://github.com/Xerrion/PhDamage/pull/57
+* ci: run lint on pull_request instead of pull_request_target by @Xerrion in https://github.com/Xerrion/PhDamage/pull/56
+* docs: drop AI disclosure requirement by @Xerrion in https://github.com/Xerrion/PhDamage/pull/60
+* ci: add PR labeler and unify release note categories by @Xerrion in https://github.com/Xerrion/PhDamage/pull/61
+* ci: use pull_request triggers and update action versions by @Xerrion in https://github.com/Xerrion/PhDamage/pull/62
+* ci: run the PR labeler on pull_request_target for fork PRs by @Xerrion in https://github.com/Xerrion/PhDamage/pull/63
+
+
+**Full Changelog**: https://github.com/Xerrion/PhDamage/compare/1.5.0...1.5.1
+
 ## [1.5.0](https://github.com/Xerrion/PhDamage/compare/1.4.0...1.5.0) (2026-06-09)
 
 
