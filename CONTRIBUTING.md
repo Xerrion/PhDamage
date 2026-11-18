@@ -159,6 +159,22 @@ If `busted --verbose` fails with `module 'busted.runner' not found`, your `buste
 | `docs/` | Documentation | `docs/update-readme` |
 | `refactor/` | Code improvement | `refactor/16-engine-cleanup` |
 
+## AI-Assisted Contributions
+
+AI tools are welcome, but you remain responsible for everything you submit. This policy is separate from our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+1. **Disclose it.** Say in the PR description which AI tool you used and how much of the change it produced.
+2. **Review it yourself.** You must review, understand, and be able to explain every line you submit. Do not submit unreviewed agent output.
+3. **Verify it.** Run `luacheck .` and the busted tests (see [Linting](#linting) and [Testing](#testing)), and test in-game before submitting. Never claim a check passed without running it.
+4. **Do not invent APIs.** Do not make up WoW API behaviour. Check it against [warcraft.wiki.gg](https://warcraft.wiki.gg) and Blizzard's FrameXML source.
+5. **No spam.** No bulk or drive-by AI-generated issues or PRs. Keep each PR to one scoped change, linked to an issue.
+6. **Licensing.** You are responsible for licensing. Do not paste code of unknown origin.
+7. **Agent conduct.** AI agents working on your behalf must follow the repo's `AGENTS.md`, never push to `master`, never merge release-please PRs (`chore(master): release X.Y.Z`; the owner merges those), and not touch secrets or workflow permissions without explicit approval.
+
+PR titles must be conventional commits (`feat:`, `fix(scope):`, `chore:` ...). Squash merges use the PR title as the commit message, and release-please derives versions from it.
+
+Maintainers may close undisclosed or unreviewed AI-assisted PRs without review.
+
 ## What Happens After Your PR
 
 1. **CI** runs luacheck and busted tests automatically
