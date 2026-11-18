@@ -140,13 +140,12 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 
 Applies to every AI agent working in this repo. Human-facing version: `CONTRIBUTING.md` (AI-Assisted Contributions).
 
-1. **Disclose.** Put the AI tool used, and how much of the change it produced, in the PR description.
-2. **Human review.** Never submit unreviewed output. A human must review, understand, and be able to explain every line.
-3. **Verify.** Run `luacheck .` and the busted suite (`lua tests/RunBusted.lua --verbose`) before submitting, and test in-game. Never claim a check passed without running it.
-4. **Do not fabricate.** Never invent WoW API behaviour. Verify against [warcraft.wiki.gg](https://warcraft.wiki.gg) and Blizzard's FrameXML source. Data values follow **Data Sources** above.
-5. **No spam.** No bulk or drive-by AI-generated issues or PRs. One scoped change per PR, linked to an issue.
-6. **Licensing.** Do not paste code of unknown origin. The contributor is responsible for licensing.
-7. **Agent conduct.**
+1. **Human review.** Never submit unreviewed output. A human must review, understand, and be able to explain every line.
+2. **Verify.** Run `luacheck .` and the busted suite (`lua tests/RunBusted.lua --verbose`) before submitting, and test in-game. Never claim a check passed without running it.
+3. **Do not fabricate.** Never invent WoW API behaviour. Verify against [warcraft.wiki.gg](https://warcraft.wiki.gg) and Blizzard's FrameXML source. Data values follow **Data Sources** above.
+4. **No spam.** No bulk or drive-by AI-generated issues or PRs. One scoped change per PR, linked to an issue.
+5. **Licensing.** Do not paste code of unknown origin. The contributor is responsible for licensing.
+6. **Agent conduct.**
    - Follow this file.
    - Never push to `master`.
    - Never merge release-please PRs (`chore(master): release X.Y.Z`). The owner merges those.
@@ -154,7 +153,7 @@ Applies to every AI agent working in this repo. Human-facing version: `CONTRIBUT
 
 PR titles must be conventional commits (`feat:`, `fix(scope):`, `chore:` ...) and reference the issue number. Squash merges use the PR title as the commit message, and release-please derives versions from it. Branches are named `type/<issue>-short-desc`.
 
-Maintainers may close undisclosed or unreviewed AI-assisted PRs without review. This policy is separate from [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Maintainers may close unreviewed AI-assisted PRs without review. This policy is separate from [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
