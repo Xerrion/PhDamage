@@ -4,18 +4,7 @@
         ".": {
             "release-type": "simple",
             "include-v-in-tag": false,
-            "changelog-sections": [
-                { "type": "feat", "section": "Features" },
-                { "type": "fix", "section": "Bug Fixes" },
-                { "type": "refactor", "section": "Code Refactoring" },
-                { "type": "doc", "section": "Documentation", "hidden": true },
-                { "type": "docs", "section": "Documentation", "hidden": true },
-                { "type": "perf", "section": "Performance Improvements" },
-                { "type": "style", "section": "Styles" },
-                { "type": "test", "section": "Tests" },
-                { "type": "ci", "section": "Continuous Integration", "hidden": true },
-                { "type": "chore", "section": "Miscellaneous Chores", "hidden": true }
-            ]
+            "changelog-type": "github"
         }
     }
 }
