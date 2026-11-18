@@ -130,7 +130,7 @@ task(subagent_type="wowhead-researcher", prompt="Look up all ranks of Fireball f
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `lint.yml` | `pull_request_target` to `master` | Runs Luacheck and busted tests |
+| `lint.yml` | `pull_request` to `master` | Runs Luacheck and busted tests |
 | `release.yml` | Push to `master` | release-please creates/updates a Release PR; dispatches `packager.yml` on release |
 | `packager.yml` | `workflow_dispatch` (from release.yml) | Builds and publishes via BigWigsMods packager |
 
